@@ -3,6 +3,7 @@ package io.github.labyrinthgenerator.pages;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.viewport.FitViewport;
+import io.github.labyrinthgenerator.Application;
 import io.github.labyrinthgenerator.additional.Vector2;
 
 import java.util.HashSet;
@@ -21,6 +22,7 @@ public class DebugPage implements Page {
     private boolean escape;
     private boolean fourth;
     private boolean update;
+    private boolean screenshot;
 
     private Set<Vector2> prevPoses;
     private Set<Vector2> puffins;
@@ -46,6 +48,7 @@ public class DebugPage implements Page {
 
     @Override
     public void logic() {
+        screenshot = false;
         frame++;
         if (frame % 30 == 0) {
             prevPoses.clear();
@@ -63,6 +66,7 @@ public class DebugPage implements Page {
                 fourth = false;
                 escape = true;
                 update = true;
+                screenshot = Application.saveAsImage;
             }
         }
     }
@@ -72,7 +76,8 @@ public class DebugPage implements Page {
         mainPage.prepareDraw(viewport, spriteBatch);
         float scale = mainPage.getScale();
         for (Vector2 prevPose : prevPoses) {
-            if (escape) spriteBatch.draw(prefPoseAcceptEscapeTexture, prevPose.x * scale, prevPose.y * scale, scale, scale);
+            if (escape)
+                spriteBatch.draw(prefPoseAcceptEscapeTexture, prevPose.x * scale, prevPose.y * scale, scale, scale);
             else spriteBatch.draw(prefPoseTexture, prevPose.x * scale, prevPose.y * scale, scale, scale);
         }
         for (Vector2 puffin : puffins) {
@@ -80,6 +85,7 @@ public class DebugPage implements Page {
         }
         mainPage.drawLabyrinth(spriteBatch);
         mainPage.endDraw(spriteBatch);
+        if (screenshot) mainPage.saveAsImage();
     }
 
     @Override

@@ -2,6 +2,8 @@ package io.github.labyrinthgenerator.pages;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Pixmap;
+import com.badlogic.gdx.graphics.PixmapIO;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -11,6 +13,9 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 import io.github.labyrinthgenerator.Application;
 import io.github.labyrinthgenerator.interfaces.ApplicationFacade;
 import io.github.labyrinthgenerator.labyrinth.Labyrinth;
+
+import java.util.UUID;
+import java.util.zip.Deflater;
 
 import static io.github.labyrinthgenerator.Application.windowH;
 import static io.github.labyrinthgenerator.Application.windowW;
@@ -117,6 +122,13 @@ public class MainPage implements Page {
         if (Application.debug) {
             application.getDebugger().render(application.getCamera().combined);
         }
+    }
+
+    public void saveAsImage() {
+        Pixmap pixmap = Pixmap.createFromFrameBuffer(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        UUID uuid = UUID.randomUUID();
+        PixmapIO.writePNG(Gdx.files.external("./labyrinth-generations/" + uuid + ".png"), pixmap, Deflater.DEFAULT_COMPRESSION, true);
+        pixmap.dispose();
     }
 
     public Labyrinth getLabyrinth() {
