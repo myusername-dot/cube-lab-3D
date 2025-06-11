@@ -31,8 +31,8 @@ public class DebugPage implements Page {
 
     @Override
     public void create() {
-        prefPoseTexture = new Texture("pp.png");
-        prefPoseAcceptEscapeTexture = new Texture("ppa.png");
+        prefPoseTexture = new Texture("pref.png");
+        prefPoseAcceptEscapeTexture = new Texture("pref_a.png");
         puffinTexture = new Texture("puff.png");
 
         mainPage = new MainPage();

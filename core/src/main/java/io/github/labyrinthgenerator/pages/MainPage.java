@@ -32,6 +32,7 @@ public class MainPage implements Page {
     private Texture verticalWallTexture;
     private Texture horizontalWallTexture;
 
+    private Texture entryTexture;
     private Texture escapeTexture;
 
     private Labyrinth labyrinth;
@@ -50,7 +51,8 @@ public class MainPage implements Page {
         labyrinth = new Labyrinth(lW, lH);
         verticalWallTexture = new Texture("wall1.png");
         horizontalWallTexture = new Texture("wall2.png");
-        escapeTexture = new Texture("e.png");
+        entryTexture = new Texture("entry.png");
+        escapeTexture = new Texture("escape.png");
 
         createFonts("fonts/clacon2.ttf");
     }
@@ -111,6 +113,7 @@ public class MainPage implements Page {
                 }
             }
         spriteBatch.draw(escapeTexture, (lW - 2) * scale, (lH - 2) * scale, scale, scale);
+        spriteBatch.draw(entryTexture, 1 * scale, 1 * scale, scale, scale);
     }
 
     public void prepareDraw(FitViewport viewport, SpriteBatch spriteBatch) {
