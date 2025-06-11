@@ -8,6 +8,7 @@ import io.github.labyrinthgenerator.additional.Vector2;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
 public class DebugPage implements Page {
 
@@ -23,6 +24,7 @@ public class DebugPage implements Page {
     private boolean fourth;
     private boolean update;
     private boolean screenshot;
+    private boolean txtFile;
 
     private Set<Vector2> prevPoses;
     private Set<Vector2> puffins;
@@ -49,6 +51,7 @@ public class DebugPage implements Page {
     @Override
     public void logic() {
         screenshot = false;
+        txtFile = false;
         frame++;
         if (frame % 30 == 0) {
             prevPoses.clear();
@@ -67,6 +70,7 @@ public class DebugPage implements Page {
                 escape = true;
                 update = true;
                 screenshot = Application.saveAsImage;
+                txtFile = Application.saveAsTxt;
             }
         }
     }
@@ -85,7 +89,9 @@ public class DebugPage implements Page {
         }
         mainPage.drawLabyrinth(spriteBatch);
         mainPage.endDraw(spriteBatch);
-        if (screenshot) mainPage.saveAsImage();
+        UUID uuid = null;
+        if (screenshot) uuid = mainPage.saveAsImage();
+        if (txtFile) mainPage.saveAsTxt(uuid);
     }
 
     @Override

@@ -20,7 +20,7 @@ public class Application extends ApplicationAdapter implements ApplicationFacade
 
     public static final boolean debug = true;
 
-    public static final boolean saveAsText = true;
+    public static final boolean saveAsTxt = true;
     public static final boolean saveAsImage = true;
 
     private static Application application;

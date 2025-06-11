@@ -14,6 +14,10 @@ import io.github.labyrinthgenerator.Application;
 import io.github.labyrinthgenerator.interfaces.ApplicationFacade;
 import io.github.labyrinthgenerator.labyrinth.Labyrinth;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.UUID;
 import java.util.zip.Deflater;
 
@@ -124,11 +128,35 @@ public class MainPage implements Page {
         }
     }
 
-    public void saveAsImage() {
+    public UUID saveAsImage() {
         Pixmap pixmap = Pixmap.createFromFrameBuffer(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         UUID uuid = UUID.randomUUID();
-        PixmapIO.writePNG(Gdx.files.external("./labyrinth-generations/" + uuid + ".png"), pixmap, Deflater.DEFAULT_COMPRESSION, true);
+        File file = null;
+        PixmapIO.writePNG(Gdx.files.external("./labyrinth-generations/screenshots/" + uuid + ".png"), pixmap, Deflater.DEFAULT_COMPRESSION, true);
         pixmap.dispose();
+        return uuid;
+    }
+
+    public void saveAsTxt(UUID uuid) {
+        if (uuid == null) uuid = UUID.randomUUID();
+        File dir = new File(System.getProperty("user.home") + "/labyrinth-generations/text-files/");
+        dir.mkdir();
+        File txtFile = new File(dir, uuid + ".txt");
+        try {
+            txtFile.createNewFile();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(txtFile))) {
+            for (int[] row : labyrinth.getLabyrinth()) {
+                for (int j : row) {
+                    writer.write(Integer.toString(j));
+                }
+                writer.newLine();
+            }
+        } catch (IOException e) {
+            System.err.println("Error writing to file: " + e.getMessage());
+        }
     }
 
     public Labyrinth getLabyrinth() {
