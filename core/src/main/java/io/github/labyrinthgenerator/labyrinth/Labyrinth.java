@@ -138,14 +138,23 @@ public class Labyrinth {
 
         if (escape && exitWhenFindEscape) return true;
         if (!puffinsTmp.isEmpty()) {
-            Vector2 puffinT = puffinsTmp.entrySet().stream()
-                .max((e1, e2) ->
+            // divarication
+            puffins.addAll(puffinsTmp.entrySet().stream()
+                .sorted((e2, e1) ->
                     sortedByEscapeDistance ?
                         e2.getKey().getDistance(this.escape).compareTo(e1.getKey().getDistance(this.escape)) :
-                        e1.getValue().compareTo(e2.getValue())
-                )
-                .get().getKey();
-            puffins.add(puffinT);
+                        e1.getValue().compareTo(e2.getValue()))
+                .limit(1)
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toSet()));
+            puffins.addAll(puffinsTmp.entrySet().stream()
+                .sorted((e1, e2) ->
+                    sortedByEscapeDistance ?
+                        e2.getKey().getDistance(this.escape).compareTo(e1.getKey().getDistance(this.escape)) :
+                        e1.getValue().compareTo(e2.getValue()))
+                .limit(1)
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toSet()));
         }
         for (Vector2 puffin : puffins) {
             puff(puffin, true);
@@ -365,32 +374,36 @@ public class Labyrinth {
                     nextX = x - 1;
                     nextY = y;
                     if (setPuffins(puffins, prevPoses, distance, nextX, nextY, currentPos, exitWhenFindEscape)) {
-                        escape = true;
                         if (exitWhenFindEscape) return true;
+                        escape = true;
+                        distance /= 2; // lead the remaining branches away from the exit
                     }
                     break;
                 case RIGHT:
                     nextX = x + 1;
                     nextY = y;
                     if (setPuffins(puffins, prevPoses, distance, nextX, nextY, currentPos, exitWhenFindEscape)) {
-                        escape = true;
                         if (exitWhenFindEscape) return true;
+                        escape = true;
+                        distance /= 2; // lead the remaining branches away from the exit
                     }
                     break;
                 case UP:
                     nextX = x;
                     nextY = y + 1;
                     if (setPuffins(puffins, prevPoses, distance, nextX, nextY, currentPos, exitWhenFindEscape)) {
-                        escape = true;
                         if (exitWhenFindEscape) return true;
+                        escape = true;
+                        distance /= 2; // lead the remaining branches away from the exit
                     }
                     break;
                 case DOWN:
                     nextX = x;
                     nextY = y - 1;
                     if (setPuffins(puffins, prevPoses, distance, nextX, nextY, currentPos, exitWhenFindEscape)) {
-                        escape = true;
                         if (exitWhenFindEscape) return true;
+                        escape = true;
+                        distance /= 2; // lead the remaining branches away from the exit
                     }
                     break;
             }

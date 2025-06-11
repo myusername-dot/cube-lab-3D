@@ -16,7 +16,7 @@ import io.github.labyrinthgenerator.pages.Page;
 public class Application extends ApplicationAdapter implements ApplicationFacade {
 
     public static final int windowW = 642;
-    public static final int windowH = 364;
+    public static final int windowH = 322;
 
     public static final boolean debug = true;
 
