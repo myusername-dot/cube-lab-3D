@@ -1,0 +1,89 @@
+package io.github.labyrinthgenerator;
+
+import com.badlogic.gdx.ApplicationAdapter;
+import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.utils.viewport.FitViewport;
+import io.github.labyrinthgenerator.debug.MyDebugRenderer;
+import io.github.labyrinthgenerator.interfaces.ApplicationFacade;
+import io.github.labyrinthgenerator.pages.DebugPage;
+import io.github.labyrinthgenerator.pages.MainPage;
+import io.github.labyrinthgenerator.pages.Page;
+
+/**
+ * {@link com.badlogic.gdx.ApplicationListener} implementation shared by all platforms.
+ */
+public class Application extends ApplicationAdapter implements ApplicationFacade {
+
+    public static final int windowW = 642;
+    public static final int windowH = 364;
+
+    public static final boolean debug = true;
+
+    private static Application application;
+
+    private SpriteBatch spriteBatch;
+    private FitViewport viewport;
+    private OrthographicCamera camera;
+
+    private MyDebugRenderer debugger;
+
+    private Page page;
+
+    public static ApplicationFacade getApplicationInstanceFacade() {
+        if (application == null) {
+            application = new Application();
+        }
+        return application;
+    }
+
+    private Application() {
+    }
+
+    @Override
+    public void create() {
+        spriteBatch = new SpriteBatch();
+        viewport = new FitViewport(windowW, windowH);
+        camera = new OrthographicCamera(viewport.getWorldWidth(), viewport.getWorldHeight());
+        viewport.setCamera(camera);
+
+        debugger = new MyDebugRenderer();
+
+        page = new DebugPage();
+        page.create();
+    }
+
+    @Override
+    public void resize(int width, int height) {
+        viewport.update(width, height, true);
+    }
+
+    @Override
+    public void render() {
+        page.input();
+        page.logic();
+        page.draw(viewport, spriteBatch);
+
+        if (page.isFinished()) {
+            page = page.getNextPage();
+            page.create();
+        }
+    }
+
+    public SpriteBatch getSpriteBatch() {
+        return spriteBatch;
+    }
+
+    public FitViewport getViewport() {
+        return viewport;
+    }
+
+    public OrthographicCamera getCamera() {
+        return camera;
+    }
+
+    public MyDebugRenderer getDebugger() {
+        return debugger;
+    }
+}
+
