@@ -2,7 +2,7 @@
 
 This project is written with a [libGDX](https://libgdx.com/).
 
-The application generates difficult to navigate mazes of any size.
+The application generates difficult to navigate mazes.
 ____
 
 ### Preview gif:
