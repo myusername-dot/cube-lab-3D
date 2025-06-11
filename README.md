@@ -3,5 +3,5 @@
 This project is written with a [libGDX](https://libgdx.com/).
 ____
 
-### Preview video:
+### Preview gif:
 ![algorithm](preview.gif)
