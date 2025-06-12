@@ -99,7 +99,7 @@ public class Tools2dPage implements Page {
                     case EMPTY:
                         continue;
                     case VERTICAL_WALL:
-                        spriteBatch.draw(verticalWallTexture, i * lDivider, j * lDivider - 8, lDivider / 4f, lDivider + 10);
+                        spriteBatch.draw(verticalWallTexture, i * lDivider, j * lDivider - lDivider, lDivider / 4f, lDivider * 2);
                         break;
                     case HORIZONTAL_WALL:
                     case LU_CORNER:

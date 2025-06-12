@@ -13,9 +13,9 @@ import io.github.labyrinthgenerator.pages.Page;
  */
 public class MyApplication extends ApplicationAdapter implements ApplicationFacade {
 
-    public static final int windowW = 642;
-    public static final int windowH = 322;
     public static final float lDivider = 10;
+    public static final int   windowW = 640 + (int) (lDivider / 4f);
+    public static final int   windowH = 320 + (int) (lDivider / 4f);
 
     public static final boolean debug = true;
 
@@ -46,7 +46,7 @@ public class MyApplication extends ApplicationAdapter implements ApplicationFaca
 
         debugger = new MyDebugRenderer();
 
-        page = new Game3dPage();
+        page = new LabyrinthPage();
         page.create();
     }
 
