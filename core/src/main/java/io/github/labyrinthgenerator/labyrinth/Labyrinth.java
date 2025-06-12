@@ -129,32 +129,26 @@ public class Labyrinth {
         boolean sortedByEscapeDistance,
         boolean exitWhenFindEscape
     ) {
-        Map<Vector2, Integer> puffinsTmp = new HashMap<>();
         if (LEntity.values()[labyrinth[x][y]] != LEntity.EMPTY)
             throw new UnsupportedOperationException("wormSecondDebug: LEntity.values()[labyrinth[x][y]] != LEntity.EMPTY");
 
+        Map<Vector2, Integer> puffinsTmp = new HashMap<>();
         boolean escape = setPuffins(puffinsTmp, prevPoses, 0, x, y, new Vector2(x, y), exitWhenFindEscape);
         this.prevPoses.addAll(prevPoses);
 
         if (escape && exitWhenFindEscape) return true;
         if (!puffinsTmp.isEmpty()) {
-            // divarication
-            puffins.addAll(puffinsTmp.entrySet().stream()
-                .sorted((e2, e1) ->
-                    sortedByEscapeDistance ?
-                        e2.getKey().getDistance(this.escape).compareTo(e1.getKey().getDistance(this.escape)) :
-                        e1.getValue().compareTo(e2.getValue()))
-                .limit(1)
-                .map(Map.Entry::getKey)
-                .collect(Collectors.toSet()));
-            puffins.addAll(puffinsTmp.entrySet().stream()
+            List<Vector2> sorted = puffinsTmp.entrySet().stream()
                 .sorted((e1, e2) ->
                     sortedByEscapeDistance ?
-                        e2.getKey().getDistance(this.escape).compareTo(e1.getKey().getDistance(this.escape)) :
+                        e1.getKey().getDistance(this.escape).compareTo(e2.getKey().getDistance(this.escape)) :
                         e1.getValue().compareTo(e2.getValue()))
-                .limit(1)
                 .map(Map.Entry::getKey)
-                .collect(Collectors.toSet()));
+                .collect(Collectors.toList());
+            // divarication
+            puffins.add(sorted.get(0));
+            puffins.add(sorted.get(sorted.size() - 1));
+            //puffins.add(sorted.get((int) (sorted.size() / 1.6)));
         }
         for (Vector2 puffin : puffins) {
             puff(puffin, true);
@@ -359,7 +353,7 @@ public class Labyrinth {
             }
         }
         if (directions.isEmpty()) {
-            if (cycle) distance /= 2;
+            if (cycle) distance /= 1.5;
             if (!getDirections(x, y, true, true).isEmpty()) {
                 puffins.put(currentPos, distance);
             }
@@ -376,7 +370,7 @@ public class Labyrinth {
                     if (setPuffins(puffins, prevPoses, distance, nextX, nextY, currentPos, exitWhenFindEscape)) {
                         if (exitWhenFindEscape) return true;
                         escape = true;
-                        distance /= 2; // lead the remaining branches away from the exit
+                        if (distance > Math.pow(width * height, 0.65)) distance /= 2; // lead the remaining branches away from the exit
                     }
                     break;
                 case RIGHT:
@@ -385,7 +379,7 @@ public class Labyrinth {
                     if (setPuffins(puffins, prevPoses, distance, nextX, nextY, currentPos, exitWhenFindEscape)) {
                         if (exitWhenFindEscape) return true;
                         escape = true;
-                        distance /= 2; // lead the remaining branches away from the exit
+                        if (distance > Math.pow(width * height, 0.65)) distance /= 2; // lead the remaining branches away from the exit
                     }
                     break;
                 case UP:
@@ -394,7 +388,7 @@ public class Labyrinth {
                     if (setPuffins(puffins, prevPoses, distance, nextX, nextY, currentPos, exitWhenFindEscape)) {
                         if (exitWhenFindEscape) return true;
                         escape = true;
-                        distance /= 2; // lead the remaining branches away from the exit
+                        if (distance > Math.pow(width * height, 0.65)) distance /= 2; // lead the remaining branches away from the exit
                     }
                     break;
                 case DOWN:
@@ -403,7 +397,7 @@ public class Labyrinth {
                     if (setPuffins(puffins, prevPoses, distance, nextX, nextY, currentPos, exitWhenFindEscape)) {
                         if (exitWhenFindEscape) return true;
                         escape = true;
-                        distance /= 2; // lead the remaining branches away from the exit
+                        if (distance > Math.pow(width * height, 0.65)) distance /= 1.5; // lead the remaining branches away from the exit
                     }
                     break;
             }
