@@ -13,9 +13,9 @@ import io.github.labyrinthgenerator.pages.Page;
  */
 public class MyApplication extends ApplicationAdapter implements ApplicationFacade {
 
-    public static final float lDivider = 10;
-    public static final int   windowW = 640 + (int) (lDivider / 4f);
-    public static final int   windowH = 320 + (int) (lDivider / 4f);
+    public static final float lDivider = 20;
+    public static final int   windowW = 960;
+    public static final int   windowH = 300;
 
     public static final boolean debug = true;
 

@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.util.UUID;
 import java.util.zip.Deflater;
 
+import static com.badlogic.gdx.Gdx.gl20;
 import static io.github.labyrinthgenerator.MyApplication.*;
 
 public class Tools2dPage implements Page {
@@ -37,6 +38,7 @@ public class Tools2dPage implements Page {
 
     private Labyrinth labyrinth;
     private int lW, lH;
+    private int screenX, screenY;
 
     private int frame;
 
@@ -49,9 +51,31 @@ public class Tools2dPage implements Page {
         viewport.update(viewport.getScreenWidth(), viewport.getScreenHeight(), true);
         spriteBatch = new SpriteBatch();
         //backgroundTexture = new Texture("backgrounds/notebook-paper-background.jpg");
-        lW = (int) (windowW / lDivider) + 1;
-        lH = (int) (windowH / lDivider) + 1;
+
+        lW = (int) ((windowW - lDivider * 0.75) / lDivider);
+        lH = (int) ((windowH - lDivider * 0.75) / lDivider);
+        lW += lW % 2 == 0 ? 1 : 0;
+        lH += lH % 2 == 0 ? 1 : 0;
         labyrinth = new Labyrinth(lW, lH);
+        screenX = (int) (windowW - lDivider * lW);
+        screenY = (int) (windowH - lDivider * lH);
+
+        float blackScreenWidth = Gdx.graphics.getBackBufferWidth();
+        float blackScreenHeight = Gdx.graphics.getBackBufferHeight();
+        if (blackScreenWidth != windowW || blackScreenHeight != windowH) {
+            float blackScreenWorldScale;
+            if (windowH > windowW) blackScreenWorldScale = blackScreenHeight / windowH;
+            else blackScreenWorldScale = blackScreenWidth / windowW;
+            float worldWindowW = windowW * blackScreenWorldScale;
+            float worldWindowH = windowH * blackScreenWorldScale;
+
+            float bordersWidth = blackScreenWidth - worldWindowW;
+            float bordersHeight = blackScreenHeight - worldWindowH;
+
+            viewport.setScreenX((int) bordersWidth / 2);
+            viewport.setScreenY((int) bordersHeight / 2);
+        }
+
         verticalWallTexture = new Texture("wall1.png");
         horizontalWallTexture = new Texture("wall2.png");
         entryTexture = new Texture("entry.png");
@@ -99,7 +123,11 @@ public class Tools2dPage implements Page {
                     case EMPTY:
                         continue;
                     case VERTICAL_WALL:
-                        spriteBatch.draw(verticalWallTexture, i * lDivider, j * lDivider - lDivider, lDivider / 4f, lDivider * 2);
+                        spriteBatch.draw(
+                            verticalWallTexture,
+                            screenX + i * lDivider, screenY + j * lDivider - lDivider,
+                            lDivider / 4f, lDivider * 2
+                        );
                         break;
                     case HORIZONTAL_WALL:
                     case LU_CORNER:
@@ -115,13 +143,17 @@ public class Tools2dPage implements Page {
                                         Labyrinth.LEntity.values()[(labyrinth[i][j + 1])] == Labyrinth.LEntity.EMPTY)
                             )
                         ) {
-                            spriteBatch.draw(horizontalWallTexture, i * lDivider, j * lDivider, lDivider, lDivider / 4f);
+                            spriteBatch.draw(
+                                horizontalWallTexture,
+                                screenX + i * lDivider, screenY + j * lDivider,
+                                lDivider, lDivider / 4f
+                            );
                         }
                         break;
                 }
             }
-        spriteBatch.draw(escapeTexture, (lW - 2) * lDivider, (lH - 2) * lDivider, lDivider, lDivider);
-        spriteBatch.draw(entryTexture, 1 * lDivider, 1 * lDivider, lDivider, lDivider);
+        spriteBatch.draw(escapeTexture, screenX + (lW - 2) * lDivider, screenY + (lH - 2) * lDivider, lDivider, lDivider);
+        spriteBatch.draw(entryTexture, screenX + 1 * lDivider, screenY + 1 * lDivider, lDivider, lDivider);
     }
 
     public void prepareDraw() {
@@ -180,6 +212,14 @@ public class Tools2dPage implements Page {
 
     public float getScale() {
         return lDivider;
+    }
+
+    public int getScreenX() {
+        return screenX;
+    }
+
+    public int getScreenY() {
+        return screenY;
     }
 
     public FitViewport getViewport() {

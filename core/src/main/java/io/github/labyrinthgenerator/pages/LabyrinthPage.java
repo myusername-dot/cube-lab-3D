@@ -80,13 +80,27 @@ public class LabyrinthPage implements Page {
         toolsPage.prepareDraw();
         SpriteBatch spriteBatch = toolsPage.getSpriteBatch();
         float scale = toolsPage.getScale();
+        int screenX = toolsPage.getScreenX();
+        int screenY = toolsPage.getScreenY();
         for (Vector2 prevPose : prevPoses) {
             if (escape)
-                spriteBatch.draw(prefPoseAcceptEscapeTexture, prevPose.x * scale, prevPose.y * scale, scale, scale);
-            else spriteBatch.draw(prefPoseTexture, prevPose.x * scale, prevPose.y * scale, scale, scale);
+                spriteBatch.draw(
+                    prefPoseAcceptEscapeTexture,
+                    screenX + prevPose.x * scale, screenY + prevPose.y * scale,
+                    scale, scale
+                );
+            else spriteBatch.draw(
+                prefPoseTexture,
+                screenX + prevPose.x * scale, screenY + prevPose.y * scale,
+                scale, scale
+            );
         }
         for (Vector2 puffin : puffins) {
-            spriteBatch.draw(puffinTexture, puffin.x * scale, puffin.y * scale, scale, scale);
+            spriteBatch.draw(
+                puffinTexture,
+                screenX + puffin.x * scale, screenY + puffin.y * scale,
+                scale, scale
+            );
         }
         toolsPage.drawLabyrinth();
         toolsPage.endDraw();
