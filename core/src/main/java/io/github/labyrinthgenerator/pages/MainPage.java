@@ -142,10 +142,11 @@ public class MainPage implements Page {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        int[][] labyrinth = getLabyrinth().getLabyrinth();
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(txtFile))) {
-            for (int[] row : labyrinth.getLabyrinth()) {
-                for (int j : row) {
-                    writer.write(Integer.toString(j));
+            for (int j = lH - 1; j >= 0; j--) {
+                for (int i = 0; i < lW; i++) {
+                    writer.write(Integer.toString(labyrinth[i][j]));
                 }
                 writer.newLine();
             }

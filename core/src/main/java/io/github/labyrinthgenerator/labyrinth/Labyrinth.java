@@ -54,21 +54,23 @@ public class Labyrinth {
 
             }
         // walls
-        for (int i = 0; i < width; i++)
+        for (int i = 0; i < width; i++) {
             labyrinth[i][0] = LEntity.HORIZONTAL_WALL.ordinal();
-        for (int j = height - 2; j >= 0; j -= 2) {
-            labyrinth[width - 1][j] = LEntity.VERTICAL_WALL.ordinal();
-            labyrinth[width - 1][j + 1] = LEntity.HORIZONTAL_WALL.ordinal();
+            labyrinth[i][height - 1] = LEntity.HORIZONTAL_WALL.ordinal();
         }
-        labyrinth[width - 1][height - 1] = LEntity.HORIZONTAL_WALL.ordinal();
+        for (int j = height - 2; j >= 1; j--) {
+            labyrinth[0][j] = LEntity.VERTICAL_WALL.ordinal();
+            labyrinth[width - 1][j] = LEntity.VERTICAL_WALL.ordinal();
+        }
+        //labyrinth[width - 1][height - 1] = LEntity.HORIZONTAL_WALL.ordinal();
 
 
-        /*for (int j = height - 1; j >= 0; j--) {
+        for (int j = height - 1; j >= 0; j--) {
             for (int i = 0; i < width; i++) {
                 System.out.print(labyrinth[i][j]);
             }
             System.out.println();
-        }*/
+        }
     }
 
     public void wormFirst() {
@@ -175,9 +177,9 @@ public class Labyrinth {
             System.out.println();
         }
         System.out.println();
-        for (int j = height - 2; j >= 1; j -= 2) {
-            for (int i = 0; i < width - 1; i += 2) {
-                if (i == 0 || this.escape.x == i && this.escape.y == j) continue;
+        for (int j = height - 2; j >= 1; j--) {
+            for (int i = 1; i < width - 1; i++) {
+                if (this.escape.x == i && this.escape.y == j) continue;
                 LEntity entity = LEntity.values()[labyrinth[i][j]];
                 LEntity left = LEntity.values()[labyrinth[i - 1][j]];
                 LEntity right = LEntity.values()[labyrinth[i + 1][j]];
@@ -205,7 +207,7 @@ public class Labyrinth {
                     }
                 }
                 if (isCorner(i, j, labyrinth)) {
-                    labyrinth[i][j] = LEntity.EMPTY.ordinal();
+                    labyrinth[i][j] = LEntity.CORNER.ordinal();
                 }
                 /*LEntity left2 = LEntity.values()[labyrinth[i - 2][j]];
                 LEntity right2 = LEntity.values()[labyrinth[i + 2][j]];
@@ -441,8 +443,8 @@ public class Labyrinth {
                         Labyrinth.LEntity.values()[(labyrinth[x - 1][y])] == Labyrinth.LEntity.EMPTY &&
                         Labyrinth.LEntity.values()[(labyrinth[x + 1][y])] == Labyrinth.LEntity.EMPTY &&
                         Labyrinth.LEntity.values()[(labyrinth[x][y - 1])] == Labyrinth.LEntity.EMPTY &&
-                            Labyrinth.LEntity.values()[(labyrinth[x][y + 1])] == Labyrinth.LEntity.EMPTY
+                        Labyrinth.LEntity.values()[(labyrinth[x][y + 1])] == Labyrinth.LEntity.EMPTY
                 )
-        );
+            );
     }
 }
