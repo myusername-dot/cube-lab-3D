@@ -169,28 +169,11 @@ public class Labyrinth {
             while (LEntity.values()[labyrinth[escapePos.x][escapePos.y]] == LEntity.EMPTY);
             labyrinth[escapePos.x][escapePos.y] = LEntity.EMPTY.ordinal();
         }
-        System.out.println("Finally:");
-        for (int j = height - 1; j >= 0; j--) {
-            for (int i = 0; i < width; i++) {
-                System.out.print(labyrinth[i][j]);
-            }
-            System.out.println();
-        }
-        System.out.println();
         for (int j = height - 2; j >= 1; j--) {
             for (int i = 1; i < width - 1; i++) {
                 if (this.escape.x == i && this.escape.y == j) continue;
-                LEntity entity = LEntity.values()[labyrinth[i][j]];
-                LEntity left = LEntity.values()[labyrinth[i - 1][j]];
-                LEntity right = LEntity.values()[labyrinth[i + 1][j]];
-                LEntity up = LEntity.values()[labyrinth[i][j + 1]];
-                LEntity down = LEntity.values()[labyrinth[i][j - 1]];
-                boolean le = left == LEntity.EMPTY;
-                boolean re = right == LEntity.EMPTY;
-                boolean ue = up == LEntity.EMPTY;
-                boolean de = down == LEntity.EMPTY;
-                int notEmptyEntities = (le ? 0 : 1) + (re ? 0 : 1) + (ue ? 0 : 1) + (de ? 0 : 1);
-                if (notEmptyEntities == 4 && entity == LEntity.EMPTY) {
+                Info info = new Info(labyrinth, i, j);
+                if (info.notEmptyEntities == 4 && info.entity == LEntity.EMPTY) {
                     switch (MathUtils.random(1, 4)) {
                         case 1:
                             labyrinth[i - 1][j] = LEntity.EMPTY.ordinal();
@@ -205,13 +188,6 @@ public class Labyrinth {
                             labyrinth[i][j - 1] = LEntity.EMPTY.ordinal();
                             break;
                     }
-                }
-                if (entity == LEntity.HORIZONTAL_WALL && up == LEntity.VERTICAL_WALL && down == LEntity.VERTICAL_WALL) {
-                    entity = LEntity.VERTICAL_WALL;
-                    labyrinth[i][j] = entity.ordinal();
-                }
-                if (isCorner(i, j)) {
-                    labyrinth[i][j] = LEntity.CORNER.ordinal();
                 }
                 /*LEntity left2 = LEntity.values()[labyrinth[i - 2][j]];
                 LEntity right2 = LEntity.values()[labyrinth[i + 2][j]];
@@ -243,6 +219,7 @@ public class Labyrinth {
                 labyrinth[i][j] = entity.ordinal();*/
             }
         }
+        //convertToMapWithCorners();
     }
 
     private List<Direction> getDirections(int x, int y, boolean dig, boolean usePrevPoses) {
@@ -427,16 +404,34 @@ public class Labyrinth {
         dig(direction, puffin.x, puffin.y);
     }
 
-    public int[][] getLabyrinth() {
-        return labyrinth;
-    }
+    private void convertToMapWithCorners() {
+        labyrinth[0][0] = LEntity.CORNER.ordinal();
+        labyrinth[width - 1][0] = LEntity.CORNER.ordinal();
+        labyrinth[0][height - 1] = LEntity.CORNER.ordinal();
+        labyrinth[width - 1][height - 1] = LEntity.CORNER.ordinal();
+        for (int j = height - 2; j >= 1; j--) {
+            for (int i = 1; i < width - 1; i++) {
+                Info info = new Info(labyrinth, i, j);
+                LEntity entity = info.entity;
 
-    public Vector2 getEscape() {
-        return escape;
-    }
-
-    public Set<Vector2> getPrevPoses() {
-        return prevPoses;
+                if (entity == LEntity.HORIZONTAL_WALL && info.up == LEntity.VERTICAL_WALL && info.down == LEntity.VERTICAL_WALL
+                    || info.notEmptyEntities == 1 && (info.up == LEntity.VERTICAL_WALL || info.down == LEntity.VERTICAL_WALL)) {
+                    entity = LEntity.VERTICAL_WALL;
+                    labyrinth[i][j] = entity.ordinal();
+                }
+                if (isCorner(i, j)) {
+                    labyrinth[i][j] = LEntity.CORNER.ordinal();
+                }
+            }
+        }
+        System.out.println("Finally:");
+        for (int j = height - 1; j >= 0; j--) {
+            for (int i = 0; i < width; i++) {
+                System.out.print(labyrinth[i][j]);
+            }
+            System.out.println();
+        }
+        System.out.println();
     }
 
     private boolean isCorner(int x, int y) {
@@ -452,5 +447,17 @@ public class Labyrinth {
                     && (Labyrinth.LEntity.values()[(labyrinth[x][y - 1])] != Labyrinth.LEntity.EMPTY
                     || Labyrinth.LEntity.values()[(labyrinth[x][y + 1])] != Labyrinth.LEntity.EMPTY)
             ));
+    }
+
+    public int[][] getLabyrinth() {
+        return labyrinth;
+    }
+
+    public Vector2 getEscape() {
+        return escape;
+    }
+
+    public Set<Vector2> getPrevPoses() {
+        return prevPoses;
     }
 }
