@@ -54,15 +54,12 @@ public class Labyrinth {
 
             }
         // walls
-        for (int i = 0; i < width; i++) {
+        for (int i = 0; i < width; i++)
             labyrinth[i][0] = LEntity.HORIZONTAL_WALL.ordinal();
-            labyrinth[i][height - 1] = LEntity.HORIZONTAL_WALL.ordinal();
-        }
-        for (int j = height - 2; j >= 1; j--) {
-            labyrinth[0][j] = LEntity.VERTICAL_WALL.ordinal();
+        for (int j = height - 2; j >= 0; j -= 2) {
             labyrinth[width - 1][j] = LEntity.VERTICAL_WALL.ordinal();
         }
-        //labyrinth[width - 1][height - 1] = LEntity.HORIZONTAL_WALL.ordinal();
+        labyrinth[width - 1][height - 1] = LEntity.HORIZONTAL_WALL.ordinal();
 
 
         for (int j = height - 1; j >= 0; j--) {
@@ -219,7 +216,7 @@ public class Labyrinth {
                 labyrinth[i][j] = entity.ordinal();*/
             }
         }
-        //convertToMapWithCorners();
+        convertToMapWithCorners();
     }
 
     private List<Direction> getDirections(int x, int y, boolean dig, boolean usePrevPoses) {
@@ -405,6 +402,13 @@ public class Labyrinth {
     }
 
     private void convertToMapWithCorners() {
+        for (int i = 1; i < width; i++) {
+            labyrinth[i][height - 1] = LEntity.HORIZONTAL_WALL.ordinal();
+        }
+        for (int j = height - 2; j >= 1; j--) {
+            labyrinth[0][j] = LEntity.VERTICAL_WALL.ordinal();
+            labyrinth[width - 1][j] = LEntity.VERTICAL_WALL.ordinal();
+        }
         labyrinth[0][0] = LEntity.CORNER.ordinal();
         labyrinth[width - 1][0] = LEntity.CORNER.ordinal();
         labyrinth[0][height - 1] = LEntity.CORNER.ordinal();
