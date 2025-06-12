@@ -99,15 +99,7 @@ public class MainPage implements Page {
                         spriteBatch.draw(verticalWallTexture, i * scale, j * scale - 8, scale / 4f, scale + 10);
                         break;
                     case HORIZONTAL_WALL:
-                        if (i < lW - 1 &&
-                            (Labyrinth.LEntity.values()[(labyrinth[i + 1][j])] != Labyrinth.LEntity.EMPTY ||
-                                i > 0 && j > 1 && j < lH - 1 &&
-                                    Labyrinth.LEntity.values()[(labyrinth[i - 1][j])] == Labyrinth.LEntity.EMPTY &&
-                                    Labyrinth.LEntity.values()[(labyrinth[i + 1][j])] == Labyrinth.LEntity.EMPTY &&
-                                    (Labyrinth.LEntity.values()[(labyrinth[i][j - 1])] == Labyrinth.LEntity.EMPTY &&
-                                    Labyrinth.LEntity.values()[(labyrinth[i][j + 1])] == Labyrinth.LEntity.EMPTY)
-                            )
-                        )
+                        if (!Labyrinth.isCorner(i, j, labyrinth))
                             spriteBatch.draw(horizontalWallTexture, i * scale, j * scale, scale, scale / 4f);
                         break;
                 }

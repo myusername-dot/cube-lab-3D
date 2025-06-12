@@ -8,12 +8,15 @@ import java.util.stream.Collectors;
 
 public class Labyrinth {
 
+    public static int width;
+    public static int height;
     public static int maxDistance;
 
     public enum LEntity {
         EMPTY,
         HORIZONTAL_WALL,
-        VERTICAL_WALL
+        VERTICAL_WALL,
+        CORNER
     }
 
     public enum Direction {
@@ -23,9 +26,6 @@ public class Labyrinth {
         DOWN
     }
 
-    private final int width;
-    private final int height;
-
     private int[][] labyrinth;
 
     private Vector2 escape;
@@ -33,15 +33,15 @@ public class Labyrinth {
     private final Set<Vector2> prevPoses;
 
     public Labyrinth(int width, int height) {
-        this.width = width;
-        this.height = height;
+        Labyrinth.width = width;
+        Labyrinth.height = height;
         escape = new Vector2(width - 2, height - 2);
         prevPoses = new HashSet<>();
         maxDistance = Integer.MAX_VALUE;
-        create(width, height);
+        create();
     }
 
-    public void create(int width, int height) {
+    public void create() {
         labyrinth = new int[width][height];
         for (int j = height - 2; j >= 0; j -= 2)
             for (int i = 0; i < width - 1; i += 2) {
@@ -175,9 +175,9 @@ public class Labyrinth {
             System.out.println();
         }
         System.out.println();
-        for (int j = height - 3; j >= 2; j--) {
-            for (int i = 2; i <= width - 3; i++) {
-                if (this.escape.x == i && this.escape.y == j) continue;
+        for (int j = height - 2; j >= 1; j -= 2) {
+            for (int i = 0; i < width - 1; i += 2) {
+                if (i == 0 || this.escape.x == i && this.escape.y == j) continue;
                 LEntity entity = LEntity.values()[labyrinth[i][j]];
                 LEntity left = LEntity.values()[labyrinth[i - 1][j]];
                 LEntity right = LEntity.values()[labyrinth[i + 1][j]];
@@ -203,6 +203,9 @@ public class Labyrinth {
                             labyrinth[i][j - 1] = LEntity.EMPTY.ordinal();
                             break;
                     }
+                }
+                if (isCorner(i, j, labyrinth)) {
+                    labyrinth[i][j] = LEntity.EMPTY.ordinal();
                 }
                 /*LEntity left2 = LEntity.values()[labyrinth[i - 2][j]];
                 LEntity right2 = LEntity.values()[labyrinth[i + 2][j]];
@@ -370,7 +373,8 @@ public class Labyrinth {
                     if (setPuffins(puffins, prevPoses, distance, nextX, nextY, currentPos, exitWhenFindEscape)) {
                         if (exitWhenFindEscape) return true;
                         escape = true;
-                        if (distance > Math.pow(width * height, 0.65)) distance /= 2; // lead the remaining branches away from the exit
+                        if (distance > Math.pow(width * height, 0.65))
+                            distance /= 2; // lead the remaining branches away from the exit
                     }
                     break;
                 case RIGHT:
@@ -379,7 +383,8 @@ public class Labyrinth {
                     if (setPuffins(puffins, prevPoses, distance, nextX, nextY, currentPos, exitWhenFindEscape)) {
                         if (exitWhenFindEscape) return true;
                         escape = true;
-                        if (distance > Math.pow(width * height, 0.65)) distance /= 2; // lead the remaining branches away from the exit
+                        if (distance > Math.pow(width * height, 0.65))
+                            distance /= 2; // lead the remaining branches away from the exit
                     }
                     break;
                 case UP:
@@ -388,7 +393,8 @@ public class Labyrinth {
                     if (setPuffins(puffins, prevPoses, distance, nextX, nextY, currentPos, exitWhenFindEscape)) {
                         if (exitWhenFindEscape) return true;
                         escape = true;
-                        if (distance > Math.pow(width * height, 0.65)) distance /= 2; // lead the remaining branches away from the exit
+                        if (distance > Math.pow(width * height, 0.65))
+                            distance /= 2; // lead the remaining branches away from the exit
                     }
                     break;
                 case DOWN:
@@ -397,7 +403,8 @@ public class Labyrinth {
                     if (setPuffins(puffins, prevPoses, distance, nextX, nextY, currentPos, exitWhenFindEscape)) {
                         if (exitWhenFindEscape) return true;
                         escape = true;
-                        if (distance > Math.pow(width * height, 0.65)) distance /= 1.5; // lead the remaining branches away from the exit
+                        if (distance > Math.pow(width * height, 0.65))
+                            distance /= 1.5; // lead the remaining branches away from the exit
                     }
                     break;
             }
@@ -424,5 +431,18 @@ public class Labyrinth {
 
     public Set<Vector2> getPrevPoses() {
         return prevPoses;
+    }
+
+    public static boolean isCorner(int x, int y, int[][] labyrinth) {
+        return Labyrinth.LEntity.values()[(labyrinth[x][y])] == LEntity.HORIZONTAL_WALL &&
+            !(x < width - 1 &&
+                (Labyrinth.LEntity.values()[(labyrinth[x + 1][y])] != Labyrinth.LEntity.EMPTY ||
+                    x > 0 && y > 1 && y < height - 1 &&
+                        Labyrinth.LEntity.values()[(labyrinth[x - 1][y])] == Labyrinth.LEntity.EMPTY &&
+                        Labyrinth.LEntity.values()[(labyrinth[x + 1][y])] == Labyrinth.LEntity.EMPTY &&
+                        Labyrinth.LEntity.values()[(labyrinth[x][y - 1])] == Labyrinth.LEntity.EMPTY &&
+                            Labyrinth.LEntity.values()[(labyrinth[x][y + 1])] == Labyrinth.LEntity.EMPTY
+                )
+        );
     }
 }
