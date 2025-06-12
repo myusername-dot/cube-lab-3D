@@ -8,8 +8,6 @@ import java.util.stream.Collectors;
 
 public class Labyrinth {
 
-    public static int width;
-    public static int height;
     public static int maxDistance;
 
     public enum LEntity {
@@ -26,6 +24,8 @@ public class Labyrinth {
         DOWN
     }
 
+    private int width;
+    private int height;
     private int[][] labyrinth;
 
     private Vector2 escape;
@@ -33,8 +33,8 @@ public class Labyrinth {
     private final Set<Vector2> prevPoses;
 
     public Labyrinth(int width, int height) {
-        Labyrinth.width = width;
-        Labyrinth.height = height;
+        this.width = width;
+        this.height = height;
         escape = new Vector2(width - 2, height - 2);
         prevPoses = new HashSet<>();
         maxDistance = Integer.MAX_VALUE;
@@ -206,7 +206,11 @@ public class Labyrinth {
                             break;
                     }
                 }
-                if (isCorner(i, j, labyrinth)) {
+                if (entity == LEntity.HORIZONTAL_WALL && up == LEntity.VERTICAL_WALL && down == LEntity.VERTICAL_WALL) {
+                    entity = LEntity.VERTICAL_WALL;
+                    labyrinth[i][j] = entity.ordinal();
+                }
+                if (isCorner(i, j)) {
                     labyrinth[i][j] = LEntity.CORNER.ordinal();
                 }
                 /*LEntity left2 = LEntity.values()[labyrinth[i - 2][j]];
@@ -435,16 +439,18 @@ public class Labyrinth {
         return prevPoses;
     }
 
-    public static boolean isCorner(int x, int y, int[][] labyrinth) {
+    private boolean isCorner(int x, int y) {
         return Labyrinth.LEntity.values()[(labyrinth[x][y])] == LEntity.HORIZONTAL_WALL &&
-            !(x < width - 1 &&
-                (Labyrinth.LEntity.values()[(labyrinth[x + 1][y])] != Labyrinth.LEntity.EMPTY ||
-                    x > 0 && y > 1 && y < height - 1 &&
-                        Labyrinth.LEntity.values()[(labyrinth[x - 1][y])] == Labyrinth.LEntity.EMPTY &&
-                        Labyrinth.LEntity.values()[(labyrinth[x + 1][y])] == Labyrinth.LEntity.EMPTY &&
-                        Labyrinth.LEntity.values()[(labyrinth[x][y - 1])] == Labyrinth.LEntity.EMPTY &&
-                        Labyrinth.LEntity.values()[(labyrinth[x][y + 1])] == Labyrinth.LEntity.EMPTY
+            (x < width - 1 && x > 0 && y > 1 && y < height - 1 && (
+                !(
+                    Labyrinth.LEntity.values()[(labyrinth[x + 1][y])] == Labyrinth.LEntity.EMPTY
+                        && Labyrinth.LEntity.values()[(labyrinth[x - 1][y])] == Labyrinth.LEntity.EMPTY
+                        ||
+                        Labyrinth.LEntity.values()[(labyrinth[x + 1][y])] == LEntity.HORIZONTAL_WALL
+                            && Labyrinth.LEntity.values()[(labyrinth[x - 1][y])] == LEntity.HORIZONTAL_WALL
                 )
-            );
+                    && (Labyrinth.LEntity.values()[(labyrinth[x][y - 1])] != Labyrinth.LEntity.EMPTY
+                    || Labyrinth.LEntity.values()[(labyrinth[x][y + 1])] != Labyrinth.LEntity.EMPTY)
+            ));
     }
 }
