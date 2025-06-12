@@ -99,7 +99,10 @@ public class MainPage implements Page {
                         spriteBatch.draw(verticalWallTexture, i * scale, j * scale - 8, scale / 4f, scale + 10);
                         break;
                     case HORIZONTAL_WALL:
-                    case CORNER:
+                    case LU_CORNER:
+                    case RU_CORNER:
+                    case LD_CORNER:
+                    case RD_CORNER:
                         if (i < lW - 1 &&
                             (Labyrinth.LEntity.values()[(labyrinth[i + 1][j])] != Labyrinth.LEntity.EMPTY ||
                                 i > 0 && j > 1 && j < lH - 1 &&
@@ -136,7 +139,6 @@ public class MainPage implements Page {
     public UUID saveAsImage() {
         Pixmap pixmap = Pixmap.createFromFrameBuffer(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         UUID uuid = UUID.randomUUID();
-        File file = null;
         PixmapIO.writePNG(Gdx.files.external("./labyrinth-generations/screenshots/" + uuid + ".png"), pixmap, Deflater.DEFAULT_COMPRESSION, true);
         pixmap.dispose();
         return uuid;
@@ -152,7 +154,7 @@ public class MainPage implements Page {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        int[][] labyrinth = getLabyrinth().getLabyrinth();
+        int[][] labyrinth = getLabyrinth().getConvertedLabyrinth();
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(txtFile))) {
             for (int j = lH - 1; j >= 0; j--) {
                 for (int i = 0; i < lW; i++) {

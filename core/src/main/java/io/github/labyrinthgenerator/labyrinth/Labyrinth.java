@@ -14,7 +14,10 @@ public class Labyrinth {
         EMPTY,
         HORIZONTAL_WALL,
         VERTICAL_WALL,
-        CORNER
+        LU_CORNER,
+        RU_CORNER,
+        RD_CORNER,
+        LD_CORNER
     }
 
     public enum Direction {
@@ -27,6 +30,7 @@ public class Labyrinth {
     private int width;
     private int height;
     private int[][] labyrinth;
+    private int[][] convertedLabyrinth;
 
     private Vector2 escape;
 
@@ -51,13 +55,13 @@ public class Labyrinth {
                 labyrinth[i + 1][j + 1] = LEntity.HORIZONTAL_WALL.ordinal();
                 labyrinth[i][j] = LEntity.VERTICAL_WALL.ordinal();
                 labyrinth[i + 1][j] = LEntity.EMPTY.ordinal();
-
             }
         // walls
         for (int i = 0; i < width; i++)
             labyrinth[i][0] = LEntity.HORIZONTAL_WALL.ordinal();
-        for (int j = height - 2; j >= 0; j -= 2) {
+        for (int j = height - 2; j >= 1; j -= 2) {
             labyrinth[width - 1][j] = LEntity.VERTICAL_WALL.ordinal();
+            labyrinth[width - 1][j + 1] = LEntity.HORIZONTAL_WALL.ordinal();
         }
         labyrinth[width - 1][height - 1] = LEntity.HORIZONTAL_WALL.ordinal();
 
@@ -146,8 +150,8 @@ public class Labyrinth {
                 .collect(Collectors.toList());
             // divarication
             puffins.add(sorted.get(0));
-            puffins.add(sorted.get(sorted.size() - 1));
-            //puffins.add(sorted.get((int) (sorted.size() / 1.6)));
+            if (!escape) puffins.add(sorted.get(sorted.size() - 1));
+            else puffins.add(sorted.get((int) (sorted.size() / 1.6)));
         }
         for (Vector2 puffin : puffins) {
             puff(puffin, true);
@@ -169,7 +173,7 @@ public class Labyrinth {
         for (int j = height - 2; j >= 1; j--) {
             for (int i = 1; i < width - 1; i++) {
                 if (this.escape.x == i && this.escape.y == j) continue;
-                Info info = new Info(labyrinth, i, j);
+                Info info = new Info(labyrinth, i, j, width, height);
                 if (info.notEmptyEntities == 4 && info.entity == LEntity.EMPTY) {
                     switch (MathUtils.random(1, 4)) {
                         case 1:
@@ -291,13 +295,13 @@ public class Labyrinth {
             throw new UnsupportedOperationException("setPuffins: LEntity.values()[labyrinth[x][y]] != LEntity.EMPTY");
         }
         Vector2 currentPos = new Vector2(x, y);
-        if (currentPos.equals(this.escape)) {
-            return true;
-        }
         if (prevPoses.contains(currentPos)) {
             return false;
         }
         prevPoses.add(currentPos);
+        if (currentPos.equals(this.escape)) {
+            return true;
+        }
         distance++;
         if (distance > maxDistance) {
             return false;
@@ -384,7 +388,7 @@ public class Labyrinth {
                         if (exitWhenFindEscape) return true;
                         escape = true;
                         if (distance > Math.pow(width * height, 0.65))
-                            distance /= 1.5; // lead the remaining branches away from the exit
+                            distance /= 2; // lead the remaining branches away from the exit
                     }
                     break;
             }
@@ -402,66 +406,57 @@ public class Labyrinth {
     }
 
     private void convertToMapWithCorners() {
+        convertedLabyrinth = new int[width][height];
+        for (int i = 0; i < width; i++)
+            System.arraycopy(labyrinth[i], 0, convertedLabyrinth[i], 0, height);
+        // walls
         for (int i = 1; i < width; i++) {
-            labyrinth[i][height - 1] = LEntity.HORIZONTAL_WALL.ordinal();
+            convertedLabyrinth[i][height - 1] = LEntity.HORIZONTAL_WALL.ordinal();
         }
         for (int j = height - 2; j >= 1; j--) {
-            labyrinth[0][j] = LEntity.VERTICAL_WALL.ordinal();
-            labyrinth[width - 1][j] = LEntity.VERTICAL_WALL.ordinal();
+            convertedLabyrinth[0][j] = LEntity.VERTICAL_WALL.ordinal();
+            convertedLabyrinth[width - 1][j] = LEntity.VERTICAL_WALL.ordinal();
         }
-        labyrinth[0][0] = LEntity.CORNER.ordinal();
-        labyrinth[width - 1][0] = LEntity.CORNER.ordinal();
-        labyrinth[0][height - 1] = LEntity.CORNER.ordinal();
-        labyrinth[width - 1][height - 1] = LEntity.CORNER.ordinal();
+        convertedLabyrinth[0][0] = LEntity.LU_CORNER.ordinal();
+        convertedLabyrinth[width - 1][0] = LEntity.RU_CORNER.ordinal();
+        convertedLabyrinth[0][height - 1] = LEntity.LD_CORNER.ordinal();
+        convertedLabyrinth[width - 1][height - 1] = LEntity.RD_CORNER.ordinal();
         for (int j = height - 2; j >= 1; j--) {
             for (int i = 1; i < width - 1; i++) {
-                Info info = new Info(labyrinth, i, j);
+                Info info = new Info(convertedLabyrinth, i, j, width, height);
                 LEntity entity = info.entity;
 
                 if (entity == LEntity.HORIZONTAL_WALL && info.up == LEntity.VERTICAL_WALL && info.down == LEntity.VERTICAL_WALL
                     || info.notEmptyEntities == 1 && (info.up == LEntity.VERTICAL_WALL || info.down == LEntity.VERTICAL_WALL)) {
                     entity = LEntity.VERTICAL_WALL;
-                    labyrinth[i][j] = entity.ordinal();
+                    convertedLabyrinth[i][j] = entity.ordinal();
                 }
-                if (isCorner(i, j)) {
-                    labyrinth[i][j] = LEntity.CORNER.ordinal();
-                }
+
+                setCorner(convertedLabyrinth, i, j, width, height);
             }
         }
         System.out.println("Finally:");
         for (int j = height - 1; j >= 0; j--) {
             for (int i = 0; i < width; i++) {
-                System.out.print(labyrinth[i][j]);
+                System.out.print(convertedLabyrinth[i][j]);
             }
             System.out.println();
         }
         System.out.println();
     }
 
-    private boolean isCorner(int x, int y) {
-        return Labyrinth.LEntity.values()[(labyrinth[x][y])] == LEntity.HORIZONTAL_WALL &&
-            (x < width - 1 && x > 0 && y > 1 && y < height - 1 && (
-                !(
-                    Labyrinth.LEntity.values()[(labyrinth[x + 1][y])] == Labyrinth.LEntity.EMPTY
-                        && Labyrinth.LEntity.values()[(labyrinth[x - 1][y])] == Labyrinth.LEntity.EMPTY
-                        ||
-                        Labyrinth.LEntity.values()[(labyrinth[x + 1][y])] == LEntity.HORIZONTAL_WALL
-                            && Labyrinth.LEntity.values()[(labyrinth[x - 1][y])] == LEntity.HORIZONTAL_WALL
-                )
-                    && (Labyrinth.LEntity.values()[(labyrinth[x][y - 1])] != Labyrinth.LEntity.EMPTY
-                    || Labyrinth.LEntity.values()[(labyrinth[x][y + 1])] != Labyrinth.LEntity.EMPTY)
-            ));
+    private void setCorner(int[][] labyrinth, int x, int y, int width, int height) {
+        Info info = new Info(labyrinth, x, y, width, height);
+        if (info.isCorner) {
+            labyrinth[x][y] = info.cornerType.ordinal();
+        }
     }
 
     public int[][] getLabyrinth() {
         return labyrinth;
     }
 
-    public Vector2 getEscape() {
-        return escape;
-    }
-
-    public Set<Vector2> getPrevPoses() {
-        return prevPoses;
+    public int[][] getConvertedLabyrinth() {
+        return convertedLabyrinth;
     }
 }
