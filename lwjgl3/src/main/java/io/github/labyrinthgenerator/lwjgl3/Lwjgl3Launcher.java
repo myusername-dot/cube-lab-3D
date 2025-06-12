@@ -3,10 +3,10 @@ package io.github.labyrinthgenerator.lwjgl3;
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
-import io.github.labyrinthgenerator.Application;
+import io.github.labyrinthgenerator.MyApplication;
 
-import static io.github.labyrinthgenerator.Application.windowH;
-import static io.github.labyrinthgenerator.Application.windowW;
+import static io.github.labyrinthgenerator.MyApplication.windowH;
+import static io.github.labyrinthgenerator.MyApplication.windowW;
 
 /** Launches the desktop (LWJGL3) application. */
 public class Lwjgl3Launcher {
@@ -16,7 +16,7 @@ public class Lwjgl3Launcher {
     }
 
     private static Lwjgl3Application createApplication() {
-        return new Lwjgl3Application((ApplicationListener) Application.getApplicationInstanceFacade(), getDefaultConfiguration());
+        return new Lwjgl3Application((ApplicationListener) MyApplication.getApplicationInstanceFacade(), getDefaultConfiguration());
     }
 
     private static Lwjgl3ApplicationConfiguration getDefaultConfiguration() {

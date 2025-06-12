@@ -10,7 +10,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
-import io.github.labyrinthgenerator.Application;
+import io.github.labyrinthgenerator.MyApplication;
 import io.github.labyrinthgenerator.interfaces.ApplicationFacade;
 import io.github.labyrinthgenerator.labyrinth.Labyrinth;
 
@@ -21,10 +21,10 @@ import java.io.IOException;
 import java.util.UUID;
 import java.util.zip.Deflater;
 
-import static io.github.labyrinthgenerator.Application.windowH;
-import static io.github.labyrinthgenerator.Application.windowW;
+import static io.github.labyrinthgenerator.MyApplication.windowH;
+import static io.github.labyrinthgenerator.MyApplication.windowW;
 
-public class MainPage implements Page {
+public class ToolsPage implements Page {
 
     private ApplicationFacade application;
     private BitmapFont font;
@@ -43,7 +43,7 @@ public class MainPage implements Page {
 
     @Override
     public void create() {
-        application = Application.getApplicationInstanceFacade();
+        application = MyApplication.getApplicationInstanceFacade();
         //backgroundTexture = new Texture("backgrounds/notebook-paper-background.jpg");
         scale = 10;
         lW = (int) (windowW / scale) + 1;
@@ -131,7 +131,7 @@ public class MainPage implements Page {
 
     public void endDraw(SpriteBatch spriteBatch) {
         spriteBatch.end();
-        if (Application.debug) {
+        if (MyApplication.debug) {
             application.getDebugger().render(application.getCamera().combined);
         }
     }

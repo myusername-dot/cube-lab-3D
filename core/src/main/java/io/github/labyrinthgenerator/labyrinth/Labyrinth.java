@@ -27,12 +27,12 @@ public class Labyrinth {
         DOWN
     }
 
-    private int width;
-    private int height;
+    private final int width;
+    private final int height;
     private int[][] labyrinth;
     private int[][] convertedLabyrinth;
 
-    private Vector2 escape;
+    private final Vector2 escape;
 
     private final Set<Vector2> prevPoses;
 
@@ -346,7 +346,6 @@ public class Labyrinth {
             }
             return false;
         }
-        //if (cycle) return false;
 
         boolean escape = false;
         for (Direction direction : directions) {

@@ -6,14 +6,13 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import io.github.labyrinthgenerator.debug.MyDebugRenderer;
 import io.github.labyrinthgenerator.interfaces.ApplicationFacade;
-import io.github.labyrinthgenerator.pages.DebugPage;
-import io.github.labyrinthgenerator.pages.MainPage;
+import io.github.labyrinthgenerator.pages.CreateLabyrinthPage;
 import io.github.labyrinthgenerator.pages.Page;
 
 /**
  * {@link com.badlogic.gdx.ApplicationListener} implementation shared by all platforms.
  */
-public class Application extends ApplicationAdapter implements ApplicationFacade {
+public class MyApplication extends ApplicationAdapter implements ApplicationFacade {
 
     public static final int windowW = 642;
     public static final int windowH = 322;
@@ -23,7 +22,7 @@ public class Application extends ApplicationAdapter implements ApplicationFacade
     public static final boolean saveAsTxt = true;
     public static final boolean saveAsImage = true;
 
-    private static Application application;
+    private static MyApplication application;
 
     private SpriteBatch spriteBatch;
     private FitViewport viewport;
@@ -35,12 +34,12 @@ public class Application extends ApplicationAdapter implements ApplicationFacade
 
     public static ApplicationFacade getApplicationInstanceFacade() {
         if (application == null) {
-            application = new Application();
+            application = new MyApplication();
         }
         return application;
     }
 
-    private Application() {
+    private MyApplication() {
     }
 
     @Override
@@ -52,7 +51,7 @@ public class Application extends ApplicationAdapter implements ApplicationFacade
 
         debugger = new MyDebugRenderer();
 
-        page = new DebugPage();
+        page = new CreateLabyrinthPage();
         page.create();
     }
 
