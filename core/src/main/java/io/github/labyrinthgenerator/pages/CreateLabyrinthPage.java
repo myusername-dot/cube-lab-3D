@@ -1,5 +1,6 @@
 package io.github.labyrinthgenerator.pages;
 
+import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.viewport.FitViewport;
@@ -16,7 +17,7 @@ public class CreateLabyrinthPage implements Page {
     private Texture prefPoseAcceptEscapeTexture;
     private Texture puffinTexture;
 
-    private ToolsPage toolsPage;
+    private Tools2dPage toolsPage;
 
     private int frame;
 
@@ -35,10 +36,9 @@ public class CreateLabyrinthPage implements Page {
         prefPoseAcceptEscapeTexture = new Texture("pref_a.png");
         puffinTexture = new Texture("puff.png");
 
-        toolsPage = new ToolsPage();
+        toolsPage = new Tools2dPage();
         toolsPage.create();
         toolsPage.getLabyrinth().wormSecond(false, false, 0);
-        //mainPage.getLabyrinth().maxDistance = 5000;
 
         prevPoses = new HashSet<>();
         puffins = new HashSet<>();
@@ -57,7 +57,7 @@ public class CreateLabyrinthPage implements Page {
             prevPoses.clear();
             puffins.clear();
             if (update) { // second
-                toolsPage = new ToolsPage();
+                toolsPage = new Tools2dPage();
                 toolsPage.create();
                 toolsPage.getLabyrinth().wormSecond(false, false, 0);
                 update = false;
@@ -76,8 +76,9 @@ public class CreateLabyrinthPage implements Page {
     }
 
     @Override
-    public void draw(FitViewport viewport, SpriteBatch spriteBatch) {
-        toolsPage.prepareDraw(viewport, spriteBatch);
+    public void draw() {
+        toolsPage.prepareDraw();
+        SpriteBatch spriteBatch = toolsPage.getSpriteBatch();
         float scale = toolsPage.getScale();
         for (Vector2 prevPose : prevPoses) {
             if (escape)
@@ -87,11 +88,16 @@ public class CreateLabyrinthPage implements Page {
         for (Vector2 puffin : puffins) {
             spriteBatch.draw(puffinTexture, puffin.x * scale, puffin.y * scale, scale, scale);
         }
-        toolsPage.drawLabyrinth(spriteBatch);
-        toolsPage.endDraw(spriteBatch);
+        toolsPage.drawLabyrinth();
+        toolsPage.endDraw();
         UUID uuid = null;
         if (screenshot) uuid = toolsPage.saveAsImage();
         if (txtFile) toolsPage.saveAsTxt(uuid);
+    }
+
+    @Override
+    public Camera getCamera() {
+        return toolsPage.getCamera();
     }
 
     @Override
@@ -102,5 +108,10 @@ public class CreateLabyrinthPage implements Page {
     @Override
     public Page getNextPage() {
         return null;
+    }
+
+    @Override
+    public void dispose() {
+        toolsPage.dispose();
     }
 }

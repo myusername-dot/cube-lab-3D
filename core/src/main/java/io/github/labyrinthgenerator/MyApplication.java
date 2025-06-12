@@ -1,8 +1,6 @@
 package io.github.labyrinthgenerator;
 
 import com.badlogic.gdx.ApplicationAdapter;
-import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import io.github.labyrinthgenerator.debug.MyDebugRenderer;
 import io.github.labyrinthgenerator.interfaces.ApplicationFacade;
@@ -24,15 +22,13 @@ public class MyApplication extends ApplicationAdapter implements ApplicationFaca
 
     private static MyApplication application;
 
-    private SpriteBatch spriteBatch;
     private FitViewport viewport;
-    private OrthographicCamera camera;
 
     private MyDebugRenderer debugger;
 
     private Page page;
 
-    public static ApplicationFacade getApplicationInstanceFacade() {
+    public static ApplicationFacade getApplicationInstance() {
         if (application == null) {
             application = new MyApplication();
         }
@@ -44,10 +40,7 @@ public class MyApplication extends ApplicationAdapter implements ApplicationFaca
 
     @Override
     public void create() {
-        spriteBatch = new SpriteBatch();
         viewport = new FitViewport(windowW, windowH);
-        camera = new OrthographicCamera(viewport.getWorldWidth(), viewport.getWorldHeight());
-        viewport.setCamera(camera);
 
         debugger = new MyDebugRenderer();
 
@@ -64,7 +57,7 @@ public class MyApplication extends ApplicationAdapter implements ApplicationFaca
     public void render() {
         page.input();
         page.logic();
-        page.draw(viewport, spriteBatch);
+        page.draw();
 
         if (page.isFinished()) {
             page = page.getNextPage();
@@ -72,16 +65,11 @@ public class MyApplication extends ApplicationAdapter implements ApplicationFaca
         }
     }
 
-    public SpriteBatch getSpriteBatch() {
-        return spriteBatch;
-    }
+    @Override
+    public void dispose() {}
 
     public FitViewport getViewport() {
         return viewport;
-    }
-
-    public OrthographicCamera getCamera() {
-        return camera;
     }
 
     public MyDebugRenderer getDebugger() {

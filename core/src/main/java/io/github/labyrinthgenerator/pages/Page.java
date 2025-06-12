@@ -1,9 +1,10 @@
 package io.github.labyrinthgenerator.pages;
 
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.badlogic.gdx.graphics.Camera;
 
 public interface Page {
+
+    Camera getCamera();
 
     void create();
 
@@ -11,9 +12,11 @@ public interface Page {
 
     void logic();
 
-    void draw(FitViewport viewport, SpriteBatch spriteBatch);
+    void draw();
 
     boolean isFinished();
 
     Page getNextPage();
+
+    void dispose();
 }

@@ -1,10 +1,7 @@
 package io.github.labyrinthgenerator.pages;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.Pixmap;
-import com.badlogic.gdx.graphics.PixmapIO;
-import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
@@ -24,9 +21,13 @@ import java.util.zip.Deflater;
 import static io.github.labyrinthgenerator.MyApplication.windowH;
 import static io.github.labyrinthgenerator.MyApplication.windowW;
 
-public class ToolsPage implements Page {
+public class Tools2dPage implements Page {
 
     private ApplicationFacade application;
+    private SpriteBatch spriteBatch;
+    private FitViewport viewport;
+    private OrthographicCamera camera;
+
     private BitmapFont font;
     private Texture backgroundTexture;
     private Texture verticalWallTexture;
@@ -43,7 +44,12 @@ public class ToolsPage implements Page {
 
     @Override
     public void create() {
-        application = MyApplication.getApplicationInstanceFacade();
+        application = MyApplication.getApplicationInstance();
+        viewport = application.getViewport();
+        camera = new OrthographicCamera(viewport.getScreenWidth(), viewport.getScreenHeight());
+        viewport.setCamera(camera);
+        viewport.update(viewport.getScreenWidth(), viewport.getScreenHeight(), true);
+        spriteBatch = new SpriteBatch();
         //backgroundTexture = new Texture("backgrounds/notebook-paper-background.jpg");
         scale = 10;
         lW = (int) (windowW / scale) + 1;
@@ -81,13 +87,13 @@ public class ToolsPage implements Page {
     }
 
     @Override
-    public void draw(FitViewport viewport, SpriteBatch spriteBatch) {
-        prepareDraw(viewport, spriteBatch);
-        drawLabyrinth(spriteBatch);
-        endDraw(spriteBatch);
+    public void draw() {
+        prepareDraw();
+        drawLabyrinth();
+        endDraw();
     }
 
-    public void drawLabyrinth(SpriteBatch spriteBatch) {
+    public void drawLabyrinth() {
         int[][] labyrinth = this.labyrinth.getLabyrinth();
         for (int j = 0; j < lH; j++)
             for (int i = 0; i < lW; i++) {
@@ -121,7 +127,7 @@ public class ToolsPage implements Page {
         spriteBatch.draw(entryTexture, 1 * scale, 1 * scale, scale, scale);
     }
 
-    public void prepareDraw(FitViewport viewport, SpriteBatch spriteBatch) {
+    public void prepareDraw() {
         ScreenUtils.clear(Color.BLACK);
         viewport.apply();
         spriteBatch.setProjectionMatrix(viewport.getCamera().combined);
@@ -129,10 +135,10 @@ public class ToolsPage implements Page {
     }
 
 
-    public void endDraw(SpriteBatch spriteBatch) {
+    public void endDraw() {
         spriteBatch.end();
         if (MyApplication.debug) {
-            application.getDebugger().render(application.getCamera().combined);
+            application.getDebugger().render(camera.combined);
         }
     }
 
@@ -167,12 +173,25 @@ public class ToolsPage implements Page {
         }
     }
 
+    public SpriteBatch getSpriteBatch() {
+        return spriteBatch;
+    }
+
     public Labyrinth getLabyrinth() {
         return labyrinth;
     }
 
     public float getScale() {
         return scale;
+    }
+
+    public FitViewport getViewport() {
+        return viewport;
+    }
+
+    @Override
+    public OrthographicCamera getCamera() {
+        return camera;
     }
 
     @Override
@@ -183,5 +202,10 @@ public class ToolsPage implements Page {
     @Override
     public Page getNextPage() {
         return null;
+    }
+
+    @Override
+    public void dispose() {
+        spriteBatch.dispose();
     }
 }
