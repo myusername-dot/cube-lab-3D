@@ -4,8 +4,6 @@ import com.badlogic.gdx.graphics.Camera;
 
 public interface Page {
 
-    Camera getCamera();
-
     void create();
 
     void input();
@@ -19,4 +17,6 @@ public interface Page {
     Page getNextPage();
 
     void dispose();
+
+    Camera getCamera();
 }

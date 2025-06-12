@@ -18,8 +18,7 @@ import java.io.IOException;
 import java.util.UUID;
 import java.util.zip.Deflater;
 
-import static io.github.labyrinthgenerator.MyApplication.windowH;
-import static io.github.labyrinthgenerator.MyApplication.windowW;
+import static io.github.labyrinthgenerator.MyApplication.*;
 
 public class Tools2dPage implements Page {
 
@@ -37,7 +36,6 @@ public class Tools2dPage implements Page {
     private Texture escapeTexture;
 
     private Labyrinth labyrinth;
-    private float scale;
     private int lW, lH;
 
     private int frame;
@@ -51,9 +49,8 @@ public class Tools2dPage implements Page {
         viewport.update(viewport.getScreenWidth(), viewport.getScreenHeight(), true);
         spriteBatch = new SpriteBatch();
         //backgroundTexture = new Texture("backgrounds/notebook-paper-background.jpg");
-        scale = 10;
-        lW = (int) (windowW / scale) + 1;
-        lH = (int) (windowH / scale) + 1;
+        lW = (int) (windowW / lDivider) + 1;
+        lH = (int) (windowH / lDivider) + 1;
         labyrinth = new Labyrinth(lW, lH);
         verticalWallTexture = new Texture("wall1.png");
         horizontalWallTexture = new Texture("wall2.png");
@@ -102,7 +99,7 @@ public class Tools2dPage implements Page {
                     case EMPTY:
                         continue;
                     case VERTICAL_WALL:
-                        spriteBatch.draw(verticalWallTexture, i * scale, j * scale - 8, scale / 4f, scale + 10);
+                        spriteBatch.draw(verticalWallTexture, i * lDivider, j * lDivider - 8, lDivider / 4f, lDivider + 10);
                         break;
                     case HORIZONTAL_WALL:
                     case LU_CORNER:
@@ -118,13 +115,13 @@ public class Tools2dPage implements Page {
                                         Labyrinth.LEntity.values()[(labyrinth[i][j + 1])] == Labyrinth.LEntity.EMPTY)
                             )
                         ) {
-                            spriteBatch.draw(horizontalWallTexture, i * scale, j * scale, scale, scale / 4f);
+                            spriteBatch.draw(horizontalWallTexture, i * lDivider, j * lDivider, lDivider, lDivider / 4f);
                         }
                         break;
                 }
             }
-        spriteBatch.draw(escapeTexture, (lW - 2) * scale, (lH - 2) * scale, scale, scale);
-        spriteBatch.draw(entryTexture, 1 * scale, 1 * scale, scale, scale);
+        spriteBatch.draw(escapeTexture, (lW - 2) * lDivider, (lH - 2) * lDivider, lDivider, lDivider);
+        spriteBatch.draw(entryTexture, 1 * lDivider, 1 * lDivider, lDivider, lDivider);
     }
 
     public void prepareDraw() {
@@ -182,7 +179,7 @@ public class Tools2dPage implements Page {
     }
 
     public float getScale() {
-        return scale;
+        return lDivider;
     }
 
     public FitViewport getViewport() {

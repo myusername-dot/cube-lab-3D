@@ -4,7 +4,8 @@ import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import io.github.labyrinthgenerator.debug.MyDebugRenderer;
 import io.github.labyrinthgenerator.interfaces.ApplicationFacade;
-import io.github.labyrinthgenerator.pages.CreateLabyrinthPage;
+import io.github.labyrinthgenerator.pages.Game3dPage;
+import io.github.labyrinthgenerator.pages.LabyrinthPage;
 import io.github.labyrinthgenerator.pages.Page;
 
 /**
@@ -14,6 +15,7 @@ public class MyApplication extends ApplicationAdapter implements ApplicationFaca
 
     public static final int windowW = 642;
     public static final int windowH = 322;
+    public static final float lDivider = 10;
 
     public static final boolean debug = true;
 
@@ -44,7 +46,7 @@ public class MyApplication extends ApplicationAdapter implements ApplicationFaca
 
         debugger = new MyDebugRenderer();
 
-        page = new CreateLabyrinthPage();
+        page = new Game3dPage();
         page.create();
     }
 

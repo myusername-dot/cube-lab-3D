@@ -11,7 +11,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
-public class CreateLabyrinthPage implements Page {
+public class LabyrinthPage implements Page {
 
     private Texture prefPoseTexture;
     private Texture prefPoseAcceptEscapeTexture;
