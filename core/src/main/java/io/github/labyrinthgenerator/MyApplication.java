@@ -2,22 +2,18 @@ package io.github.labyrinthgenerator;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.utils.viewport.FitViewport;
-import io.github.labyrinthgenerator.debug.MyDebugRenderer;
 import io.github.labyrinthgenerator.interfaces.ApplicationFacade;
-import io.github.labyrinthgenerator.pages.Game3dPage;
-import io.github.labyrinthgenerator.pages.LabyrinthPage;
 import io.github.labyrinthgenerator.pages.Page;
+import io.github.labyrinthgenerator.pages.game2d.LabyrinthPage;
 
 /**
  * {@link com.badlogic.gdx.ApplicationListener} implementation shared by all platforms.
  */
 public class MyApplication extends ApplicationAdapter implements ApplicationFacade {
 
-    public static final float lDivider = 20;
-    public static final int   windowW = 960;
-    public static final int   windowH = 300;
-
-    public static final boolean debug = true;
+    public static final float lDivider = 10;
+    public static final int windowW = 960;
+    public static final int windowH = 480;
 
     public static final boolean saveAsTxt = true;
     public static final boolean saveAsImage = true;
@@ -25,8 +21,6 @@ public class MyApplication extends ApplicationAdapter implements ApplicationFaca
     private static MyApplication application;
 
     private FitViewport viewport;
-
-    private MyDebugRenderer debugger;
 
     private Page page;
 
@@ -43,8 +37,6 @@ public class MyApplication extends ApplicationAdapter implements ApplicationFaca
     @Override
     public void create() {
         viewport = new FitViewport(windowW, windowH);
-
-        debugger = new MyDebugRenderer();
 
         page = new LabyrinthPage();
         page.create();
@@ -68,14 +60,11 @@ public class MyApplication extends ApplicationAdapter implements ApplicationFaca
     }
 
     @Override
-    public void dispose() {}
+    public void dispose() {
+    }
 
     public FitViewport getViewport() {
         return viewport;
-    }
-
-    public MyDebugRenderer getDebugger() {
-        return debugger;
     }
 }
 
