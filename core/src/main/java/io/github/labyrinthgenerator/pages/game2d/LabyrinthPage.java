@@ -26,8 +26,8 @@ public class LabyrinthPage implements Page {
     private int framerate = 2;
 
     private boolean escape;
-    private boolean fourth;
-    private boolean update;
+    private boolean puffPuffins;
+    private boolean newLab;
     private boolean isFinished;
     private boolean screenshot;
     private boolean txtFile;
@@ -41,12 +41,18 @@ public class LabyrinthPage implements Page {
         prefPoseAcceptEscapeTexture = new Texture("labyrinth2d/pref_a.png");
         puffinTexture = new Texture("labyrinth2d/puff.png");
 
-        toolsPage = new Tools2d();
-        toolsPage.create();
+        createToolsPage();
         toolsPage.getLabyrinth().wormSecond(false, false, 0);
 
         prevPoses = new HashSet<>();
         puffins = new HashSet<>();
+
+        puffPuffins = true;
+    }
+
+    void createToolsPage() {
+        toolsPage = new Tools2d();
+        toolsPage.create();
     }
 
     @Override
@@ -55,50 +61,66 @@ public class LabyrinthPage implements Page {
 
     @Override
     public void logic() {
+        frame++;
         screenshot = false;
         txtFile = false;
-        frame++;
-        if (frame % (60 / framerate) == 0) {
-            prevPoses.clear();
-            puffins.clear();
-            if (update) {
-                toolsPage = new Tools2d();
-                toolsPage.create();
-                toolsPage.getLabyrinth().wormSecond(false, false, 0);
-                update = false;
-            } else if (!fourth) {
-                escape = toolsPage.getLabyrinth().wormThird(1, 1, prevPoses, puffins, false, false);
-                fourth = puffins.isEmpty();
-            } else {
-                toolsPage.getLabyrinth().buildFourth(escape);
-                fourth = false;
-                escape = true;
-                isFinished = true;
-                screenshot = MyApplication.saveAsImage;
-                txtFile = MyApplication.saveAsTxt;
-            }
+
+        if (!isLogicFrame()) return;
+
+        prevPoses.clear();
+        puffins.clear();
+        /*if (newLab) {
+            toolsPage.dispose();
+            createToolsPage();
+            toolsPage.getLabyrinth().wormSecond(false, false, 0);
+            newLab = false;
+            puffPuffins = true;
+        } else */
+        if (puffPuffins) {
+            escape = toolsPage.getLabyrinth().wormThird(
+                1, 1,
+                prevPoses, puffins,
+                false, false
+            );
+            puffPuffins = !puffins.isEmpty();
+        } else {
+            // rest assured that the exit is open
+            toolsPage.getLabyrinth().buildFourth(escape);
+            escape = true;
+            isFinished = true;
+            screenshot = MyApplication.saveAsImage;
+            txtFile = MyApplication.saveAsTxt;
         }
+
+    }
+
+    private boolean isLogicFrame() {
+        return frame % (60 / framerate) == 0;
     }
 
     @Override
     public void draw() {
         toolsPage.prepareDraw();
         SpriteBatch spriteBatch = toolsPage.getSpriteBatch();
+
         float scale = toolsPage.getScale();
         int screenX = toolsPage.getScreenX();
         int screenY = toolsPage.getScreenY();
+
         for (Vector2i prevPose : prevPoses) {
-            if (escape)
+            if (escape) {
                 spriteBatch.draw(
                     prefPoseAcceptEscapeTexture,
                     screenX + prevPose.x * scale, screenY + prevPose.y * scale,
                     scale, scale
                 );
-            else spriteBatch.draw(
-                prefPoseTexture,
-                screenX + prevPose.x * scale, screenY + prevPose.y * scale,
-                scale, scale
-            );
+            } else {
+                spriteBatch.draw(
+                    prefPoseTexture,
+                    screenX + prevPose.x * scale, screenY + prevPose.y * scale,
+                    scale, scale
+                );
+            }
         }
         for (Vector2i puffin : puffins) {
             spriteBatch.draw(
@@ -108,13 +130,12 @@ public class LabyrinthPage implements Page {
             );
         }
         toolsPage.drawLabyrinth();
+
         toolsPage.endDraw();
+
         UUID uuid = null;
         if (screenshot) uuid = toolsPage.saveAsImage();
-        if (txtFile) {
-            txtFilename = toolsPage.saveAsTxt(uuid);
-
-        }
+        if (txtFile) txtFilename = toolsPage.saveAsTxt(uuid);
     }
 
     @Override

@@ -127,16 +127,16 @@ public class Labyrinth {
     }
 
     public boolean wormThird(
-            int x, int y,
+            int startX, int startY,
             Set<Vector2i> prevPoses, Set<Vector2i> puffins,
             boolean sortedByEscapeDistance,
             boolean exitWhenFindEscape
     ) {
-        if (LEntity.values()[labyrinth[x][y]] != LEntity.EMPTY)
-            throw new UnsupportedOperationException("wormSecondDebug: LEntity.values()[labyrinth[x][y]] != LEntity.EMPTY");
+        if (LEntity.values()[labyrinth[startX][startY]] != LEntity.EMPTY)
+            throw new UnsupportedOperationException("wormSecondDebug: LEntity.values()[labyrinth[startX][startY]] != LEntity.EMPTY");
 
         Map<Vector2i, Integer> puffinsTmp = new HashMap<>();
-        boolean escape = setPuffins(puffinsTmp, prevPoses, 0, x, y, new Vector2i(x, y), exitWhenFindEscape);
+        boolean escape = setPuffins(puffinsTmp, prevPoses, 0, startX, startY, new Vector2i(startX, startY), exitWhenFindEscape);
         this.prevPoses.addAll(prevPoses);
 
         if (escape && exitWhenFindEscape) return true;
