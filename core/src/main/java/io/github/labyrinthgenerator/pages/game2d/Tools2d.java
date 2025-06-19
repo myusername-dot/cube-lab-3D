@@ -50,16 +50,27 @@ public class Tools2d implements Page {
         viewport.setCamera(camera);
         viewport.update(viewport.getScreenWidth(), viewport.getScreenHeight(), true);
         spriteBatch = new SpriteBatch();
-        //backgroundTexture = new Texture("backgrounds/notebook-paper-background.jpg");
 
+        //backgroundTexture = new Texture("backgrounds/notebook-paper-background.jpg");
+        verticalWallTexture = new Texture("labyrinth2d/wall1.png");
+        horizontalWallTexture = new Texture("labyrinth2d/wall2.png");
+        entryTexture = new Texture("labyrinth2d/entry.png");
+        escapeTexture = new Texture("labyrinth2d/escape.png");
+
+        createFonts("fonts/clacon2.ttf");
+
+        // create labyrinth
+        // leave space for outer walls, otherwise the sprites will go beyond the screen boundaries
         lW = (int) ((windowW - lDivider * 0.75) / lDivider);
         lH = (int) ((windowH - lDivider * 0.75) / lDivider);
+        // in order for the labyrinth to have all outer walls, the width and height must be odd
         lW += lW % 2 == 0 ? 1 : 0;
         lH += lH % 2 == 0 ? 1 : 0;
         labyrinth = new Labyrinth(lW, lH);
         screenX = (int) (windowW - lDivider * lW);
         screenY = (int) (windowH - lDivider * lH);
 
+        // if you change the window size, then when you go to a new page the screen shifts to the left or to the down
         float blackScreenWidth = Gdx.graphics.getBackBufferWidth();
         float blackScreenHeight = Gdx.graphics.getBackBufferHeight();
         if (blackScreenWidth != windowW || blackScreenHeight != windowH) {
@@ -75,13 +86,6 @@ public class Tools2d implements Page {
             viewport.setScreenX((int) bordersWidth / 2);
             viewport.setScreenY((int) bordersHeight / 2);
         }
-
-        verticalWallTexture = new Texture("labyrinth2d/wall1.png");
-        horizontalWallTexture = new Texture("labyrinth2d/wall2.png");
-        entryTexture = new Texture("labyrinth2d/entry.png");
-        escapeTexture = new Texture("labyrinth2d/escape.png");
-
-        createFonts("fonts/clacon2.ttf");
     }
 
     protected void createFonts(String fontName) {
@@ -123,6 +127,8 @@ public class Tools2d implements Page {
                     case EMPTY:
                         continue;
                     case VERTICAL_WALL:
+                        // since the horizontal walls are lower than the cell height,
+                        // the vertical walls should be 2 times higher
                         spriteBatch.draw(
                             verticalWallTexture,
                             screenX + i * lDivider, screenY + j * lDivider - lDivider,
@@ -134,6 +140,8 @@ public class Tools2d implements Page {
                     case RU_CORNER:
                     case LD_CORNER:
                     case RD_CORNER:
+                        // since after removing a horizontal wall there remains an unsightly protrusion
+                        // of the wall to the left, it is necessary not to show such walls during rendering
                         if (i < lW - 1 &&
                             (Labyrinth.LEntity.values()[(labyrinth[i + 1][j])] != Labyrinth.LEntity.EMPTY ||
                                 i > 0 && j > 1 && j < lH - 1 &&
