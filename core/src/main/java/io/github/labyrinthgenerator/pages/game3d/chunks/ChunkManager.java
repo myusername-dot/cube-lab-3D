@@ -1,4 +1,4 @@
-package io.github.labyrinthgenerator.pages.game3d.rect;
+package io.github.labyrinthgenerator.pages.game3d.chunks;
 
 import com.badlogic.gdx.math.Vector2;
 import io.github.labyrinthgenerator.pages.game3d.constants.Constants;

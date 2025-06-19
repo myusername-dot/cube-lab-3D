@@ -1,6 +1,8 @@
 package io.github.labyrinthgenerator.pages.game3d.rect;
 
 import io.github.labyrinthgenerator.pages.game3d.CubeLab3D;
+import io.github.labyrinthgenerator.pages.game3d.chunks.Chunk;
+import io.github.labyrinthgenerator.pages.game3d.chunks.ChunkManager;
 import io.github.labyrinthgenerator.pages.game3d.entities.Entity;
 import io.github.labyrinthgenerator.pages.game3d.rect.filters.RectanglePlusFilter;
 
