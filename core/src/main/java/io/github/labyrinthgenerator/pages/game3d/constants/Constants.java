@@ -15,7 +15,7 @@ public abstract class Constants {
     public static final int TILE_SIZE = 16;
 	public static final float HALF_UNIT = 0.5f;
 
-    // this should be a constant, but when resizing the window, the transition to a new page does not work correctly
+    // FIXME this should be a constant, but when resizing the window, the transition to a new page does not work correctly
 	public static int WINDOW_WIDTH;
 	public static int WINDOW_HEIGHT;
 

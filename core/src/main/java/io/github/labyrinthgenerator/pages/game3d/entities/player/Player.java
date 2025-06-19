@@ -112,23 +112,7 @@ public class Player extends Entity {
     public final void setEnemyInRangeAroundCam(float delta) {
         updateEnemiesRangeTimer += delta;
         if (updateEnemiesRangeTimer >= updateEnemiesRangeTimeSec) {
-            float closestDistanceBetweenRects = 50f;
-            Set<RectanglePlus> enemiesRects = screen.game.getRectMan().getRectsByFilter(RectanglePlusFilter.ENEMY);
-            enemiesRects.addAll(screen.game.getRectMan().getRectsByFilter(RectanglePlusFilter.ENTITY));
-            for (final RectanglePlus enemyRect : enemiesRects) {
-
-                ((Enemy) screen.game.getEntMan().getEntityFromId(enemyRect.getConnectedEntityId()))
-                    .setIsPlayerInRange(false);
-
-                float distanceBetweenRects = Vector2.dst2(
-                    playerCam.position.x, playerCam.position.z,
-                    enemyRect.getX() + enemyRect.getWidth() / 2f, enemyRect.getZ() + enemyRect.getDepth() / 2f);
-
-                if (distanceBetweenRects < closestDistanceBetweenRects) {
-                    ((Enemy) screen.game.getEntMan().getEntityFromId(enemyRect.getConnectedEntityId()))
-                        .setIsPlayerInRange(true);
-                }
-            }
+            screen.setEnemyInRangeAroundCam();
             updateEnemiesRangeTimer = 0f;
         }
     }

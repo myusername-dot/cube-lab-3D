@@ -3,16 +3,20 @@ package io.github.labyrinthgenerator.pages.game3d.screens;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Camera;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import io.github.labyrinthgenerator.pages.game3d.CubeLab3D;
 import io.github.labyrinthgenerator.pages.game3d.entities.Entity;
+import io.github.labyrinthgenerator.pages.game3d.entities.enemies.Enemy;
 import io.github.labyrinthgenerator.pages.game3d.entities.player.Player;
 import io.github.labyrinthgenerator.pages.game3d.models.ModelInstanceBB;
 import io.github.labyrinthgenerator.pages.game3d.rect.RectanglePlus;
+import io.github.labyrinthgenerator.pages.game3d.rect.filters.RectanglePlusFilter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public abstract class GameScreen implements Screen {
 	public final CubeLab3D game;
@@ -84,6 +88,26 @@ public abstract class GameScreen implements Screen {
 
 		rect.setZ(rect.newPosition.z);
 	}
+
+    public final void setEnemyInRangeAroundCam() {
+        float closestDistanceBetweenRects = 50f;
+        Set<RectanglePlus> enemiesRects = game.getRectMan().getRectsByFilter(RectanglePlusFilter.ENEMY);
+        enemiesRects.addAll(game.getRectMan().getRectsByFilter(RectanglePlusFilter.ENTITY));
+        for (final RectanglePlus enemyRect : enemiesRects) {
+
+            ((Enemy) game.getEntMan().getEntityFromId(enemyRect.getConnectedEntityId()))
+                .setIsPlayerInRange(false);
+
+            float distanceBetweenRects = Vector2.dst2(
+                currentCam.position.x, currentCam.position.z,
+                enemyRect.getX() + enemyRect.getWidth() / 2f, enemyRect.getZ() + enemyRect.getDepth() / 2f);
+
+            if (distanceBetweenRects < closestDistanceBetweenRects) {
+                ((Enemy) game.getEntMan().getEntityFromId(enemyRect.getConnectedEntityId()))
+                    .setIsPlayerInRange(true);
+            }
+        }
+    }
 
 	@Override
 	public void dispose() {

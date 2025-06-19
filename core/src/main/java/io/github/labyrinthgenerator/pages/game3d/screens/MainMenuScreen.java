@@ -12,17 +12,11 @@ import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
-import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
 import io.github.labyrinthgenerator.pages.game2d.LabyrinthPage;
 import io.github.labyrinthgenerator.pages.game3d.CubeLab3D;
 import io.github.labyrinthgenerator.pages.game3d.constants.Constants;
-import io.github.labyrinthgenerator.pages.game3d.entities.enemies.Enemy;
-import io.github.labyrinthgenerator.pages.game3d.rect.RectanglePlus;
-import io.github.labyrinthgenerator.pages.game3d.rect.filters.RectanglePlusFilter;
-
-import java.util.Set;
 
 import static io.github.labyrinthgenerator.pages.game3d.constants.Constants.HALF_UNIT;
 
@@ -201,26 +195,6 @@ public class MainMenuScreen extends GameScreen {
                 limitSelectedOption();
 
                 sfxChoiceId = sfxChoice.play(game.getSfxVolume());
-            }
-        }
-    }
-
-    public final void setEnemyInRangeAroundCam() {
-        float closestDistanceBetweenRects = 75f;
-        Set<RectanglePlus> enemiesRects = game.getRectMan().getRectsByFilter(RectanglePlusFilter.ENEMY);
-        enemiesRects.addAll(game.getRectMan().getRectsByFilter(RectanglePlusFilter.ENTITY));
-        for (final RectanglePlus enemyRect : enemiesRects) {
-
-            ((Enemy) game.getEntMan().getEntityFromId(enemyRect.getConnectedEntityId()))
-                .setIsPlayerInRange(false);
-
-            float distanceBetweenRects = Vector2.dst2(
-                currentCam.position.x, currentCam.position.z,
-                enemyRect.getX() + enemyRect.getWidth() / 2f, enemyRect.getZ() + enemyRect.getDepth() / 2f);
-
-            if (distanceBetweenRects < closestDistanceBetweenRects) {
-                ((Enemy) game.getEntMan().getEntityFromId(enemyRect.getConnectedEntityId()))
-                    .setIsPlayerInRange(true);
             }
         }
     }
