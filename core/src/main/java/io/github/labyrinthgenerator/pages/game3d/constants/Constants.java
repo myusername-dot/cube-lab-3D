@@ -15,18 +15,16 @@ public abstract class Constants {
     public static final int TILE_SIZE = 16;
 	public static final float HALF_UNIT = 0.5f;
 
-	public static final int WINDOW_WIDTH = MyApplication.windowW;
-	public static final int WINDOW_HEIGHT = MyApplication.windowH;
+    // this should be a constant, but when resizing the window, the transition to a new page does not work correctly
+	public static int WINDOW_WIDTH;
+	public static int WINDOW_HEIGHT;
 
-	public static final int VIEWPORT_WIDTH = MyApplication.windowW;
-	public static final int VIEWPORT_HEIGHT = MyApplication.windowH;
+	public static final int FBO_WIDTH_ORIGINAL = MyApplication.windowW / 4; // 160
+	public static final int FBO_HEIGHT_ORIGINAL = MyApplication.windowH / 4; // 120
 
-	public static final int FBO_WIDTH_ORIGINAL = VIEWPORT_WIDTH / 4; // 160
-	public static final int FBO_HEIGHT_ORIGINAL = VIEWPORT_HEIGHT / 4; // 120
+	public static final int FBO_WIDTH_DECENT = MyApplication.windowW / 2;
+	public static final int FBO_HEIGHT_DECENT = MyApplication.windowH / 2;
 
-	public static final int FBO_WIDTH_DECENT = VIEWPORT_WIDTH / 2;
-	public static final int FBO_HEIGHT_DECENT = VIEWPORT_HEIGHT / 2;
-
-	public static final int FBO_WIDTH_DELUXE = VIEWPORT_WIDTH;
-	public static final int FBO_HEIGHT_DELUXE = VIEWPORT_HEIGHT;
+	public static final int FBO_WIDTH_DELUXE = MyApplication.windowW;
+	public static final int FBO_HEIGHT_DELUXE = MyApplication.windowH;
 }

@@ -53,6 +53,12 @@ public class CubeLab3D extends Game implements Page {
 
 	@Override
 	public void create() {
+        // if you change the window size, then when you go to a new page the screen shifts to the left or to the down
+        float blackScreenWidth = Gdx.graphics.getBackBufferWidth();
+        float blackScreenHeight = Gdx.graphics.getBackBufferHeight();
+        Constants.WINDOW_WIDTH = (int) blackScreenWidth;
+        Constants.WINDOW_HEIGHT = (int) blackScreenHeight;
+
 		createNewMainFbo(Constants.FBO_WIDTH_DELUXE, Constants.FBO_HEIGHT_DELUXE);
 
 		assMan = new AssetsManager();
