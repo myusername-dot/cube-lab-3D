@@ -20,10 +20,11 @@ public class RectanglePlus {
     public final Vector3 oldPosition = new Vector3();
     public final Vector3 newPosition = new Vector3();
 
-    private int connectedEntityId = 0;
-    public RectanglePlusFilter filter = RectanglePlusFilter.NONE;
+    private final int connectedEntityId;
+    public final RectanglePlusFilter filter;
 
-    private RectanglePlus(float x, float y, float z, float width, float height, float depth) {
+    public RectanglePlus(float x, float y, float z, float width, float height, float depth,
+                         int connectedEntityId, RectanglePlusFilter filter, RectManager rectMan) {
         this.id = maxId++;
         this.x = x;
         this.y = y;
@@ -32,14 +33,11 @@ public class RectanglePlus {
         this.height = height;
         this.depth = depth;
         rectangle = new Rectangle(x, z, width, depth);
-    }
-
-    public RectanglePlus(float x, float y, float z, float width, float height, float depth,
-                         int connectedEntityId, RectanglePlusFilter filter) {
-        this(x, y, z, width, height, depth);
 
         this.connectedEntityId = connectedEntityId;
         this.filter = filter;
+
+        rectMan.addRect(this);
     }
 
     public boolean overlaps(RectanglePlus r) {
@@ -61,10 +59,6 @@ public class RectanglePlus {
 
     public int getConnectedEntityId() {
         return connectedEntityId;
-    }
-
-    public void setConnectedEntityId(final int connectedEntityId) {
-        this.connectedEntityId = connectedEntityId;
     }
 
     public float getX() {

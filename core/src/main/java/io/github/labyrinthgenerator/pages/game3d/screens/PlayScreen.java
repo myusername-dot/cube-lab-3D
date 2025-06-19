@@ -12,6 +12,7 @@ import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
 import io.github.labyrinthgenerator.pages.game2d.LabyrinthPage;
 import io.github.labyrinthgenerator.pages.game3d.CubeLab3D;
@@ -19,10 +20,10 @@ import io.github.labyrinthgenerator.pages.game3d.constants.Constants;
 import io.github.labyrinthgenerator.pages.game3d.entities.player.Player;
 import io.github.labyrinthgenerator.pages.game3d.shaders.SkyBoxShaderProgram;
 
+import static io.github.labyrinthgenerator.pages.game3d.constants.Constants.HALF_UNIT;
+
 public class PlayScreen extends GameScreen {
     private final TextureRegion skyBg;
-	/*private final TextureRegion guiBG, guiBGInventorySelected, guiRedCard, guiGreenCard, guiBlueCard, guiGoldenCard,
-			texRegBloodOverlay, texRegBlackOverlay;*/
 
     private final Environment env;
 
@@ -51,8 +52,6 @@ public class PlayScreen extends GameScreen {
 
     private final SkyBoxShaderProgram envCubeMap;
 
-    //private final float bloodOverlayAlphaSwitch = 0.5f;
-
     public PlayScreen(final CubeLab3D game) {
         super(game);
 
@@ -63,19 +62,8 @@ public class PlayScreen extends GameScreen {
         fogColor = new Color(66 / 256f, 33 / 256f, 54 / 256f, 1f);
         //env.set(new ColorAttribute(ColorAttribute.Fog, fogColor));
 
-		/*texRegBloodOverlay = new TextureRegion((Texture) game.getAssMan().get(game.getAssMan().atlas01), 0, 0, 2, 2);
-		texRegBlackOverlay = new TextureRegion((Texture) game.getAssMan().get(game.getAssMan().atlas01), 3, 0, 2, 2);*/
-
         skyBg = new TextureRegion((Texture) game.getAssMan().get(game.getAssMan().bgSky01));
         skyBg.flip(false, true);
-
-		/*guiBG = new TextureRegion((Texture) game.getAssMan().get(game.getAssMan().guiBG), 0, 0, 160, 16);
-		guiBGInventorySelected = new TextureRegion((Texture) game.getAssMan().get(game.getAssMan().guiBG), 240, 0, 16,
-				16);
-		guiRedCard = new TextureRegion((Texture) game.getAssMan().get(game.getAssMan().guiBG), 160, 0, 16, 16);
-		guiGreenCard = new TextureRegion((Texture) game.getAssMan().get(game.getAssMan().guiBG), 160 + 16, 0, 16, 16);
-		guiBlueCard = new TextureRegion((Texture) game.getAssMan().get(game.getAssMan().guiBG), 160 + 32, 0, 16, 16);
-		guiGoldenCard = new TextureRegion((Texture) game.getAssMan().get(game.getAssMan().guiBG), 160 + 48, 0, 16, 16);*/
 
         guiFont01_64 = game.getAssMan().get(game.getAssMan().font03_64);
         guiFont01_32 = game.getAssMan().get(game.getAssMan().font03_32);
@@ -89,10 +77,14 @@ public class PlayScreen extends GameScreen {
 
         game.getMapBuilder().buildMap(LabyrinthPage.txtFilename);
 
-//		game.getEntMan().addEntity(new Grid(this));
-
-        player = new Player(this);
-        game.getEntMan().addEntity(player);
+        float playerRectWidth = (HALF_UNIT / 2f);
+        float playerRectDepth = (HALF_UNIT / 2f);
+        Vector3 playerSpawnPosition = new Vector3(
+            game.getMapBuilder().mapLoadSpawnPosition.x + HALF_UNIT - playerRectWidth / 2f,
+            0,
+            game.getMapBuilder().mapLoadSpawnPosition.y + HALF_UNIT - playerRectDepth / 2f
+        );
+        player = new Player(playerSpawnPosition, playerRectWidth, playerRectDepth, this);
         setCurrentCam(player.playerCam);
         viewport.setCamera(currentCam);
 
@@ -169,15 +161,6 @@ public class PlayScreen extends GameScreen {
                 player.handleInput(delta);
             }
         }
-
-//		if (Gdx.input.isKeyJustPressed(Input.Keys.F)) {
-//			Gdx.input.setCursorCatched(!Gdx.input.isCursorCatched());
-//		}
-
-//		if (Gdx.input.isKeyJustPressed(Input.Keys.Q)) {
-//			game.getEntMan().entities.get(game.getEntMan().entities.size - 1).setDestroy(true);
-//			game.getEntMan().entities.get(game.getEntMan().entities.size - 1).destroy();
-//		}
     }
 
     private void limitGuiSelection() {
@@ -202,23 +185,15 @@ public class PlayScreen extends GameScreen {
         Gdx.gl.glClearColor(fogColor.r, fogColor.g, fogColor.b, fogColor.a);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
 
-//		game.getBatch().getProjectionMatrix().setToOrtho2D(0, 0, viewport.getWorldWidth(), viewport.getWorldHeight());
-        //game.getBatch().begin();
-        //game.getBatch().draw(skyBg, 0, 0, viewport.getWorldWidth(), viewport.getWorldHeight());
-        //game.getBatch().end();
-        // sky
         envCubeMap.render(currentCam);
 
-//		game.getEntMan().render2DAllEntities(delta);
         game.getMdlBatch().begin(currentCam);
-        game.getEntMan().render3DAllEntities(game.getMdlBatch(), env, delta);
+        game.getEntMan().render3DAllEntities(game.getMdlBatch(), env, delta, currentCam.position.x, currentCam.position.z);
         game.getMdlBatch().end();
         game.getFbo().end();
 
 //		render final fbo
         game.getBatch().begin();
-
-        //renderBloodOverlay01();
 
         game.getBatch().draw(game.getFbo().getColorBufferTexture(), 0, 0, viewport.getWorldWidth(),
             viewport.getWorldHeight());
@@ -228,54 +203,6 @@ public class PlayScreen extends GameScreen {
         if (showExitDistance && !showGuiMenu) {
             guiFont01_32.draw(game.getBatch(), "Exit distance: " + player.getExitDistance(), viewport.getWorldWidth() / 8f, viewport.getWorldHeight() - 32);
         }
-//		gui
-		/*game.getBatch().draw(player.guiCurrentGun, viewport.getWorldWidth() / 2f - 7.5f * 8f, (int) player.gunY,
-				7.5f * 16f, 7.5f * 32f);*/
-
-        //renderBloodOverlay02();
-
-//		hud
-		/*game.getBatch().setColor(1, 1, 1, 1); // Never cover HUD in blood.
-		game.getBatch().draw(guiBG, 0, 0, viewport.getWorldWidth(), 7.5f * 8f);
-		guiFont01_64.draw(game.getBatch(), Integer.toString(getPlayer().getCurrentHP()), 48, 42);
-//		System.out.println(getPlayer().currentInventorySlot);
-
-		switch (getPlayer().currentInventorySlot) {
-		case 1:
-			game.getBatch().draw(guiBGInventorySelected, 128, 0, 10 * 6.4f, 7.5f * 8);
-			break;
-		case 2:
-			game.getBatch().draw(guiBGInventorySelected, 128 + 64, 0, 10 * 6.4f, 7.5f * 8);
-			break;
-		case 3:
-			game.getBatch().draw(guiBGInventorySelected, 128 + 128, 0, 10 * 6.4f, 7.5f * 8);
-			break;
-		case 4:
-			game.getBatch().draw(guiBGInventorySelected, 128 + 128 + 64, 0, 10 * 6.4f, 7.5f * 8);
-			break;
-		case 5:
-			game.getBatch().draw(guiBGInventorySelected, 128 + 128 + 128, 0, 10 * 6.4f, 7.5f * 8);
-			break;
-		case 6:
-			game.getBatch().draw(guiBGInventorySelected, 128 + 128 + 128 + 64, 0, 10 * 6.4f, 7.5f * 8);
-			break;
-		default:
-			game.getBatch().draw(guiBGInventorySelected, 128, 0, 10 * 6.4f, 7.5f * 8);
-			break;
-		}
-
-		if (getPlayer().hasRedKeycard) {
-			game.getBatch().draw(guiRedCard, viewport.getWorldWidth() - 80, 32, 10 * 6.4f, 7.5f * 8);
-		}
-		if (getPlayer().hasGreenKeycard) {
-			game.getBatch().draw(guiGreenCard, viewport.getWorldWidth() - 80 + 32, 32, 10 * 6.4f, 7.5f * 8);
-		}
-		if (getPlayer().hasBlueKeycard) {
-			game.getBatch().draw(guiBlueCard, viewport.getWorldWidth() - 80, 8, 10 * 6.4f, 7.5f * 8);
-		}
-		if (getPlayer().hasGoldenKeycard) {
-			game.getBatch().draw(guiGoldenCard, viewport.getWorldWidth() - 80 + 32, 8, 10 * 6.4f, 7.5f * 8);
-		}*/
 
 //		gui menu
         if (showGuiMenu) {
@@ -311,25 +238,6 @@ public class PlayScreen extends GameScreen {
 
         game.getBatch().end();
     }
-
-	/*private void renderBloodOverlay01() {
-//		This pass makes it look cooler.
-//		FIXME You can see floor through the gun if you look closely...
-		if (getPlayer().bloodOverlayAlpha >= bloodOverlayAlphaSwitch) {
-			game.getBatch().setColor(1, 0, 0, getPlayer().bloodOverlayAlpha);
-			game.getBatch().draw(texRegBlackOverlay, 0, 0, viewport.getWorldWidth(), viewport.getWorldHeight());
-		}
-	}
-
-	private void renderBloodOverlay02() {
-//		This pass is more traditional.
-		if (getPlayer().renderBloodOverlay) {
-			if (getPlayer().bloodOverlayAlpha < bloodOverlayAlphaSwitch) {
-				game.getBatch().setColor(1, 1, 1, getPlayer().bloodOverlayAlpha);
-				game.getBatch().draw(texRegBloodOverlay, 0, 0, viewport.getWorldWidth(), viewport.getWorldHeight());
-			}
-		}
-	}*/
 
     @Override
     public void resize(final int width, final int height) {

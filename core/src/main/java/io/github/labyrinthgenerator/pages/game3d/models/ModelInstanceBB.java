@@ -13,10 +13,6 @@ public class ModelInstanceBB extends ModelInstance {
 	public final Vector3 dimensions = new Vector3(); // for sphere
 	public float radius; // for sphere
 	public final BoundingBox renderBox = new BoundingBox();
-//	public Color devRendererColor;
-
-	// These are currently only used by dev.
-//	public String bbName;
 
 	public ModelInstanceBB(final Model model) {
 		super(model);
@@ -34,15 +30,7 @@ public class ModelInstanceBB extends ModelInstance {
 		return isInFrustum;
 	}
 
-//	public boolean isOccluded() {
-//		return isOccluded;
-//	}
-
 	public void setInFrustum(final boolean isVisible) {
 		this.isInFrustum = isVisible;
 	}
-
-//	public void setOccluded(final boolean isOccluded) {
-//		this.isOccluded = isOccluded;
-//	}
 }

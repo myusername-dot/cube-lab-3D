@@ -5,18 +5,13 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
-import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import io.github.labyrinthgenerator.pages.game3d.entities.Entity;
 import io.github.labyrinthgenerator.pages.game3d.entities.Firefly;
-import io.github.labyrinthgenerator.pages.game3d.entities.IUsable;
-import io.github.labyrinthgenerator.pages.game3d.entities.enemies.Enemy;
 import io.github.labyrinthgenerator.pages.game3d.rect.RectanglePlus;
 import io.github.labyrinthgenerator.pages.game3d.rect.filters.RectanglePlusFilter;
 import io.github.labyrinthgenerator.pages.game3d.screens.GameScreen;
-
-import java.util.Set;
 
 import static io.github.labyrinthgenerator.pages.game3d.constants.Constants.HALF_UNIT;
 
@@ -53,11 +48,12 @@ public class Player extends Entity {
     boolean headbob = false;
     boolean verticalCameraMovement = false;
 
-    float updateEnemiesRangeTimeSec = 0f;
-    float updateEnemiesRangeTimer = updateEnemiesRangeTimeSec;
-
-    public Player(final GameScreen screen) {
-        super(screen);
+    public Player(Vector3 position, float rectWidth, float rectDepth, final GameScreen screen) {
+        super(position.cpy().set(
+                position.x + rectWidth / 2f,
+                position.y,
+                position.z + rectDepth / 2f),
+            screen);
 
         playerCam = new PerspectiveCamera(70, 640, 480);
         playerCam.position.set(new Vector3(0, HALF_UNIT, 0));
@@ -66,24 +62,22 @@ public class Player extends Entity {
         playerCam.far = 10f;
         playerCam.update();
 
-        float rectWidth = (HALF_UNIT / 2f);
-        float rectDepth = (HALF_UNIT / 2f);
         rect = new RectanglePlus(
-            screen.game.getMapBuilder().mapLoadSpawnPosition.x + HALF_UNIT - rectWidth / 2f,
-            0f,
-            screen.game.getMapBuilder().mapLoadSpawnPosition.y + HALF_UNIT - rectDepth / 2f,
+            position.x,
+            position.y,
+            position.z,
             rectWidth, HALF_UNIT, rectDepth,
-            id, RectanglePlusFilter.PLAYER
+            id, RectanglePlusFilter.PLAYER,
+            screen.game.getRectMan()
         );
         rect.oldPosition.set(rect.getPosition());
         rect.newPosition.set(rect.getPosition()); // Needed for spawning at correct position.
-        screen.game.getRectMan().addRect(rect); // never forget!
 
         setCamPosition();
     }
 
     private void setCamPosition() {
-        playerCam.position.set(rect.getX() + rect.getWidth() / 2f, camY, rect.getZ() + rect.getDepth() / 2f);
+        playerCam.position.set(getPositionX(), camY, getPositionZ());
     }
 
     public void addHP(final int addHP) {
@@ -96,28 +90,11 @@ public class Player extends Entity {
 //		System.out.println("Current HP: " + currentHP);
     }
 
-    @Override
-    public void destroy() {
-        if (destroy) {
-            screen.game.getRectMan().removeRect(rect);
-        }
-
-        super.destroy(); // should be last.
-    }
-
     public int getCurrentHP() {
         return currentHP;
     }
 
-    public final void setEnemyInRangeAroundCam(float delta) {
-        updateEnemiesRangeTimer += delta;
-        if (updateEnemiesRangeTimer >= updateEnemiesRangeTimeSec) {
-            screen.setEnemyInRangeAroundCam();
-            updateEnemiesRangeTimer = 0f;
-        }
-    }
-
-    public final void collectItems() {
+    /*public final void collectItems() {
         final float rangeDistanceFromCam = 2f;
 
         float rectX = rect.getX() + rect.getWidth() / 2f;
@@ -140,7 +117,7 @@ public class Player extends Entity {
                 }
             }
         }
-    }
+    }*/
 
     public float getExitDistance() {
         float playerX = rect.getX();
@@ -232,9 +209,6 @@ public class Player extends Entity {
                 * 0.01875f);
             camY += sinOffset;
 
-			/*gunY = gunYStart;
-			gunY += sinOffset * 200f;*/
-
             headbob = false;
         }
 
@@ -258,23 +232,6 @@ public class Player extends Entity {
 		}*/
     }
 
-	/*private void shoot() {
-		if (!shootTimerSet) {
-			shootTimerEnd = System.currentTimeMillis() + shootTimerCD;
-
-			if (!shootAnimationTimerSet) {
-				shootAnimationTimerEnd = System.currentTimeMillis() + shootAnimationTimerCD;
-				guiCurrentGun = guiGunShoot;
-				shootAnimationTimerSet = true;
-			}
-
-			getEnemyRectInRangeFromCam();
-//			System.out.println("shot");
-
-			shootTimerSet = true;
-		}
-	}*/
-
     public void subHP(final int subHP) {
         this.currentHP -= subHP;
 
@@ -283,8 +240,6 @@ public class Player extends Entity {
         }
 
         gotHit = true;
-
-//		System.out.println("Current HP: " + currentHP);
     }
 
     @Override
@@ -294,17 +249,6 @@ public class Player extends Entity {
 
     @Override
     public void tick(final float delta) {
-//		if (gotHit) {
-//			if (!gotHitAnimationTimerSet) {
-//				gotHitAnimationTimerEnd = System.currentTimeMillis() + gotHitAnimationTimerCD;
-//				bloodOverlayAlpha = 0;
-//				renderBloodOverlay = true;
-//				gotHitAnimationTimerSet = true;
-//			}
-//
-//			gotHit = false;
-//		}
-
         if (gotHit) {
             renderBloodOverlay = true;
             bloodOverlayAlpha = bloodOverlayAlphaMax;
@@ -342,11 +286,12 @@ public class Player extends Entity {
 		}*/
 
         screen.checkOverlaps(rect, delta);
+        /*rect.setX(rect.newPosition.x);
+        rect.setY(rect.newPosition.y);
+        rect.setZ(rect.newPosition.z);*/
 
+        setPosition(rect.getX() + rect.getWidth() / 2f, 0f, rect.getZ() + rect.getDepth() / 2f);
         setCamPosition();
-
-        setEnemyInRangeAroundCam(delta);
-        collectItems();
 
         rect.oldPosition.set(rect.getPosition());
     }

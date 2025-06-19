@@ -51,47 +51,43 @@ public class Firefly extends Enemy {
         final float rectHeight = mdlInst.radius;
         final float rectDepth = mdlInst.radius;
         rect = new RectanglePlus(
-            this.position.x - rectWidth / 2f, this.position.y - rectHeight / 2f, this.position.z - rectDepth / 2f,
-            rectWidth, rectHeight, rectDepth, id, RectanglePlusFilter.ENTITY
+            getPositionX() - rectWidth / 2f, getPositionY() - rectHeight / 2f, getPositionZ() - rectDepth / 2f,
+            rectWidth, rectHeight, rectDepth, id, RectanglePlusFilter.ENTITY, screen.game.getRectMan()
         );
         rect.oldPosition.set(rect.getPosition());
         rect.newPosition.set(rect.getPosition());
-
-        screen.game.getRectMan().addRect(rect);
 
         ai = new FireflyAI(this);
     }
 
     @Override
     public boolean shouldRender3D() {
-        return render3D && isPlayerInRange;
+        return render3D;
     }
 
     @Override
     public void render3D(final ModelBatch mdlBatch, final Environment env, final float delta) {
         mdlInst.transform.setToLookAt(screen.getCurrentCam().direction.cpy().rotate(Vector3.Z, 180f), Vector3.Y);
-        mdlInst.transform.setTranslation(position.cpy().add(0, 0.5f, 0));
+        mdlInst.transform.setTranslation(getPositionImmutable().add(0, 0.5f, 0));
 
         super.render3D(mdlBatch, env, delta);
     }
 
     @Override
     public void tick(final float delta) {
-        if (isPlayerInRange) {
-            ai.tick(delta);
+        ai.tick(delta);
 
-            screen.checkOverlaps(rect, delta);
+        screen.checkOverlaps(rect, delta);
 
-            position.set(
-                rect.getX() + rect.getWidth() / 2f,
-                rect.getY() + rect.getHeight() / 2f,
-                rect.getZ() + rect.getDepth() / 2f
-            );
+        setPosition(
+            rect.getX() + rect.getWidth() / 2f,
+            rect.getY() + rect.getHeight() / 2f,
+            rect.getZ() + rect.getDepth() / 2f
+        );
 
-            //pointLight.setPosition(position);
+        //pointLight.setPosition(position);
 
-            rect.oldPosition.set(rect.getPosition());
-        }
+        rect.oldPosition.set(rect.getPosition());
     }
 
     public void switchTexture() {
@@ -102,12 +98,7 @@ public class Firefly extends Enemy {
 
     @Override
     public void destroy() {
-        if (destroy) {
-            if (rect != null) {
-                screen.game.getRectMan().removeRect(rect);
-            }
-        }
-
-        super.destroy(); // should be last.
+        super.destroy();
+        screen.game.getRectMan().removeRect(rect);
     }
 }

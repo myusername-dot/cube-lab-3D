@@ -19,8 +19,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static io.github.labyrinthgenerator.pages.game3d.constants.Constants.HALF_UNIT;
-import static io.github.labyrinthgenerator.pages.game3d.constants.Constants.TEXTURE_SIZE;
+import static io.github.labyrinthgenerator.pages.game3d.constants.Constants.*;
 
 public class LMapBuilder {
 
@@ -55,13 +54,21 @@ public class LMapBuilder {
         assert lines.size() != 0;
         assert lines.get(lines.size() - 1).length() != 0;
 
+        int width = lines.get(lines.size() - 1).length(), height = lines.size();
+
+        // create chunks
+        for (int i = 0; i < width / CHUNK_SIZE + 1; i++) {
+            for (int j = 0; j < height / CHUNK_SIZE + 1; j++) {
+                game.getChunkMan().add(i * CHUNK_SIZE, j * CHUNK_SIZE);
+            }
+        }
+
         final Texture texWall = ModelMaker.textureRegionToTexture(
             game.getAssMan().get(game.getAssMan().atlas01), 2 * TEXTURE_SIZE, 0, TEXTURE_SIZE, TEXTURE_SIZE);
         final Texture texFloor = ModelMaker.textureRegionToTexture(
             game.getAssMan().get(game.getAssMan().atlas01), 6 * TEXTURE_SIZE, 0, TEXTURE_SIZE, TEXTURE_SIZE);
 
         List<Cell3D> cell3DList = new ArrayList<>();
-        int width = lines.get(lines.size() - 1).length(), height = lines.size();
         for (int j = 0; j < height; j++) {
             String line = lines.get(j);
             System.out.println(line);
@@ -90,39 +97,35 @@ public class LMapBuilder {
                     final RectanglePlus rect = new RectanglePlus(
                         i, 0, j,
                         1, 1, 1,
-                        -1, RectanglePlusFilter.WALL);
+                        currentCell3D.getId(), RectanglePlusFilter.WALL,
+                        game.getRectMan());
                     // центровка в центр координат
                     rect.setX(rect.getX() - HALF_UNIT);
                     rect.setZ(rect.getZ() - HALF_UNIT);
-                    game.getRectMan().addRect(rect);
                 }
                 cell3DList.add(currentCell3D);
             }
         }
 
-
         for (Cell3D currentCell3D : cell3DList) {
             for (Cell3D otherCell3D : cell3DList) {
-                if (otherCell3D.position.x == currentCell3D.position.x - 1
-                    && otherCell3D.position.z == currentCell3D.position.z
+                if (otherCell3D.getPositionX() == currentCell3D.getPositionX() - 1
+                    && otherCell3D.getPositionZ() == currentCell3D.getPositionZ()
                     && currentCell3D.hasWallEast) {
                     otherCell3D.hasWallWest = true;
                 }
-
-                if (otherCell3D.position.x == currentCell3D.position.x + 1
-                    && otherCell3D.position.z == currentCell3D.position.z
+                if (otherCell3D.getPositionX() == currentCell3D.getPositionX() + 1
+                    && otherCell3D.getPositionZ() == currentCell3D.getPositionZ()
                     && currentCell3D.hasWallWest) {
                     otherCell3D.hasWallEast = true;
                 }
-
-                if (otherCell3D.position.x == currentCell3D.position.x
-                    && otherCell3D.position.z == currentCell3D.position.z - 1
+                if (otherCell3D.getPositionX() == currentCell3D.getPositionX()
+                    && otherCell3D.getPositionZ() == currentCell3D.getPositionZ() - 1
                     && currentCell3D.hasWallNorth) {
                     otherCell3D.hasWallSouth = true;
                 }
-
-                if (otherCell3D.position.x == currentCell3D.position.x
-                    && otherCell3D.position.z == currentCell3D.position.z + 1
+                if (otherCell3D.getPositionX() == currentCell3D.getPositionX()
+                    && otherCell3D.getPositionZ() == currentCell3D.getPositionZ() + 1
                     && currentCell3D.hasWallSouth) {
                     otherCell3D.hasWallNorth = true;
                 }
@@ -131,7 +134,6 @@ public class LMapBuilder {
 
         for (Cell3D cell3D : cell3DList) {
             cell3D.buildCell();
-            game.getEntMan().addEntity(cell3D);
         }
 
         // add entities
@@ -142,11 +144,10 @@ public class LMapBuilder {
             for (int i = 0; i < firefliesC; i++) {
                 Firefly firefly = new Firefly(
                     new Vector3(
-                        cell3D.position.x - HALF_UNIT,
+                        cell3D.getPositionX() - HALF_UNIT,
                         MathUtils.random(0f, 0.4f),
-                        cell3D.position.z - HALF_UNIT),
+                        cell3D.getPositionZ() - HALF_UNIT),
                     game.getEntMan().getScreen());
-                game.getEntMan().addEntity(firefly);
             }
         }
 

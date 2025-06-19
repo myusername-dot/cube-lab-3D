@@ -11,96 +11,71 @@ import io.github.labyrinthgenerator.pages.game3d.screens.GameScreen;
 import static io.github.labyrinthgenerator.pages.game3d.constants.Constants.HALF_UNIT;
 
 public class Enemy extends Entity {
-	protected Vector3 position;
+    protected ModelInstanceBB mdlInst;
 
-	protected ModelInstanceBB mdlInst;
+    protected RectanglePlus rect;
 
-	protected RectanglePlus rect;
+    protected boolean isDead = false;
 
-	protected boolean isPlayerInRange = true;
-	protected boolean isDead = false;
+    protected int maxHp = 100;
+    protected int currentHp = maxHp;
 
-	protected int maxHp = 100;
-	protected int currentHp = maxHp;
+    public Enemy(final Vector3 position, final GameScreen screen) {
+        super(position.set(position.x + HALF_UNIT, position.y, position.z + HALF_UNIT), screen);
+    }
 
-	public Enemy(final Vector3 position, final GameScreen screen) {
-		super(screen);
+    public void addHp(final int amount) {
+        currentHp += amount;
+        limitHP();
+        checkIfDead();
+        destroyIfDead();
+    }
 
-        position.set(position.x + HALF_UNIT, position.y, position.z + HALF_UNIT);
-		this.position = position;
-	}
+    private void checkIfDead() {
+        if (currentHp == 0) {
+            isDead = true;
+        }
+    }
 
-	public void addHp(final int amount) {
-		currentHp += amount;
-		limitHP();
-		checkIfDead();
-		destroyIfDead();
-	}
+    @Override
+    public void destroy() {
+        super.destroy();
+        screen.game.getRectMan().removeRect(rect);
+    }
 
-	private void checkIfDead() {
-		if (currentHp == 0) {
-			isDead = true;
-		}
-	}
+    private void destroyIfDead() {
+        if (isDead) {
+            System.out.println("Enemy is dead.");
+            destroy();
+        }
+    }
 
-	@Override
-	public void destroy() {
-		if (destroy) {
-			if (rect != null) {
-				screen.game.getRectMan().removeRect(rect);
-			}
-		}
+    public RectanglePlus getRect() {
+        return rect;
+    }
 
-		super.destroy(); // should be last.
-	}
+    protected void limitHP() {
+        if (currentHp > maxHp) {
+            currentHp = maxHp;
+        } else if (currentHp < 0) {
+            currentHp = 0;
+        }
+    }
 
-	private void destroyIfDead() {
-		if (isDead) {
-			System.out.println("Enemy is dead.");
+    @Override
+    public void render3D(final ModelBatch mdlBatch, final Environment env, final float delta) {
+        if (mdlInst != null) {
+            mdlInst.setInFrustum(screen.frustumCull(screen.getCurrentCam(), mdlInst));
+            if (mdlInst.isInFrustum()) {
+                mdlBatch.render(mdlInst, env);
+            }
+        }
+    }
 
-			destroy = true;
-			destroy();
-		}
-	}
-
-	public Vector3 getPosition() {
-		return position;
-	}
-
-	public RectanglePlus getRect() {
-		return rect;
-	}
-
-	public boolean isPlayerInRange() {
-		return isPlayerInRange;
-	}
-
-	protected void limitHP() {
-		if (currentHp > maxHp) {
-			currentHp = maxHp;
-		} else if (currentHp < 0) {
-			currentHp = 0;
-		}
-	}
-
-	@Override
-	public void render3D(final ModelBatch mdlBatch, final Environment env, final float delta) {
-		if (mdlInst != null) {
-			mdlInst.setInFrustum(screen.frustumCull(screen.getCurrentCam(), mdlInst));
-			if (mdlInst.isInFrustum()) {
-				mdlBatch.render(mdlInst, env);
-			}
-		}
-	}
-
-	public void setIsPlayerInRange(final boolean isInRange) { // controlled by the player
-		this.isPlayerInRange = isInRange;
-	}
-
-	public void subHp(final int amount) {
-		currentHp -= amount;
-		limitHP();
-		checkIfDead();
-		destroyIfDead();
-	}
+    public void subHp(final int amount) {
+        currentHp -= amount;
+        limitHP();
+        checkIfDead();
+        destroyIfDead();
+    }
 }

@@ -17,6 +17,7 @@ import io.github.labyrinthgenerator.pages.game3d.input.GameInputProcessor;
 import io.github.labyrinthgenerator.pages.game3d.managers.AssetsManager;
 import io.github.labyrinthgenerator.pages.game3d.maps.LMapBuilder;
 import io.github.labyrinthgenerator.pages.game3d.models.ModelMaker;
+import io.github.labyrinthgenerator.pages.game3d.rect.ChunkManager;
 import io.github.labyrinthgenerator.pages.game3d.rect.RectManager;
 import io.github.labyrinthgenerator.pages.game3d.screens.MainMenuScreen;
 import io.github.labyrinthgenerator.pages.game3d.shaders.MyShaderProvider;
@@ -30,6 +31,8 @@ public class CubeLab3D extends Game implements Page {
 	private FrameBuffer fbo;
 
 	private AssetsManager assMan;
+
+    private ChunkManager chunkMan;
 	private EntityManager entMan;
 
 	private RectManager rectMan;
@@ -68,6 +71,7 @@ public class CubeLab3D extends Game implements Page {
 
 		cellBuilder = new ModelMaker(this); // builds models...
 
+        chunkMan = new ChunkManager();
 		entMan = new EntityManager();
 		rectMan = new RectManager(this);
 
@@ -141,7 +145,11 @@ public class CubeLab3D extends Game implements Page {
 		return cellBuilder;
 	}
 
-	public EntityManager getEntMan() {
+    public ChunkManager getChunkMan() {
+        return chunkMan;
+    }
+
+    public EntityManager getEntMan() {
 		return entMan;
 	}
 

@@ -115,8 +115,6 @@ public class MainMenuScreen extends GameScreen {
 
         sfxAmbientId = sfxAmbient.play(game.getAmbientVolume());
         sfxAmbient.setLooping(sfxAmbientId, true);
-
-        setEnemyInRangeAroundCam();
     }
 
     @Override
@@ -234,7 +232,7 @@ public class MainMenuScreen extends GameScreen {
 
 //		game.getEntMan().render2DAllEntities(delta);
         game.getMdlBatch().begin(currentCam);
-        game.getEntMan().render3DAllEntities(game.getMdlBatch(), env, delta);
+        game.getEntMan().render3DAllEntities(game.getMdlBatch(), env, delta, currentCam.position.x, currentCam.position.z);
         game.getMdlBatch().end();
         game.getFbo().end();
 

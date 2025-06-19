@@ -23,7 +23,7 @@ public class LabyrinthPage implements Page {
     private Tools2d toolsPage;
 
     private int frame;
-    private int framerate = 2;
+    private int framerate = 30;
 
     private boolean escape;
     private boolean puffPuffins;

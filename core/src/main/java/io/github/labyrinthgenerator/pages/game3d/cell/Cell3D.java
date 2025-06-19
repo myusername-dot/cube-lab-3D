@@ -16,29 +16,26 @@ import io.github.labyrinthgenerator.pages.game3d.shaders.MyShaderProvider;
 import static io.github.labyrinthgenerator.pages.game3d.constants.Constants.HALF_UNIT;
 
 public class Cell3D extends Entity {
-	public final Vector3 position = new Vector3();
+    private ModelInstanceBB mdlInstWallNorth;
+    private ModelInstanceBB mdlInstWallSouth;
+    private ModelInstanceBB mdlInstWallWest;
+    private ModelInstanceBB mdlInstWallEast;
+    private ModelInstanceBB mdlInstFloor;
+    private ModelInstanceBB mdlInstCeiling;
 
-	private ModelInstanceBB mdlInstWallNorth;
-	private ModelInstanceBB mdlInstWallSouth;
-	private ModelInstanceBB mdlInstWallWest;
-	private ModelInstanceBB mdlInstWallEast;
-	private ModelInstanceBB mdlInstFloor;
-	private ModelInstanceBB mdlInstCeiling;
-
-	public boolean hasWallNorth = true;
-	public boolean hasWallSouth = true;
-	public boolean hasWallWest = true;
-	public boolean hasWallEast = true;
-	public boolean hasFloor = false;
-	public boolean hasCeiling = false;
+    public boolean hasWallNorth = true;
+    public boolean hasWallSouth = true;
+    public boolean hasWallWest = true;
+    public boolean hasWallEast = true;
+    public boolean hasFloor = false;
+    public boolean hasCeiling = false;
     public boolean mobSpawn = false;
 
-	public Texture texRegNorth, texRegSouth, texRegWest, texRegEast, texRegFloor, texRegCeiling;
+    public Texture texRegNorth, texRegSouth, texRegWest, texRegEast, texRegFloor, texRegCeiling;
 
-	public Cell3D(final Vector3 position, final GameScreen screen) {
-		super(screen);
-		this.position.set(position.cpy().add(0, HALF_UNIT, 0));
-	}
+    public Cell3D(final Vector3 position, final GameScreen screen) {
+        super(position.add(0, HALF_UNIT, 0), screen);
+    }
 
     private ModelInstanceBB createModelInstanceBB(Model model, Texture texture) {
         ModelInstanceBB modelInstanceBB = new ModelInstanceBB(model);
@@ -50,32 +47,32 @@ public class Cell3D extends Entity {
         return modelInstanceBB;
     }
 
-	public void buildCell() {
-		if (hasWallNorth) {
-			mdlInstWallNorth = createModelInstanceBB(screen.game.getCellBuilder().mdlWallNorth, texRegNorth);
-			mdlInstWallNorth.transform.setToTranslation(this.position.cpy().add(new Vector3(0, 0, -HALF_UNIT)));
-		}
-		if (hasWallSouth) {
-			mdlInstWallSouth = createModelInstanceBB(screen.game.getCellBuilder().mdlWallSouth, texRegSouth);
-			mdlInstWallSouth.transform.setToTranslation(this.position.cpy().add(new Vector3(0, 0, HALF_UNIT)));
-		}
-		if (hasWallWest) {
-			mdlInstWallWest = createModelInstanceBB(screen.game.getCellBuilder().mdlWallWest, texRegWest);
-			mdlInstWallWest.transform.setToTranslation(this.position.cpy().add(new Vector3(HALF_UNIT, 0, 0)));
-		}
-		if (hasWallEast) {
-			mdlInstWallEast = createModelInstanceBB(screen.game.getCellBuilder().mdlWallEast, texRegEast);
-			mdlInstWallEast.transform.setToTranslation(this.position.cpy().add(new Vector3(-HALF_UNIT, 0, 0)));
-		}
-		if (hasFloor) {
-			mdlInstFloor = createModelInstanceBB(screen.game.getCellBuilder().mdlFloor, texRegFloor);
-			mdlInstFloor.transform.setToTranslation(this.position.cpy().add(new Vector3(0, HALF_UNIT, 0)));
-		}
-		if (hasCeiling) {
-			mdlInstCeiling = createModelInstanceBB(screen.game.getCellBuilder().mdlCeiling, texRegCeiling);
-			mdlInstCeiling.transform.setToTranslation(this.position.cpy().add(new Vector3(0, -HALF_UNIT, 0)));
-		}
-	}
+    public void buildCell() {
+        if (hasWallNorth) {
+            mdlInstWallNorth = createModelInstanceBB(screen.game.getCellBuilder().mdlWallNorth, texRegNorth);
+            mdlInstWallNorth.transform.setToTranslation(getPositionImmutable().add(new Vector3(0, 0, -HALF_UNIT)));
+        }
+        if (hasWallSouth) {
+            mdlInstWallSouth = createModelInstanceBB(screen.game.getCellBuilder().mdlWallSouth, texRegSouth);
+            mdlInstWallSouth.transform.setToTranslation(getPositionImmutable().add(new Vector3(0, 0, HALF_UNIT)));
+        }
+        if (hasWallWest) {
+            mdlInstWallWest = createModelInstanceBB(screen.game.getCellBuilder().mdlWallWest, texRegWest);
+            mdlInstWallWest.transform.setToTranslation(getPositionImmutable().add(new Vector3(HALF_UNIT, 0, 0)));
+        }
+        if (hasWallEast) {
+            mdlInstWallEast = createModelInstanceBB(screen.game.getCellBuilder().mdlWallEast, texRegEast);
+            mdlInstWallEast.transform.setToTranslation(getPositionImmutable().add(new Vector3(-HALF_UNIT, 0, 0)));
+        }
+        if (hasFloor) {
+            mdlInstFloor = createModelInstanceBB(screen.game.getCellBuilder().mdlFloor, texRegFloor);
+            mdlInstFloor.transform.setToTranslation(getPositionImmutable().add(new Vector3(0, HALF_UNIT, 0)));
+        }
+        if (hasCeiling) {
+            mdlInstCeiling = createModelInstanceBB(screen.game.getCellBuilder().mdlCeiling, texRegCeiling);
+            mdlInstCeiling.transform.setToTranslation(getPositionImmutable().add(new Vector3(0, -HALF_UNIT, 0)));
+        }
+    }
 
     private void setInFrustum(final ModelInstanceBB model, final ModelBatch mdlBatch, final Environment env, final Shader shader) {
         model.setInFrustum(screen.frustumCull(screen.getCurrentCam(), model));
@@ -84,28 +81,28 @@ public class Cell3D extends Entity {
         }
     }
 
-	@Override
-	public void render3D(final ModelBatch mdlBatch, final Environment env, final float delta) {
+    @Override
+    public void render3D(final ModelBatch mdlBatch, final Environment env, final float delta) {
         Shader shader = ((MyShaderProvider) screen.game.getShaderProvider()).getShader();
 
-		if (hasWallNorth) {
-			setInFrustum(mdlInstWallNorth, mdlBatch, env, shader);
-		}
-		if (hasWallSouth) {
+        if (hasWallNorth) {
+            setInFrustum(mdlInstWallNorth, mdlBatch, env, shader);
+        }
+        if (hasWallSouth) {
             setInFrustum(mdlInstWallSouth, mdlBatch, env, shader);
-		}
-		if (hasWallWest) {
+        }
+        if (hasWallWest) {
             setInFrustum(mdlInstWallWest, mdlBatch, env, shader);
-		}
-		if (hasWallEast) {
+        }
+        if (hasWallEast) {
             setInFrustum(mdlInstWallEast, mdlBatch, env, shader);
-		}
-		if (hasFloor) {
+        }
+        if (hasFloor) {
             setInFrustum(mdlInstFloor, mdlBatch, env, shader);
-		}
-		if (hasCeiling) {
+        }
+        if (hasCeiling) {
             setInFrustum(mdlInstCeiling, mdlBatch, env, shader);
-		}
-	}
+        }
+    }
 
 }

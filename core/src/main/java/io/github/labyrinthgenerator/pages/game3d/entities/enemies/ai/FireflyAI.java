@@ -2,7 +2,6 @@ package io.github.labyrinthgenerator.pages.game3d.entities.enemies.ai;
 
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector3;
-import io.github.labyrinthgenerator.pages.game3d.constants.Constants;
 import io.github.labyrinthgenerator.pages.game3d.entities.enemies.Enemy;
 
 public class FireflyAI extends EnemyAI {
@@ -30,7 +29,7 @@ public class FireflyAI extends EnemyAI {
 
     @Override
     public void tick(final float delta) {
-        currentPos.set(parent.getPosition());
+        currentPos.set(parent.getPositionX(), parent.getPositionY(), parent.getPositionZ());
 
         switch (aiState) {
             case IDLE:
