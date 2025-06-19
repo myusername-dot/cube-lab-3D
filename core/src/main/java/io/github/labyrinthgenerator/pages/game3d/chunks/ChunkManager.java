@@ -15,7 +15,7 @@ public class ChunkManager {
     public Chunk add(float x, float z) {
         Vector2i position = getChunkVector2i(x, z);
         if (!chunks.containsKey(position)) {
-            Chunk chunk = new Chunk(x, z);
+            Chunk chunk = new Chunk((int) x, (int) z);
             chunks.put(position, chunk);
         }
         return chunks.get(position);
