@@ -14,4 +14,9 @@ ____
 
 #### Explore the generated maze.
 
-Special thanks to [PilzHere](https://github.com/PilzHere) for the project [Foxenstein3D](https://github.com/PilzHere/Foxenstein3D) from which I took most of the code.
+Special thanks to [PilzHere](https://github.com/PilzHere) for the project 
+[Foxenstein3D](https://github.com/PilzHere/Foxenstein3D) from which I took most of the code.
+
+#### Contains:
+
+Chunks, frustum cull, overlap filters.

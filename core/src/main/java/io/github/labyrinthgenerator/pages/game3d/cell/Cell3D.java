@@ -48,6 +48,7 @@ public class Cell3D extends Entity {
     }
 
     public void buildCell() {
+        // TODO one model with multiple textures
         if (hasWallNorth) {
             mdlInstWallNorth = createModelInstanceBB(screen.game.getCellBuilder().mdlWallNorth, texRegNorth);
             mdlInstWallNorth.transform.setToTranslation(getPositionImmutable().add(new Vector3(0, 0, -HALF_UNIT)));
