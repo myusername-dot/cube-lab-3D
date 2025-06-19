@@ -2,6 +2,8 @@ package io.github.labyrinthgenerator;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.badlogic.gdx.utils.viewport.StretchViewport;
+import com.badlogic.gdx.utils.viewport.Viewport;
 import io.github.labyrinthgenerator.interfaces.ApplicationFacade;
 import io.github.labyrinthgenerator.pages.Page;
 import io.github.labyrinthgenerator.pages.game2d.LabyrinthPage;
@@ -37,6 +39,7 @@ public class MyApplication extends ApplicationAdapter implements ApplicationFaca
     @Override
     public void create() {
         viewport = new FitViewport(windowW, windowH);
+        viewport.setWorldSize(windowW, windowH);
 
         page = new LabyrinthPage();
         page.create();
@@ -63,7 +66,7 @@ public class MyApplication extends ApplicationAdapter implements ApplicationFaca
     public void dispose() {
     }
 
-    public FitViewport getViewport() {
+    public Viewport getViewport() {
         return viewport;
     }
 }

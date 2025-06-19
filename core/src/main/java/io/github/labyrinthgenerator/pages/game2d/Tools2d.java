@@ -6,7 +6,7 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.utils.ScreenUtils;
-import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.badlogic.gdx.utils.viewport.Viewport;
 import io.github.labyrinthgenerator.MyApplication;
 import io.github.labyrinthgenerator.interfaces.ApplicationFacade;
 import io.github.labyrinthgenerator.labyrinth.Labyrinth;
@@ -25,7 +25,7 @@ public class Tools2d implements Page {
 
     private ApplicationFacade application;
     private SpriteBatch spriteBatch;
-    private FitViewport viewport;
+    private Viewport viewport;
     private OrthographicCamera camera;
 
     private BitmapFont font;
@@ -46,9 +46,15 @@ public class Tools2d implements Page {
     public void create() {
         application = MyApplication.getApplicationInstance();
         viewport = application.getViewport();
-        camera = new OrthographicCamera(viewport.getScreenWidth(), viewport.getScreenHeight());
+        camera = new OrthographicCamera(viewport.getWorldWidth(), viewport.getWorldHeight());
         viewport.setCamera(camera);
         viewport.update(viewport.getScreenWidth(), viewport.getScreenHeight(), true);
+
+        // if you change the window size, then when you go to a new page the screen shifts to the left or to the down
+        float blackScreenWidth = Gdx.graphics.getBackBufferWidth();
+        float blackScreenHeight = Gdx.graphics.getBackBufferHeight();
+        application.resize((int) blackScreenWidth, (int) blackScreenHeight);
+
         spriteBatch = new SpriteBatch();
 
         //backgroundTexture = new Texture("backgrounds/notebook-paper-background.jpg");
@@ -69,23 +75,6 @@ public class Tools2d implements Page {
         labyrinth = new Labyrinth(lW, lH);
         screenX = (int) (windowW - lDivider * lW);
         screenY = (int) (windowH - lDivider * lH);
-
-        // if you change the window size, then when you go to a new page the screen shifts to the left or to the down
-        float blackScreenWidth = Gdx.graphics.getBackBufferWidth();
-        float blackScreenHeight = Gdx.graphics.getBackBufferHeight();
-        if (blackScreenWidth != windowW || blackScreenHeight != windowH) {
-            float blackScreenWorldScale;
-            if (windowH > windowW) blackScreenWorldScale = blackScreenHeight / windowH;
-            else blackScreenWorldScale = blackScreenWidth / windowW;
-            float worldWindowW = windowW * blackScreenWorldScale;
-            float worldWindowH = windowH * blackScreenWorldScale;
-
-            float bordersWidth = blackScreenWidth - worldWindowW;
-            float bordersHeight = blackScreenHeight - worldWindowH;
-
-            viewport.setScreenX((int) bordersWidth / 2);
-            viewport.setScreenY((int) bordersHeight / 2);
-        }
     }
 
     protected void createFonts(String fontName) {

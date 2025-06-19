@@ -1,7 +1,9 @@
 package io.github.labyrinthgenerator.interfaces;
 
-import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.badlogic.gdx.utils.viewport.Viewport;
 
 public interface ApplicationFacade {
-    FitViewport getViewport();
+    Viewport getViewport();
+
+    void resize(int width, int height);
 }
