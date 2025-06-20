@@ -13,6 +13,7 @@ import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class EntityManager {
     private int nextId = 0;
@@ -145,6 +146,9 @@ public class EntityManager {
 
     public synchronized void tickAllEntities(final float delta, float playerX, float playerZ) throws InterruptedException {
         try {
+            System.out.println("Start tick all entities:");
+            System.out.println("Entities count: " + entitiesById.size() + ".");
+            System.out.println("Rectangles count: " + screen.game.getRectMan().rectsCount() + ".");
             List<Chunk> nearestChunks = chunkMan.getNearestChunks(playerX, playerZ);
 
             startTransaction();
@@ -164,6 +168,16 @@ public class EntityManager {
 
             screen.game.getRectMan().commitTransaction();
             commitTransaction();
+
+
+            AtomicInteger entitiesSize = new AtomicInteger();
+            entitiesByChunks.forEach((key, value) -> entitiesSize.addAndGet(value.size()));
+            if (entitiesSize.get() != entitiesById.size()) {
+                throw new RuntimeException("entitiesSize.get() != entitiesById.size()");
+            }
+            System.out.println("End tick all entities:");
+            System.out.println("Entities count: " + entitiesSize.get());
+            System.out.println("Rectangles count: " + screen.game.getRectMan().rectsCount() + ".");
         } catch (Exception e) {
             e.printStackTrace();
         }

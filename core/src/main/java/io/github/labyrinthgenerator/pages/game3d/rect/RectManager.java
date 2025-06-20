@@ -7,9 +7,9 @@ import io.github.labyrinthgenerator.pages.game3d.entities.Entity;
 import io.github.labyrinthgenerator.pages.game3d.entities.player.Player;
 import io.github.labyrinthgenerator.pages.game3d.rect.filters.RectanglePlusFilter;
 import io.github.labyrinthgenerator.pages.game3d.screens.GameScreen;
-import io.github.labyrinthgenerator.pages.game3d.screens.PlayScreen;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class RectManager {
 
@@ -179,6 +179,15 @@ public class RectManager {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public int rectsCount() {
+        AtomicInteger rectsCount = new AtomicInteger();
+        rects.forEach((c, m) -> m.forEach((f, s) -> rectsCount.addAndGet(s.size())));
+        if (rectsCount.get() != rectsByConnectedEntityId.size()) {
+            throw new RuntimeException("rectsCount.get() != rectsByConnectedEntityId.size()");
+        }
+        return rectsCount.get();
     }
 
     public void clear() {

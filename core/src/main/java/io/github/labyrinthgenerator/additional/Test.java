@@ -37,12 +37,12 @@ public class Test {
             if (line.matches(".*Block synchronized.*")) {
                 matchedLines++;
                 String endLine = line.replace("Block synchronized", "Block end synchronized");
-                long countBlock = lines.stream().filter(l -> l.equals(line)).count();
-                long countEndBlock = lines.stream().filter(l -> l.equals(endLine)).count();
-                if (countBlock != countEndBlock) {
-                    System.out.println("line: " + line + "\nCount blocks: " + countBlock + " count end blocks: " + countEndBlock);
-                    finder.add(line);
+                long countBlocks = lines.stream().filter(l -> l.equals(line)).count();
+                long countEndBlocks = lines.stream().filter(l -> l.equals(endLine)).count();
+                if (countBlocks != countEndBlocks) {
+                    System.out.println("line: " + line + "\nCount blocks: " + countBlocks + " count end blocks: " + countEndBlocks);
                 }
+                finder.add(line);
             }
         }
         System.out.println("Matched lines: " + matchedLines);
