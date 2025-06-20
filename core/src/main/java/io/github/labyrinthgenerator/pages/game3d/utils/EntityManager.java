@@ -33,61 +33,53 @@ public class EntityManager {
     private GameScreen screen;
 
     public Chunk addEntityOnChunk(float x, float z, final Entity ent) {
-        Chunk chunk = null;
-        try {
-            synchronized (entitiesByChunksClone) {
-                System.out.println("Method: addEntityOnChunk. Block synchronized (entitiesByChunksClone).");
-                synchronized (entitiesByIdClone) {
-                    System.out.println("Method: addEntityOnChunk. Block synchronized (entitiesByIdClone).");
+        Chunk chunk;
+        synchronized (entitiesByChunksClone) {
+            System.out.println("Method: addEntityOnChunk. Block synchronized (entitiesByChunksClone).");
+            synchronized (entitiesByIdClone) {
+                System.out.println("Method: addEntityOnChunk. Block synchronized (entitiesByIdClone).");
 
-                    Map<Integer, Entity> entitiesById = getTransactionEntitiesById();
-                    Map<Chunk, Set<Entity>> entitiesByChunks = getTransactionEntitiesByChunks();
+                Map<Integer, Entity> entitiesById = getTransactionEntitiesById();
+                Map<Chunk, Set<Entity>> entitiesByChunks = getTransactionEntitiesByChunks();
 
-                    entitiesById.put(ent.getId(), ent);
-                    chunk = chunkMan.get(x, z);
-                    if (chunk == null) {
-                        throw new NullPointerException("Chunk at position " + x + ", " + z + " is null.");
-                    }
-
-                    entitiesByChunks.computeIfAbsent(chunk, k -> new HashSet<>());
-                    entitiesByChunks.get(chunk).add(ent);
+                entitiesById.put(ent.getId(), ent);
+                chunk = chunkMan.get(x, z);
+                if (chunk == null) {
+                    throw new NullPointerException("Chunk at position " + x + ", " + z + " is null.");
                 }
-                System.out.println("Method: addEntityOnChunk. Block end synchronized (entitiesByIdClone).");
+
+                entitiesByChunks.computeIfAbsent(chunk, k -> new HashSet<>());
+                entitiesByChunks.get(chunk).add(ent);
             }
-            System.out.println("Method: addEntityOnChunk. Block end synchronized (entitiesByChunksClone).");
-        } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println("Method: addEntityOnChunk. Block end synchronized (entitiesByIdClone).");
         }
+        System.out.println("Method: addEntityOnChunk. Block end synchronized (entitiesByChunksClone).");
         return chunk;
     }
 
     public void updateEntityChunk(final Chunk oldChunk, final Chunk newChunk, final Entity ent) {
-        try {
-            synchronized (entitiesByChunksClone) {
-                System.out.println("Method: updateEntityChunk. Block synchronized (entitiesByChunksClone).");
-                synchronized (entitiesByIdClone) {
-                    System.out.println("Method: updateEntityChunk. Block synchronized (entitiesByIdClone).");
+        synchronized (entitiesByChunksClone) {
+            System.out.println("Method: updateEntityChunk. Block synchronized (entitiesByChunksClone).");
+            synchronized (entitiesByIdClone) {
+                System.out.println("Method: updateEntityChunk. Block synchronized (entitiesByIdClone).");
 
-                    Player player = getScreen().getPlayer();
-                    if (player != null && player.getId() == ent.getId()) {
-                        System.out.println("Try to move the Player to the other chunk.");
-                    }
-                    Map<Chunk, Set<Entity>> entitiesByChunks = getTransactionEntitiesByChunks();
-
-                    entitiesByChunks.get(oldChunk).remove(ent);
-                    entitiesByChunks.computeIfAbsent(newChunk, k -> new HashSet<>());
-                    entitiesByChunks.get(newChunk).add(ent);
-
-                    if (player != null && player.getId() == ent.getId()) {
-                        System.out.println("Player moved to the other chunk!");
-                    } else System.out.println("Entity id: " + ent.getId() + " moved to the other chunk!");
+                Player player = getScreen().getPlayer();
+                if (player != null && player.getId() == ent.getId()) {
+                    System.out.println("Try to move the Player to the other chunk.");
                 }
-                System.out.println("Method: updateEntityChunk. Block end synchronized (entitiesByIdClone).");
+                Map<Chunk, Set<Entity>> entitiesByChunks = getTransactionEntitiesByChunks();
+
+                entitiesByChunks.get(oldChunk).remove(ent);
+                entitiesByChunks.computeIfAbsent(newChunk, k -> new HashSet<>());
+                entitiesByChunks.get(newChunk).add(ent);
+
+                if (player != null && player.getId() == ent.getId()) {
+                    System.out.println("Player moved to the other chunk!");
+                } else System.out.println("Entity id: " + ent.getId() + " moved to the other chunk!");
             }
-            System.out.println("Method: updateEntityChunk. Block end synchronized (entitiesByChunksClone).");
-        } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println("Method: updateEntityChunk. Block end synchronized (entitiesByIdClone).");
         }
+        System.out.println("Method: updateEntityChunk. Block end synchronized (entitiesByChunksClone).");
     }
 
     public int assignId() {
@@ -103,24 +95,20 @@ public class EntityManager {
     }
 
     public void removeEntity(Entity ent) {
-        try {
-            synchronized (entitiesByChunksClone) {
-                System.out.println("Method: removeEntity. Block synchronized (entitiesByChunksClone).");
-                synchronized (entitiesByIdClone) {
-                    System.out.println("Method: removeEntity. Block synchronized (entitiesByIdClone).");
+        synchronized (entitiesByChunksClone) {
+            System.out.println("Method: removeEntity. Block synchronized (entitiesByChunksClone).");
+            synchronized (entitiesByIdClone) {
+                System.out.println("Method: removeEntity. Block synchronized (entitiesByIdClone).");
 
-                    Map<Integer, Entity> entitiesById = getTransactionEntitiesById();
-                    Map<Chunk, Set<Entity>> entitiesByChunks = getTransactionEntitiesByChunks();
+                Map<Integer, Entity> entitiesById = getTransactionEntitiesById();
+                Map<Chunk, Set<Entity>> entitiesByChunks = getTransactionEntitiesByChunks();
 
-                    entitiesById.remove(ent.getId());
-                    entitiesByChunks.values().forEach(c -> c.remove(ent));
-                }
-                System.out.println("Method: removeEntity. Block end synchronized (entitiesByIdClone).");
+                entitiesById.remove(ent.getId());
+                entitiesByChunks.values().forEach(c -> c.remove(ent));
             }
-            System.out.println("Method: removeEntity. Block end synchronized (entitiesByChunksClone).");
-        } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println("Method: removeEntity. Block end synchronized (entitiesByIdClone).");
         }
+        System.out.println("Method: removeEntity. Block end synchronized (entitiesByChunksClone).");
     }
 
     public void removeAllEntities() {
@@ -149,6 +137,8 @@ public class EntityManager {
             System.out.println("Start tick all entities:");
             System.out.println("Entities count: " + entitiesById.size() + ".");
             System.out.println("Rectangles count: " + screen.game.getRectMan().rectsCount() + ".");
+
+
             List<Chunk> nearestChunks = chunkMan.getNearestChunks(playerX, playerZ);
 
             startTransaction();
@@ -173,7 +163,10 @@ public class EntityManager {
             AtomicInteger entitiesSize = new AtomicInteger();
             entitiesByChunks.forEach((key, value) -> entitiesSize.addAndGet(value.size()));
             if (entitiesSize.get() != entitiesById.size()) {
-                throw new RuntimeException("entitiesSize.get() != entitiesById.size()");
+                if (entitiesSize.get() > entitiesById.size())
+                    throw new RuntimeException("entitiesSize.get() > entitiesById.size()");
+                else
+                    throw new RuntimeException("entitiesSize.get() < entitiesById.size()");
             }
             System.out.println("End tick all entities:");
             System.out.println("Entities count: " + entitiesSize.get());
