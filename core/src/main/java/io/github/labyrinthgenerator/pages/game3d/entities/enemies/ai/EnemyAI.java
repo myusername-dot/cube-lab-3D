@@ -2,7 +2,7 @@ package io.github.labyrinthgenerator.pages.game3d.entities.enemies.ai;
 
 import io.github.labyrinthgenerator.pages.game3d.entities.enemies.Enemy;
 
-public class EnemyAI {
+public abstract class EnemyAI {
 	protected enum AiState {
 		IDLE, MOVING, ATTACKING;
 	}

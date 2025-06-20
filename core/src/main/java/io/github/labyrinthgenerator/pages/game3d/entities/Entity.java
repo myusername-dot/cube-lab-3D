@@ -11,7 +11,7 @@ import io.github.labyrinthgenerator.pages.game3d.utils.EntityManager;
 
 import java.util.Objects;
 
-public class Entity {
+public abstract class Entity {
 	public final GameScreen screen;
     public final EntityManager entMan;
     private final ChunkManager chunkMan;

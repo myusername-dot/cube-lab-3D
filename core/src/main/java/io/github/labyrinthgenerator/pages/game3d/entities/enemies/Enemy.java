@@ -10,7 +10,7 @@ import io.github.labyrinthgenerator.pages.game3d.screens.GameScreen;
 
 import static io.github.labyrinthgenerator.pages.game3d.constants.Constants.HALF_UNIT;
 
-public class Enemy extends Entity {
+public abstract class Enemy extends Entity {
     protected ModelInstanceBB mdlInst;
 
     protected RectanglePlus rect;
