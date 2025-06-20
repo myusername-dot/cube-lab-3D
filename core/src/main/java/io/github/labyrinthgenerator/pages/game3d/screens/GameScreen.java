@@ -20,6 +20,7 @@ public abstract class GameScreen implements Screen {
     protected Viewport viewport;
 
     private final Vector3 currentSpherePos = new Vector3();
+
     protected Player player;
 
     public GameScreen(final CubeLab3D game) {
@@ -102,6 +103,10 @@ public abstract class GameScreen implements Screen {
 
     public Camera getCurrentCam() {
         return currentCam;
+    }
+
+    public Player getPlayer() {
+        return player;
     }
 
     public void handleInput(final float delta) {

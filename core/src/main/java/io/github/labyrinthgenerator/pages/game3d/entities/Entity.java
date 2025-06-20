@@ -115,7 +115,7 @@ public abstract class Entity {
 
     public synchronized void destroy() {
         if (!isDestroyed) {
-            entMan.removeEntity(id);
+            entMan.removeEntity(this);
             isDestroyed = true;
         }
     }
