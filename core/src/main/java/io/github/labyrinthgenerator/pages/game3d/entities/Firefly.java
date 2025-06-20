@@ -75,6 +75,11 @@ public class Firefly extends Enemy {
 
     @Override
     public void tick(final float delta) {
+        if (isTick) {
+            throw new UnsupportedOperationException("Firefly id: " + id + " already ticked");
+        }
+        isTick = true;
+
         ai.tick(delta);
 
         screen.checkOverlaps(rect, delta);
@@ -88,17 +93,13 @@ public class Firefly extends Enemy {
         //pointLight.setPosition(position);
 
         rect.oldPosition.set(rect.getPosition());
+
+        isTick = false;
     }
 
     public void switchTexture() {
         mdlInst.materials.get(0).set(TextureAttribute.createDiffuse(greenTexReg));
         mdlInst.materials.get(0).set(new BlendingAttribute(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA));
         mdlInst.materials.get(0).set(new FloatAttribute(FloatAttribute.AlphaTest));
-    }
-
-    @Override
-    public void destroy() {
-        super.destroy();
-        screen.game.getRectMan().removeRect(rect);
     }
 }

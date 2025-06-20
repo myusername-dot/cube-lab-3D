@@ -249,6 +249,11 @@ public class Player extends Entity {
 
     @Override
     public void tick(final float delta) {
+        if (isTick) {
+            throw new UnsupportedOperationException("Player already ticked");
+        }
+        isTick = true;
+
         if (gotHit) {
             renderBloodOverlay = true;
             bloodOverlayAlpha = bloodOverlayAlphaMax;
@@ -294,6 +299,8 @@ public class Player extends Entity {
         setCamPosition();
 
         rect.oldPosition.set(rect.getPosition());
+
+        isTick = false;
     }
 
 	/*private void useUsableInterface(final IUsable usableInterface) {

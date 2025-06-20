@@ -10,9 +10,14 @@ import java.util.*;
 
 public class RectManager {
 
-    private final Map<Chunk, Map<RectanglePlusFilter, Set<RectanglePlus>>> rects = new HashMap<>();
+    private Map<Chunk, Map<RectanglePlusFilter, Set<RectanglePlus>>> rects = new HashMap<>();
+    private Map<Integer, RectanglePlus> rectsByConnectedEntityId = new HashMap<>();
 
-    private final Map<Integer, RectanglePlus> rectsByConnectedEntityId = new HashMap<>();
+    private final Map<Chunk, Map<RectanglePlusFilter, Set<RectanglePlus>>> rectsClone = new HashMap<>();
+    private final Map<Integer, RectanglePlus> rectsByConnectedEntityIdClone = new HashMap<>();
+
+    // Read committed
+    private boolean isTransaction = false;
 
     private final ChunkManager chunkMan;
 
@@ -24,21 +29,39 @@ public class RectManager {
     }
 
     public void addRect(final RectanglePlus rect) {
-        Chunk chunk = chunkMan.get(rect.getX(), rect.getZ());
-        rects.computeIfAbsent(chunk, k -> new HashMap<>());
-        rects.get(chunk).computeIfAbsent(rect.filter, k -> new HashSet<>());
-        rects.get(chunk).get(rect.filter).add(rect);
-        if (rect.getConnectedEntityId() >= 0) {
-            rectsByConnectedEntityId.put(rect.getConnectedEntityId(), rect);
+        synchronized (rectsClone) {
+            synchronized (rectsByConnectedEntityIdClone) {
+                Map<Chunk, Map<RectanglePlusFilter, Set<RectanglePlus>>> rects = getTransactionRects();
+                Map<Integer, RectanglePlus> rectsByConnectedEntityId = getTransactionRectsByConnectedEntityId();
+
+                Chunk chunk = chunkMan.get(rect.getX(), rect.getZ());
+                rects.computeIfAbsent(chunk, k -> new HashMap<>());
+                rects.get(chunk).computeIfAbsent(rect.filter, k -> new HashSet<>());
+                rects.get(chunk).get(rect.filter).add(rect);
+                if (rect.getConnectedEntityId() >= 0) {
+                    rectsByConnectedEntityId.put(rect.getConnectedEntityId(), rect);
+                }
+            }
         }
     }
 
     public void updateEntityChunkIfExistsRect(final Chunk oldChunk, final Chunk newChunk, final Entity ent) {
-        RectanglePlus rect = rectsByConnectedEntityId.get(ent.getId());
-        if (rect == null) return;
-        rects.get(oldChunk).get(rect.filter).remove(rect);
-        rects.get(newChunk).computeIfAbsent(rect.filter, k -> new HashSet<>());
-        rects.get(newChunk).get(rect.filter).add(rect);
+        synchronized (rectsClone) {
+            synchronized (rectsByConnectedEntityIdClone) {
+                Map<Chunk, Map<RectanglePlusFilter, Set<RectanglePlus>>> rects = getTransactionRects();
+                Map<Integer, RectanglePlus> rectsByConnectedEntityId = getTransactionRectsByConnectedEntityId();
+
+                RectanglePlus rect = rectsByConnectedEntityId.get(ent.getId());
+                if (rect == null) return;
+                if (!rects.get(oldChunk).containsKey(rect.filter)) {
+                    System.err.println("ent id: " + ent.getId() + " !rects.get(oldChunk).containsKey(rect.filter)");
+                } else {
+                    rects.get(oldChunk).get(rect.filter).remove(rect);
+                }
+                rects.get(newChunk).computeIfAbsent(rect.filter, k -> new HashSet<>());
+                rects.get(newChunk).get(rect.filter).add(rect);
+            }
+        }
     }
 
     public List<RectanglePlus> getNearestRectsByFilters(float playerX, float playerZ, final RectanglePlus rect) {
@@ -102,8 +125,15 @@ public class RectManager {
     }
 
     public void removeRect(final RectanglePlus rect) {
-        rects.values().forEach(c -> c.values().forEach(l -> l.remove(rect)));
-        rectsByConnectedEntityId.remove(rect.getConnectedEntityId());
+        synchronized (rectsClone) {
+            synchronized (rectsByConnectedEntityIdClone) {
+                Map<Chunk, Map<RectanglePlusFilter, Set<RectanglePlus>>> rects = getTransactionRects();
+                Map<Integer, RectanglePlus> rectsByConnectedEntityId = getTransactionRectsByConnectedEntityId();
+
+                rects.values().forEach(c -> c.values().forEach(l -> l.remove(rect)));
+                rectsByConnectedEntityId.remove(rect.getConnectedEntityId());
+            }
+        }
     }
 
     public void clear() {
@@ -111,5 +141,36 @@ public class RectManager {
         rects.values().forEach(Map::clear);
         rects.clear();
         rectsByConnectedEntityId.clear();
+    }
+
+    public synchronized void startTransaction() {
+        if (isTransaction) {
+            throw new RuntimeException("Transaction already started.");
+        }
+        rects.forEach((c, m) -> rectsClone.computeIfAbsent(c, k -> new HashMap<>(m.size())));
+        rects.forEach((c, m) -> m.forEach((f, s) -> rectsClone.get(c).computeIfAbsent(f, k -> new HashSet<>(s))));
+        rectsByConnectedEntityIdClone.putAll(rectsByConnectedEntityId);
+        isTransaction = true;
+    }
+
+    public synchronized void commitTransaction() {
+        if (!isTransaction) {
+            throw new RuntimeException("Transaction already committed.");
+        }
+        rects = rectsClone;
+        rectsByConnectedEntityId = rectsByConnectedEntityIdClone;
+        isTransaction = false;
+        rectsClone.clear();
+        rectsByConnectedEntityIdClone.clear();
+    }
+
+    private Map<Chunk, Map<RectanglePlusFilter, Set<RectanglePlus>>> getTransactionRects() {
+        if (isTransaction) return rectsClone;
+        else return this.rects;
+    }
+
+    private Map<Integer, RectanglePlus> getTransactionRectsByConnectedEntityId() {
+        if (isTransaction) return rectsByConnectedEntityIdClone;
+        else return this.rectsByConnectedEntityId;
     }
 }

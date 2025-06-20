@@ -23,6 +23,10 @@ public abstract class Entity {
 	protected boolean render2D = true;
 	protected boolean render3D = true;
 
+    protected boolean isTick = false;
+
+    protected boolean isDestroyed = false;
+
 	protected Entity collidedEntity = null;
 
 	public Entity(Vector3 position, final GameScreen screen) {
@@ -56,15 +60,19 @@ public abstract class Entity {
         }
     }
 
-    public void updateChunk() {
-        Chunk newChunk = chunkMan.get(position.x, position.z);
-        assert newChunk != chunk;
-        if (newChunk == null) {
-            throw new NullPointerException("Chunk at position " + position.x + ", " + position.z + " is null.");
+    public synchronized void updateChunk() {
+        if (!isDestroyed) {
+            Chunk newChunk = chunkMan.get(position.x, position.z);
+            if (newChunk == chunk) {
+                throw new UnsupportedOperationException("Ent id " + id + " newChunk == chunk.");
+            }
+            if (newChunk == null) {
+                throw new NullPointerException("Chunk at position " + position.x + ", " + position.z + " is null.");
+            }
+            entMan.updateEntityChunk(chunk, newChunk, this);
+            screen.game.getRectMan().updateEntityChunkIfExistsRect(chunk, newChunk, this);
+            chunk = newChunk;
         }
-        entMan.updateEntityChunk(chunk, newChunk, this);
-        screen.game.getRectMan().updateEntityChunkIfExistsRect(chunk, newChunk, this);
-        chunk = newChunk;
     }
 
     public Vector3 getPositionImmutable() {
@@ -105,8 +113,11 @@ public abstract class Entity {
 	public void tick(final float delta) {
 	}
 
-    public void destroy() {
-        entMan.removeEntity(id);
+    public synchronized void destroy() {
+        if (!isDestroyed) {
+            entMan.removeEntity(id);
+            isDestroyed = true;
+        }
     }
 
     @Override

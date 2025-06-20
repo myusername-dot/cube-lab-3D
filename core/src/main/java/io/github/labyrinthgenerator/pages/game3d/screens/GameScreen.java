@@ -154,7 +154,11 @@ public abstract class GameScreen implements Screen {
 
     public void tick(final float delta) {
         if (!game.gameIsPaused) {
-            game.getEntMan().tickAllEntities(delta, currentCam.position.x, currentCam.position.z);
+            try {
+                game.getEntMan().tickAllEntities(delta, currentCam.position.x, currentCam.position.z);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
     }
 
