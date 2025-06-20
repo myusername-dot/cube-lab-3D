@@ -126,8 +126,9 @@ public abstract class GameScreen implements Screen {
     }
 
     protected void removeAllEntities() {
-        game.getEntMan().removeAllEntities();
         game.getRectMan().clear();
+        game.getEntMan().clear();
+        game.getChunkMan().clear();
     }
 
     @Override

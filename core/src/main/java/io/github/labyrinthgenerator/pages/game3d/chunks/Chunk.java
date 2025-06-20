@@ -34,4 +34,9 @@ public class Chunk {
     public int hashCode() {
         return Objects.hash(x, z);
     }
+
+    @Override
+    public String toString() {
+        return "Chunk[" + "x=" + x + ", z=" + z + ']';
+    }
 }

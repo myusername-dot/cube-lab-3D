@@ -1,15 +1,15 @@
 package io.github.labyrinthgenerator.pages.game3d.rect;
 
 import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import io.github.labyrinthgenerator.pages.game3d.rect.filters.RectanglePlusFilter;
 
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class RectanglePlus {
-    private static int maxId;
-    int id;
+    private static final AtomicInteger maxId = new AtomicInteger(0);
+    public final int id;
     private static final long serialVersionUID = 6589196508238637331L;
 
     public Rectangle rectangle;
@@ -25,7 +25,7 @@ public class RectanglePlus {
 
     public RectanglePlus(float x, float y, float z, float width, float height, float depth,
                          int connectedEntityId, RectanglePlusFilter filter, RectManager rectMan) {
-        this.id = maxId++;
+        this.id = maxId.getAndIncrement();
         this.x = x;
         this.y = y;
         this.z = z;
@@ -37,7 +37,7 @@ public class RectanglePlus {
         this.connectedEntityId = connectedEntityId;
         this.filter = filter;
 
-        rectMan.addRect(this);
+        rectMan.addRectTransactional(this);
     }
 
     public boolean overlaps(RectanglePlus r) {

@@ -40,7 +40,7 @@ public abstract class Enemy extends Entity {
     @Override
     public synchronized void destroy() {
         if (!isDestroyed) {
-            screen.game.getRectMan().removeRect(rect);
+            screen.game.getRectMan().removeRectTransactional(rect);
             super.destroy();
         }
     }

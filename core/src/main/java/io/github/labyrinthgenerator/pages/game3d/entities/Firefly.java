@@ -75,11 +75,6 @@ public class Firefly extends Enemy {
 
     @Override
     public void tick(final float delta) {
-        if (isTick) {
-            throw new UnsupportedOperationException("Firefly id: " + id + " already ticked");
-        }
-        isTick = true;
-
         ai.tick(delta);
 
         screen.checkOverlaps(rect, delta);
@@ -93,8 +88,6 @@ public class Firefly extends Enemy {
         //pointLight.setPosition(position);
 
         rect.oldPosition.set(rect.getPosition());
-
-        isTick = false;
     }
 
     public void switchTexture() {

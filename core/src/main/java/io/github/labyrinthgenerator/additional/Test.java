@@ -45,7 +45,7 @@ public class Test {
                 finder.add(line);
             }
         }
-        System.out.println("Matched lines: " + matchedLines);
+        System.out.println("Matched unique lines: " + matchedLines);
         System.out.println("End");
     }
 }

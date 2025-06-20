@@ -13,10 +13,11 @@ import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class EntityManager {
-    private int nextId = 0;
+    private final AtomicInteger nextId = new AtomicInteger(0);
 
     private final Map<Chunk, Set<Entity>> entitiesByChunks = new HashMap<>();
     private final Map<Integer, Entity> entitiesById = new HashMap<>();
@@ -26,18 +27,20 @@ public class EntityManager {
 
     // Read Committed
     // But the current transaction can only read changes in synchronized blocks
-    private boolean isTransaction = false;
+    private volatile boolean isTransaction = false;
+    private long transactionId = -1;
 
     private ChunkManager chunkMan;
 
     private GameScreen screen;
 
-    public Chunk addEntityOnChunk(float x, float z, final Entity ent) {
+    public Chunk addEntityOnChunkTransactional(float x, float z, final Entity ent) {
         Chunk chunk;
         synchronized (entitiesByChunksClone) {
             System.out.println("Method: addEntityOnChunk. Block synchronized (entitiesByChunksClone).");
             synchronized (entitiesByIdClone) {
                 System.out.println("Method: addEntityOnChunk. Block synchronized (entitiesByIdClone).");
+                //synchronized (ent) {
 
                 Map<Integer, Entity> entitiesById = getTransactionEntitiesById();
                 Map<Chunk, Set<Entity>> entitiesByChunks = getTransactionEntitiesByChunks();
@@ -50,6 +53,7 @@ public class EntityManager {
 
                 entitiesByChunks.computeIfAbsent(chunk, k -> new HashSet<>());
                 entitiesByChunks.get(chunk).add(ent);
+                //}
             }
             System.out.println("Method: addEntityOnChunk. Block end synchronized (entitiesByIdClone).");
         }
@@ -57,16 +61,18 @@ public class EntityManager {
         return chunk;
     }
 
-    public void updateEntityChunk(final Chunk oldChunk, final Chunk newChunk, final Entity ent) {
+    public void updateEntityChunkTransactional(final Chunk oldChunk, final Chunk newChunk, final Entity ent) {
         synchronized (entitiesByChunksClone) {
             System.out.println("Method: updateEntityChunk. Block synchronized (entitiesByChunksClone).");
             synchronized (entitiesByIdClone) {
                 System.out.println("Method: updateEntityChunk. Block synchronized (entitiesByIdClone).");
+                //synchronized (ent) {
 
                 Player player = getScreen().getPlayer();
                 if (player != null && player.getId() == ent.getId()) {
                     System.out.println("Try to move the Player to the other chunk.");
                 }
+
                 Map<Chunk, Set<Entity>> entitiesByChunks = getTransactionEntitiesByChunks();
 
                 entitiesByChunks.get(oldChunk).remove(ent);
@@ -75,7 +81,10 @@ public class EntityManager {
 
                 if (player != null && player.getId() == ent.getId()) {
                     System.out.println("Player moved to the other chunk!");
-                } else System.out.println("Entity id: " + ent.getId() + " moved to the other chunk!");
+                } else {
+                    System.out.println("Entity id: " + ent.getId() + " moved to the other chunk!");
+                }
+                //}
             }
             System.out.println("Method: updateEntityChunk. Block end synchronized (entitiesByIdClone).");
         }
@@ -83,7 +92,7 @@ public class EntityManager {
     }
 
     public int assignId() {
-        return nextId++;
+        return nextId.getAndIncrement();
     }
 
     public Entity getEntityFromId(final int id) {
@@ -94,27 +103,31 @@ public class EntityManager {
         return screen;
     }
 
-    public void removeEntity(Entity ent) {
+    public void removeEntityTransactional(Entity ent) {
         synchronized (entitiesByChunksClone) {
             System.out.println("Method: removeEntity. Block synchronized (entitiesByChunksClone).");
             synchronized (entitiesByIdClone) {
                 System.out.println("Method: removeEntity. Block synchronized (entitiesByIdClone).");
+                //synchronized (ent) {
 
                 Map<Integer, Entity> entitiesById = getTransactionEntitiesById();
                 Map<Chunk, Set<Entity>> entitiesByChunks = getTransactionEntitiesByChunks();
 
                 entitiesById.remove(ent.getId());
                 entitiesByChunks.values().forEach(c -> c.remove(ent));
+                //}
             }
             System.out.println("Method: removeEntity. Block end synchronized (entitiesByIdClone).");
         }
         System.out.println("Method: removeEntity. Block end synchronized (entitiesByChunksClone).");
     }
 
-    public void removeAllEntities() {
-        entitiesByChunks.values().forEach(Set::clear);
+    public void clear() {
+        //entitiesByChunks.values().forEach(Set::clear);
         entitiesByChunks.clear();
         entitiesById.clear();
+        entitiesByChunksClone.clear();
+        entitiesByIdClone.clear();
     }
 
     public void render3DAllEntities(final ModelBatch mdlBatch, final Environment env, final float delta, float playerX, float playerZ) {
@@ -135,41 +148,44 @@ public class EntityManager {
     public synchronized void tickAllEntities(final float delta, float playerX, float playerZ) throws InterruptedException {
         try {
             System.out.println("Start tick all entities:");
-            System.out.println("Entities count: " + entitiesById.size() + ".");
+            System.out.println("Entities count: " + entitiesById.size() + ",");
             System.out.println("Rectangles count: " + screen.game.getRectMan().rectsCount() + ".");
-
 
             List<Chunk> nearestChunks = chunkMan.getNearestChunks(playerX, playerZ);
 
+            // TRANSACTION START
             startTransaction();
             screen.game.getRectMan().startTransaction();
 
-            CountDownLatch cdl = new CountDownLatch(nearestChunks.size());
-            ExecutorService executorService = Executors.newFixedThreadPool(4);
+            List<Future<Boolean>> futures = new ArrayList<>(nearestChunks.size());
+            ExecutorService executorService = Executors.newFixedThreadPool(1);
 
             for (Chunk chunk : nearestChunks) {
-                Set<Entity> entitiesByChunk = entitiesByChunks.get(chunk);
-                TickChunk tickChunk = new TickChunk(entitiesByChunk, delta, cdl);
-                executorService.submit(tickChunk);
+                Set<Entity> entitiesByChunkClone = new HashSet<>(entitiesByChunks.get(chunk));
+                TickChunk tickChunk = new TickChunk(entitiesByChunkClone, delta);
+                futures.add(executorService.submit(tickChunk));
             }
 
-            cdl.await();
+            for(Future<Boolean> future : futures) {
+                future.get();
+            }
             executorService.shutdown();
 
             screen.game.getRectMan().commitTransaction();
             commitTransaction();
+            // TRANSACTION END
 
 
             AtomicInteger entitiesSize = new AtomicInteger();
             entitiesByChunks.forEach((key, value) -> entitiesSize.addAndGet(value.size()));
             if (entitiesSize.get() != entitiesById.size()) {
                 if (entitiesSize.get() > entitiesById.size())
-                    throw new RuntimeException("entitiesSize.get() > entitiesById.size()");
+                    throw new RuntimeException("entitiesSize.get() > entitiesById.size(): " + entitiesSize.get() + ", " + entitiesById.size());
                 else
-                    throw new RuntimeException("entitiesSize.get() < entitiesById.size()");
+                    throw new RuntimeException("entitiesSize.get() < entitiesById.size(): " + entitiesSize.get() + ", " + entitiesById.size());
             }
             System.out.println("End tick all entities:");
-            System.out.println("Entities count: " + entitiesSize.get());
+            System.out.println("Entities count: " + entitiesSize.get() + ",");
             System.out.println("Rectangles count: " + screen.game.getRectMan().rectsCount() + ".");
         } catch (Exception e) {
             e.printStackTrace();
@@ -178,20 +194,22 @@ public class EntityManager {
 
     public synchronized void startTransaction() {
         if (isTransaction) {
-            throw new RuntimeException("Transaction already started.");
+            throw new RuntimeException("Transaction has already started.");
         }
         entitiesByChunks.forEach((key, value) -> entitiesByChunksClone.put(key, new HashSet<>(value)));
         entitiesByIdClone.putAll(entitiesById);
+        transactionId = System.nanoTime();
         isTransaction = true;
     }
 
     public synchronized void commitTransaction() {
         if (!isTransaction) {
-            throw new RuntimeException("Transaction already committed.");
+            throw new RuntimeException("Transaction has already committed.");
         }
         entitiesByChunks.clear();
-        entitiesByChunks.putAll(entitiesByChunksClone);
         entitiesById.clear();
+        // FIXME or put all to the new HashSet?
+        entitiesByChunks.putAll(entitiesByChunksClone);
         entitiesById.putAll(entitiesByIdClone);
         isTransaction = false;
         entitiesByChunksClone.clear();
@@ -206,5 +224,13 @@ public class EntityManager {
     private Map<Integer, Entity> getTransactionEntitiesById() {
         if (isTransaction) return entitiesByIdClone;
         else return entitiesById;
+    }
+
+    public boolean isTransaction() {
+        return isTransaction;
+    }
+
+    public long getTransactionId() {
+        return transactionId;
     }
 }

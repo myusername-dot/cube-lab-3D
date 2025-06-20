@@ -4,26 +4,26 @@ import com.badlogic.gdx.math.Vector2;
 import io.github.labyrinthgenerator.pages.game3d.constants.Constants;
 import io.github.labyrinthgenerator.pages.game3d.vectors.Vector2i;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 public class ChunkManager {
 
-    private final HashMap<Vector2i, Chunk> chunks = new HashMap<>();
+    private final Map<Vector2i, Chunk> chunksByPosition = new HashMap<>();
 
     public Chunk add(float x, float z) {
         Vector2i position = getChunkVector2i(x, z);
-        if (!chunks.containsKey(position)) {
-            Chunk chunk = new Chunk((int) x, (int) z);
-            chunks.put(position, chunk);
+        if (!chunksByPosition.containsKey(position)) {
+            Chunk chunk = new Chunk(position.x * Constants.CHUNK_SIZE, position.y * Constants.CHUNK_SIZE);
+            chunksByPosition.put(position, chunk);
+        } else {
+            throw new RuntimeException("Chunk at position: " + position + " already exists.");
         }
-        return chunks.get(position);
+        return chunksByPosition.get(position);
     }
 
     public Chunk get(float x, float z) {
         Vector2i position = getChunkVector2i(x, z);
-        Chunk chunk = chunks.get(position);
+        Chunk chunk = chunksByPosition.get(position);
         if (chunk == null) {
             throw new NullPointerException("Chunk at position " + x + ", " + z + " is null.");
         }
@@ -32,7 +32,7 @@ public class ChunkManager {
 
     public List<Chunk> getNearestChunks(float playerX, float playerZ) {
         List<Chunk> nearestChunks = new ArrayList<>();
-        for (Chunk chunk : chunks.values()) {
+        for (Chunk chunk : chunksByPosition.values()) {
             float distance = Vector2.dst(
                 playerX, playerZ,
                 chunk.center.x, chunk.center.y
@@ -46,5 +46,9 @@ public class ChunkManager {
 
     private Vector2i getChunkVector2i(float x, float z) {
         return new Vector2i((int) (x / Constants.CHUNK_SIZE), (int) (z / Constants.CHUNK_SIZE));
+    }
+
+    public void clear() {
+        chunksByPosition.clear();
     }
 }

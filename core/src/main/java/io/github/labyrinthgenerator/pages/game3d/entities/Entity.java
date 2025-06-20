@@ -17,15 +17,16 @@ public abstract class Entity {
     private final ChunkManager chunkMan;
 
     private final Vector3 position;
-    private Chunk chunk;
     protected final int id;
-	protected boolean tick = true;
+	protected boolean shouldTick = true;
 	protected boolean render2D = true;
 	protected boolean render3D = true;
 
-    protected boolean isTick = false;
+    private volatile Chunk chunk;
 
-    protected boolean isDestroyed = false;
+    protected volatile boolean isTick = false;
+    protected volatile long transactionId = -1;
+    protected volatile boolean isDestroyed = false;
 
 	protected Entity collidedEntity = null;
 
@@ -35,7 +36,7 @@ public abstract class Entity {
 
         entMan = screen.game.getEntMan();
 		id = entMan.assignId();
-        chunk = entMan.addEntityOnChunk(this.position.x, this.position.z, this);
+        chunk = entMan.addEntityOnChunkTransactional(this.position.x, this.position.z, this);
         chunkMan = screen.game.getChunkMan();
 	}
 
@@ -62,15 +63,18 @@ public abstract class Entity {
 
     public synchronized void updateChunk() {
         if (!isDestroyed) {
-            Chunk newChunk = chunkMan.get(position.x, position.z);
-            if (newChunk == chunk) {
-                throw new UnsupportedOperationException("Ent id " + id + " newChunk == chunk.");
+            if (chunk != screen.game.getChunkMan().get(chunk.x, chunk.z)) {
+                throw new RuntimeException("Entity id: " + id + ", method updateChunk(), chunk is invalid.");
             }
+            Chunk newChunk = chunkMan.get(position.x, position.z);
             if (newChunk == null) {
                 throw new NullPointerException("Chunk at position " + position.x + ", " + position.z + " is null.");
             }
-            entMan.updateEntityChunk(chunk, newChunk, this);
-            screen.game.getRectMan().updateEntityChunkIfExistsRect(chunk, newChunk, this);
+            if (newChunk == chunk) {
+                throw new UnsupportedOperationException("Ent id " + id + " newChunk == chunk.");
+            }
+            entMan.updateEntityChunkTransactional(chunk, newChunk, this);
+            screen.game.getRectMan().updateEntityChunkIfExistsRectTransactional(chunk, newChunk, this);
             chunk = newChunk;
         }
     }
@@ -107,15 +111,26 @@ public abstract class Entity {
 	}
 
 	public boolean shouldTick() {
-		return tick;
+		return shouldTick;
 	}
 
 	public void tick(final float delta) {
 	}
 
+    public void beforeTick() {
+        long transactionId = entMan.getTransactionId();
+        if (!entMan.isTransaction() || this.transactionId != transactionId) this.transactionId = transactionId;
+        else throw new UnsupportedOperationException("Entity id: " + id + " has already been ticked in this transaction.");
+        isTick = true;
+    }
+
+    public void afterTick() {
+        isTick = false;
+    }
+
     public synchronized void destroy() {
         if (!isDestroyed) {
-            entMan.removeEntity(this);
+            entMan.removeEntityTransactional(this);
             isDestroyed = true;
         }
     }

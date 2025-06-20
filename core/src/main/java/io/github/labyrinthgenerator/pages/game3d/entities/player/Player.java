@@ -249,11 +249,6 @@ public class Player extends Entity {
 
     @Override
     public void tick(final float delta) {
-        if (isTick) {
-            throw new UnsupportedOperationException("Player already ticked");
-        }
-        isTick = true;
-
         if (gotHit) {
             renderBloodOverlay = true;
             bloodOverlayAlpha = bloodOverlayAlphaMax;
@@ -299,8 +294,18 @@ public class Player extends Entity {
         setCamPosition();
 
         rect.oldPosition.set(rect.getPosition());
+    }
 
-        isTick = false;
+    @Override
+    public void beforeTick() {
+        System.out.println("Start tick player thread id: " + Thread.currentThread().getId() + ".");
+        super.beforeTick();
+    }
+
+    @Override
+    public void afterTick() {
+        super.afterTick();
+        System.out.println("End tick player thread id: " + Thread.currentThread().getId() + ".");
     }
 
 	/*private void useUsableInterface(final IUsable usableInterface) {
