@@ -139,7 +139,7 @@ public class LMapBuilder {
         // add entities
         for (Cell3D cell3D : cell3DList) {
             if (!cell3D.mobSpawn) continue;
-            int minFirefliesCount = 1, maxFirefliesCount = 5;
+            int minFirefliesCount = 2, maxFirefliesCount = 5;
             int firefliesC = MathUtils.random(minFirefliesCount, maxFirefliesCount);
             for (int i = 0; i < firefliesC; i++) {
                 Firefly firefly = new Firefly(

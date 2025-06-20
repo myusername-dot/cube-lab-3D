@@ -6,13 +6,13 @@ import io.github.labyrinthgenerator.pages.game3d.constants.Constants;
 import java.util.Objects;
 
 public class Chunk {
-    public final int x;
-    public final int z;
+    public final float x;
+    public final float z;
     public final int width = Constants.CHUNK_SIZE;
     public final int depth = Constants.CHUNK_SIZE;
     public final Vector2 center;
 
-    public Chunk(int x, int z) {
+    public Chunk(float x, float z) {
         this.x = x;
         this.z = z;
         center = new Vector2(x + width / 2f, z + depth / 2f);

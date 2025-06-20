@@ -251,9 +251,9 @@ public class RectManager {
 
         throw new RuntimeException(
             "Entity id: " + entId + " !rects.get(oldChunk).get(rect.filter).contains(rect). " +
-                "Old chunk is: " + oldChunk + ", new chunk is: " + newChunk +
-                ", transaction chunk is: " + transactionChunk.orElse(null) +
-                ", chunk is: " + chunk.orElse(null)
+                "Old is: " + oldChunk + ", new is: " + newChunk +
+                ", transaction is: " + transactionChunk.orElse(null) +
+                ", is: " + chunk.orElse(null)
         );
     }
 }

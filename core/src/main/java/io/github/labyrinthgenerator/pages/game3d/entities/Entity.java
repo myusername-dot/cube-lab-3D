@@ -63,14 +63,14 @@ public abstract class Entity {
 
     public synchronized void updateChunk() {
         if (!isDestroyed) {
-            if (chunk != screen.game.getChunkMan().get(chunk.x, chunk.z)) {
-                throw new RuntimeException("Entity id: " + id + ", method updateChunk(), chunk is invalid.");
+            if (chunk != chunkMan.get(chunk.x, chunk.z)) {
+                throw new RuntimeException("Entity id: " + id + ", method updateChunk(), " + chunk + " is invalid.");
             }
             Chunk newChunk = chunkMan.get(position.x, position.z);
             if (newChunk == null) {
                 throw new NullPointerException("Chunk at position " + position.x + ", " + position.z + " is null.");
             }
-            if (newChunk == chunk) {
+            if (newChunk.equals(chunk)) {
                 throw new UnsupportedOperationException("Ent id " + id + " newChunk == chunk.");
             }
             entMan.updateEntityChunkTransactional(chunk, newChunk, this);
