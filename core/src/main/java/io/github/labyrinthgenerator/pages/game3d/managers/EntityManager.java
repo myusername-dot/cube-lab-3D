@@ -1,9 +1,9 @@
-package io.github.labyrinthgenerator.pages.game3d.utils;
+package io.github.labyrinthgenerator.pages.game3d.managers;
 
 import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import io.github.labyrinthgenerator.pages.game3d.chunks.Chunk;
-import io.github.labyrinthgenerator.pages.game3d.chunks.ChunkManager;
+import io.github.labyrinthgenerator.pages.game3d.managers.ChunkManager;
 import io.github.labyrinthgenerator.pages.game3d.entities.Entity;
 import io.github.labyrinthgenerator.pages.game3d.entities.player.Player;
 import io.github.labyrinthgenerator.pages.game3d.screens.GameScreen;

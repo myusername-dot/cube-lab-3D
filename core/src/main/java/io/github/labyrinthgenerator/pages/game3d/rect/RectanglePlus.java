@@ -2,6 +2,7 @@ package io.github.labyrinthgenerator.pages.game3d.rect;
 
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
+import io.github.labyrinthgenerator.pages.game3d.managers.RectManager;
 import io.github.labyrinthgenerator.pages.game3d.rect.filters.RectanglePlusFilter;
 
 import java.util.Objects;

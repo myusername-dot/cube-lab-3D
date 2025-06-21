@@ -17,11 +17,11 @@ import io.github.labyrinthgenerator.pages.game3d.input.GameInputProcessor;
 import io.github.labyrinthgenerator.pages.game3d.managers.AssetsManager;
 import io.github.labyrinthgenerator.pages.game3d.maps.LMapBuilder;
 import io.github.labyrinthgenerator.pages.game3d.models.ModelMaker;
-import io.github.labyrinthgenerator.pages.game3d.chunks.ChunkManager;
-import io.github.labyrinthgenerator.pages.game3d.rect.RectManager;
+import io.github.labyrinthgenerator.pages.game3d.managers.ChunkManager;
+import io.github.labyrinthgenerator.pages.game3d.managers.RectManager;
 import io.github.labyrinthgenerator.pages.game3d.screens.MainMenuScreen;
 import io.github.labyrinthgenerator.pages.game3d.shaders.MyShaderProvider;
-import io.github.labyrinthgenerator.pages.game3d.utils.EntityManager;
+import io.github.labyrinthgenerator.pages.game3d.managers.EntityManager;
 
 public class CubeLab3D extends Game implements Page {
 	private SpriteBatch batch;
