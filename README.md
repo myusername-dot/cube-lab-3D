@@ -11,6 +11,7 @@ ____
 ____
 
 ### 3D Game update!
+![3dGame](preview.jpg)
 
 #### Explore the generated maze.
 
