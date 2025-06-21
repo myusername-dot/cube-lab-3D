@@ -1,7 +1,7 @@
 package io.github.labyrinthgenerator.labyrinth;
 
 import com.badlogic.gdx.math.MathUtils;
-import io.github.labyrinthgenerator.additional.Vector2i;
+import io.github.labyrinthgenerator.additional.Vector2iSeedHash;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -32,14 +32,14 @@ public class Labyrinth {
     private int[][] labyrinth;
     private int[][] convertedLabyrinth;
 
-    private final Vector2i escape;
+    private final Vector2iSeedHash escape;
 
-    private final Set<Vector2i> prevPoses;
+    private final Set<Vector2iSeedHash> prevPoses;
 
     public Labyrinth(int width, int height) {
         this.width = width;
         this.height = height;
-        escape = new Vector2i(width - 2, height - 2);
+        escape = new Vector2iSeedHash(width - 2, height - 2);
         prevPoses = new HashSet<>();
         maxDistance = Integer.MAX_VALUE;
         create();
@@ -87,15 +87,15 @@ public class Labyrinth {
     }
 
     public void wormSecond(boolean sortedByEscapeDistance, boolean sortedByDistance, int limit) {
-        Map<Vector2i, Integer> puffins = new HashMap<>();
+        Map<Vector2iSeedHash, Integer> puffins = new HashMap<>();
         for (int j = height - 2; j >= 1; j -= 2) {
             for (int i = 1; i <= width - 2; i += 2) {
                 if (LEntity.values()[labyrinth[i][j]] != LEntity.EMPTY) {
                     continue;
                 }
-                Set<Vector2i> prevPosesTmp = new HashSet<>();
-                Map<Vector2i, Integer> puffinsTmp = new HashMap<>();
-                boolean escape = setPuffins(puffinsTmp, prevPosesTmp, 0, i, j, new Vector2i(i, j), false);
+                Set<Vector2iSeedHash> prevPosesTmp = new HashSet<>();
+                Map<Vector2iSeedHash, Integer> puffinsTmp = new HashMap<>();
+                boolean escape = setPuffins(puffinsTmp, prevPosesTmp, 0, i, j, new Vector2iSeedHash(i, j), false);
                 if (escape) {
                     System.out.println("x:" + i + "y:" + j + " escape == true");
                     continue;
@@ -107,7 +107,7 @@ public class Labyrinth {
             }
         }
 
-        List<Vector2i> puffinsList = puffins.entrySet().stream()
+        List<Vector2iSeedHash> puffinsList = puffins.entrySet().stream()
             .sorted(
                 (e1, e2) ->
                     sortedByEscapeDistance ?
@@ -120,28 +120,28 @@ public class Labyrinth {
             .map(Map.Entry::getKey)
             .collect(Collectors.toList());
 
-        for (Vector2i puffin : puffinsList) {
+        for (Vector2iSeedHash puffin : puffinsList) {
             puff(puffin, false);
         }
         puffins.clear();
     }
 
     public boolean wormThird(
-            int startX, int startY,
-            Set<Vector2i> prevPoses, Set<Vector2i> puffins,
-            boolean sortedByEscapeDistance,
-            boolean exitWhenFindEscape
+        int startX, int startY,
+        Set<Vector2iSeedHash> prevPoses, Set<Vector2iSeedHash> puffins,
+        boolean sortedByEscapeDistance,
+        boolean exitWhenFindEscape
     ) {
         if (LEntity.values()[labyrinth[startX][startY]] != LEntity.EMPTY)
             throw new UnsupportedOperationException("wormSecondDebug: LEntity.values()[labyrinth[startX][startY]] != LEntity.EMPTY");
 
-        Map<Vector2i, Integer> puffinsTmp = new HashMap<>();
-        boolean escape = setPuffins(puffinsTmp, prevPoses, 0, startX, startY, new Vector2i(startX, startY), exitWhenFindEscape);
+        Map<Vector2iSeedHash, Integer> puffinsTmp = new HashMap<>();
+        boolean escape = setPuffins(puffinsTmp, prevPoses, 0, startX, startY, new Vector2iSeedHash(startX, startY), exitWhenFindEscape);
         this.prevPoses.addAll(prevPoses);
 
         if (escape && exitWhenFindEscape) return true;
         if (!puffinsTmp.isEmpty()) {
-            List<Vector2i> sorted = puffinsTmp.entrySet().stream()
+            List<Vector2iSeedHash> sorted = puffinsTmp.entrySet().stream()
                 .sorted((e1, e2) ->
                     sortedByEscapeDistance ?
                         e1.getKey().getDistance(this.escape).compareTo(e2.getKey().getDistance(this.escape)) :
@@ -153,7 +153,7 @@ public class Labyrinth {
             if (!escape) puffins.add(sorted.get(sorted.size() - 1));
             else puffins.add(sorted.get((int) (sorted.size() / 1.6)));
         }
-        for (Vector2i puffin : puffins) {
+        for (Vector2iSeedHash puffin : puffins) {
             puff(puffin, true);
         }
         return escape;
@@ -161,7 +161,7 @@ public class Labyrinth {
 
     public void buildFourth(boolean escape) {
         if (!escape) {
-            Vector2i escapePos = new Vector2i(this.escape);
+            Vector2iSeedHash escapePos = new Vector2iSeedHash(this.escape.x, this.escape.y);
             do {
                 // ToDo другие координаты
                 if (Math.random() > 0.5) escapePos.x--;
@@ -247,10 +247,10 @@ public class Labyrinth {
                 maybe2 = x < width - 3;
                 maybe3 = y < height - 3;
                 maybe4 = y > 2;
-                Vector2i throughWall1 = new Vector2i(x - 2, y);
-                Vector2i throughWall2 = new Vector2i(x + 2, y);
-                Vector2i throughWall3 = new Vector2i(x, y + 2);
-                Vector2i throughWall4 = new Vector2i(x, y - 2);
+                Vector2iSeedHash throughWall1 = new Vector2iSeedHash(x - 2, y);
+                Vector2iSeedHash throughWall2 = new Vector2iSeedHash(x + 2, y);
+                Vector2iSeedHash throughWall3 = new Vector2iSeedHash(x, y + 2);
+                Vector2iSeedHash throughWall4 = new Vector2iSeedHash(x, y - 2);
                 haveWindow1 = haveWindow1 && maybe1 && !prevPoses.contains(throughWall1);
                 haveWindow2 = haveWindow2 && maybe2 && !prevPoses.contains(throughWall2);
                 haveWindow3 = haveWindow3 && maybe3 && !prevPoses.contains(throughWall3);
@@ -286,15 +286,15 @@ public class Labyrinth {
     }
 
     private boolean setPuffins(
-            Map<Vector2i, Integer> puffins, Set<Vector2i> prevPoses,
-            int distance,
-            int x, int y, final Vector2i prevPos,
-            boolean exitWhenFindEscape
+        Map<Vector2iSeedHash, Integer> puffins, Set<Vector2iSeedHash> prevPoses,
+        int distance,
+        int x, int y, final Vector2iSeedHash prevPos,
+        boolean exitWhenFindEscape
     ) {
         if (LEntity.values()[labyrinth[x][y]] != LEntity.EMPTY) {
             throw new UnsupportedOperationException("setPuffins: LEntity.values()[labyrinth[x][y]] != LEntity.EMPTY");
         }
-        Vector2i currentPos = new Vector2i(x, y);
+        Vector2iSeedHash currentPos = new Vector2iSeedHash(x, y);
         if (prevPoses.contains(currentPos)) {
             return false;
         }
@@ -316,25 +316,25 @@ public class Labyrinth {
                 case LEFT:
                     nextX = x - 1;
                     nextY = y;
-                    if (!prevPoses.contains(new Vector2i(nextX, nextY))) directions.add(direction);
+                    if (!prevPoses.contains(new Vector2iSeedHash(nextX, nextY))) directions.add(direction);
                     else if (prevPos.x != nextX && prevPos.y != nextY) cycle = true;
                     break;
                 case RIGHT:
                     nextX = x + 1;
                     nextY = y;
-                    if (!prevPoses.contains(new Vector2i(nextX, nextY))) directions.add(direction);
+                    if (!prevPoses.contains(new Vector2iSeedHash(nextX, nextY))) directions.add(direction);
                     else if (prevPos.x != nextX && prevPos.y != nextY) cycle = true;
                     break;
                 case UP:
                     nextX = x;
                     nextY = y + 1;
-                    if (!prevPoses.contains(new Vector2i(nextX, nextY))) directions.add(direction);
+                    if (!prevPoses.contains(new Vector2iSeedHash(nextX, nextY))) directions.add(direction);
                     else if (prevPos.x != nextX && prevPos.y != nextY) cycle = true;
                     break;
                 case DOWN:
                     nextX = x;
                     nextY = y - 1;
-                    if (!prevPoses.contains(new Vector2i(nextX, nextY))) directions.add(direction);
+                    if (!prevPoses.contains(new Vector2iSeedHash(nextX, nextY))) directions.add(direction);
                     else if (prevPos.x != nextX && prevPos.y != nextY) cycle = true;
                     break;
             }
@@ -396,7 +396,7 @@ public class Labyrinth {
         return escape;
     }
 
-    private void puff(Vector2i puffin, boolean usePrevPoses) {
+    private void puff(Vector2iSeedHash puffin, boolean usePrevPoses) {
         List<Direction> directions = getDirections(puffin.x, puffin.y, true, usePrevPoses);
         if (directions.isEmpty()) return;
         int window = MathUtils.random(0, directions.size() - 1);

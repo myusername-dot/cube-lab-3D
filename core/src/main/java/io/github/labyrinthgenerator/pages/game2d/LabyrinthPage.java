@@ -4,7 +4,7 @@ import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import io.github.labyrinthgenerator.MyApplication;
-import io.github.labyrinthgenerator.additional.Vector2i;
+import io.github.labyrinthgenerator.additional.Vector2iSeedHash;
 import io.github.labyrinthgenerator.pages.Page;
 import io.github.labyrinthgenerator.pages.game3d.CubeLab3D;
 
@@ -32,8 +32,8 @@ public class LabyrinthPage implements Page {
     private boolean screenshot;
     private boolean txtFile;
 
-    private Set<Vector2i> prevPoses;
-    private Set<Vector2i> puffins;
+    private Set<Vector2iSeedHash> prevPoses;
+    private Set<Vector2iSeedHash> puffins;
 
     @Override
     public void create() {
@@ -107,7 +107,7 @@ public class LabyrinthPage implements Page {
         int screenX = toolsPage.getScreenX();
         int screenY = toolsPage.getScreenY();
 
-        for (Vector2i prevPose : prevPoses) {
+        for (Vector2iSeedHash prevPose : prevPoses) {
             if (escape) {
                 spriteBatch.draw(
                     prefPoseAcceptEscapeTexture,
@@ -122,7 +122,7 @@ public class LabyrinthPage implements Page {
                 );
             }
         }
-        for (Vector2i puffin : puffins) {
+        for (Vector2iSeedHash puffin : puffins) {
             spriteBatch.draw(
                 puffinTexture,
                 screenX + puffin.x * scale, screenY + puffin.y * scale,
