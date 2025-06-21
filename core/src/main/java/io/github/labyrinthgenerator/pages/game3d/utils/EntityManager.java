@@ -256,7 +256,7 @@ public class EntityManager {
     private void startTickLog() {
         System.out.println("Start tick all entities." +
             " Entities count: " + entitiesById.size() +
-            ", rectangles count: " + screen.game.getRectMan().rectsCount() + ".");
+            ", rectangles count: " + screen.game.getRectMan().rectsCountAndCheck() + ".");
     }
 
     private void startTransactionLog(long startTransactionTime) {
@@ -281,7 +281,7 @@ public class EntityManager {
         tickTime = System.currentTimeMillis() - tickTime;
         System.out.println("End tick all entities." +
             " Entities count: " + entitiesSize.get() +
-            ", rectangles count: " + screen.game.getRectMan().rectsCount() +
+            ", rectangles count: " + screen.game.getRectMan().rectsCountAndCheck() +
             ". Time spent seconds: " + tickTime / 1000d + ".");
     }
 

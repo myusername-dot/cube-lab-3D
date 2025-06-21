@@ -46,8 +46,7 @@ public class RectManager {
                 Map<Chunk, Map<RectanglePlusFilter, Set<RectanglePlus>>> rects = getTransactionRects();
                 Map<Integer, RectanglePlus> rectsByConnectedEntityId = getTransactionRectsByConnectedEntityId();
 
-                // FIXME rect x or rect x + width / 2?
-                Chunk chunk = chunkMan.get(rect.getX(), rect.getZ());
+                Chunk chunk = chunkMan.get(rect.getX() + rect.getWidth() / 2f, rect.getZ() + rect.getDepth() / 2f);
                 rects.computeIfAbsent(chunk, k -> new HashMap<>());
                 rects.get(chunk).computeIfAbsent(rect.filter, k -> new HashSet<>());
                 rects.get(chunk).get(rect.filter).add(rect);
@@ -111,8 +110,8 @@ public class RectManager {
         if (filters.isEmpty()) return new ArrayList<>();
 
         List<Chunk> nearestChunks = chunkMan.getNearestChunks(playerX, playerZ);
-        if (nearestChunks == null || nearestChunks.isEmpty() /*|| nearestChunks.size() <= 2*/) {
-            throw new NullPointerException("nearestChunks == null || nearestChunks.isEmpty() || nearestChunks.size() <= 2 at position " + playerX + ", " + playerZ + ".");
+        if (nearestChunks == null || nearestChunks.isEmpty()) {
+            throw new NullPointerException("nearestChunks == null || nearestChunks.isEmpty() at position " + playerX + ", " + playerZ + ".");
         }
 
         List<RectanglePlus> nearestRects = new ArrayList<>();
@@ -185,7 +184,7 @@ public class RectManager {
         System.out.println("Method: removeRect. Block end synchronized (rectsClone).");
     }
 
-    public int rectsCount() {
+    public int rectsCountAndCheck() {
         AtomicInteger rectsCount = new AtomicInteger();
         rects.forEach((c, m) -> m.forEach((f, s) -> rectsCount.addAndGet(s.size())));
         if (rectsCount.get() != rectsByConnectedEntityId.size()) {
