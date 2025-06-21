@@ -118,7 +118,7 @@ public abstract class Entity {
 	}
 
 	public boolean shouldTick() {
-		return shouldTick;
+		return shouldTick && !isDestroyed;
 	}
 
 	public void tick(final float delta) {
