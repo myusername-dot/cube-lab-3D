@@ -18,35 +18,30 @@ import static io.github.labyrinthgenerator.pages.game3d.constants.Constants.HALF
 
 public class Player extends Entity {
     private final Vector3 movementDir = new Vector3();
+    private final Vector2 movementDirVec2 = new Vector2(movementDir.x, movementDir.z);
 
-    final Vector2 movementDirVec2 = new Vector2(movementDir.x, movementDir.z);
+    public final RectanglePlus rect;
+    public final PerspectiveCamera playerCam;
 
     private final float cameraRotationSpeed = 25f;
+    boolean headbob = false;
+    boolean verticalCameraMovement = false;
+    float camY = HALF_UNIT;
 
     private final float playerMoveSpeed = 4f;
+
     private final int maxHP = 100;
     private int currentHP = 100;
-
+    public boolean isDead = false;
     public boolean gotHit = false;
+
+    public int currentInventorySlot = 1;
 
     public boolean renderBloodOverlay = false;
     private final float bloodOverlayAlphaMax = 1f;
     private final float bloodOverlayAlphaMin = 0f;
     private final float bloodOverlayAlphaSpeed = 5f;
     public float bloodOverlayAlpha = bloodOverlayAlphaMin;
-
-    public final PerspectiveCamera playerCam;
-
-    public RectanglePlus rect;
-
-    public boolean isDead = false;
-
-    float camY = HALF_UNIT;
-
-    public int currentInventorySlot = 1;
-
-    boolean headbob = false;
-    boolean verticalCameraMovement = false;
 
     public Player(Vector3 position, float rectWidth, float rectDepth, final GameScreen screen) {
         super(position.cpy().set(
@@ -71,7 +66,7 @@ public class Player extends Entity {
             screen.game.getRectMan()
         );
         rect.oldPosition.set(rect.getPosition());
-        rect.newPosition.set(rect.getPosition()); // Needed for spawning at correct position.
+        rect.newPosition.set(rect.getPosition());
 
         setCamPosition();
     }
@@ -131,10 +126,6 @@ public class Player extends Entity {
 
     public void handleInput(final float delta) {
         movementDir.setZero();
-
-		/*if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)) {
-			shoot();
-		}*/
 
         if (screen.game.getGameInput().scrolledYDown) {
             currentInventorySlot++;
@@ -267,23 +258,6 @@ public class Player extends Entity {
             isDead = true;
 //			System.out.println("Player is dead.");
         }
-
-		/*if (shootTimerSet) {
-			if (System.currentTimeMillis() >= shootTimerEnd) {
-				shootAnimationTimerSet = false;
-				shootTimerSet = false;
-			}
-		}
-
-		if (shootAnimationTimerSet) {
-			if (System.currentTimeMillis() >= shootAnimationTimerEnd) {
-				shootAnimationTimerSet = false;
-			}
-		}
-
-		if (!shootAnimationTimerSet) {
-			guiCurrentGun = guiGun;
-		}*/
 
         screen.checkOverlaps(rect, delta);
         /*rect.setX(rect.newPosition.x);
