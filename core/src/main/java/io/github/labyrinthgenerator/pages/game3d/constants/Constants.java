@@ -16,7 +16,7 @@ public abstract class Constants {
 	public static final float HALF_UNIT = 0.5f;
 
     public static final int CHUNK_SIZE = 10;
-    public static final int CHUNKS_RANGE_AROUND_CAM = 2;
+    public static final int CHUNKS_RANGE_AROUND_CAM_CHUNK = 1;
 
     // FIXME this should be a constant, but when resizing the window, the transition to a new page does not work correctly
 	public static int WINDOW_WIDTH;

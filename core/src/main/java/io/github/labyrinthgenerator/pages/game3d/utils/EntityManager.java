@@ -19,10 +19,10 @@ public class EntityManager {
     private final AtomicInteger nextId = new AtomicInteger(0);
 
     private final Map<Chunk, Set<Entity>> entitiesByChunks = new HashMap<>();
-    private final Map<Integer, Entity> entitiesById = new HashMap<>();
+    private Map<Integer, Entity> entitiesById = new HashMap<>();
 
-    private final Map<Chunk, Set<Entity>> entitiesByChunksClone = new HashMap<>();
-    private final Map<Integer, Entity> entitiesByIdClone = new HashMap<>();
+    private Map<Chunk, Set<Entity>> entitiesByChunksClone = new HashMap<>(0);
+    private Map<Integer, Entity> entitiesByIdClone = new HashMap<>(0);
 
     // Read Committed
     // But the current transaction can only read changes in synchronized blocks
@@ -149,25 +149,24 @@ public class EntityManager {
     public synchronized void tickAllEntities(final float delta, float playerX, float playerZ) throws InterruptedException {
         long tickTime = System.currentTimeMillis();
         try {
-            System.out.println(
-                "Start tick all entities." +
+            System.out.println("Start tick all entities." +
                     " Entities count: " + entitiesById.size() +
-                    ", rectangles count: " + screen.game.getRectMan().rectsCount() + "."
-            );
-
-            List<Chunk> nearestChunks = chunkMan.getNearestChunks(playerX, playerZ);
+                    ", rectangles count: " + screen.game.getRectMan().rectsCount() + ".");
 
 
-            long startTime = System.nanoTime();
+            long startTransactionTime = System.nanoTime();
 
+            List<Chunk> chunksInTransaction = chunkMan.getNearestChunksInBox(playerX, playerZ, 1);
             // TRANSACTION START
-            startTransaction();
-            screen.game.getRectMan().startTransaction();
+            startTransaction(chunksInTransaction);
+            screen.game.getRectMan().startTransaction(chunksInTransaction);
 
-            startTime = System.nanoTime() - startTime;
-            double seconds = (double) startTime / 1_000_000_000.0;
+            startTransactionTime = System.nanoTime() - startTransactionTime;
+            double seconds = (double) startTransactionTime / 1_000_000_000.0;
             System.out.println("Transaction started in " + seconds + " seconds ");
 
+
+            List<Chunk> nearestChunks = chunkMan.getNearestChunks(playerX, playerZ);
 
             List<Future<Boolean>> futures = new ArrayList<>(nearestChunks.size());
             ExecutorService executorService = Executors.newFixedThreadPool(4);
@@ -184,32 +183,28 @@ public class EntityManager {
             executorService.shutdown();
 
 
-            long endTime = System.nanoTime();
+            long endTransactionTime = System.nanoTime();
 
             screen.game.getRectMan().commitTransaction();
             commitTransaction();
             // TRANSACTION END
 
-            endTime = System.nanoTime() - endTime;
-            seconds = (double) endTime / 1_000_000_000.0;
+            endTransactionTime = System.nanoTime() - endTransactionTime;
+            seconds = (double) endTransactionTime / 1_000_000_000.0;
             System.out.println("Transaction ended in " + seconds + " seconds ");
 
 
             AtomicInteger entitiesSize = new AtomicInteger();
             entitiesByChunks.forEach((key, value) -> entitiesSize.addAndGet(value.size()));
             if (entitiesSize.get() != entitiesById.size()) {
-                if (entitiesSize.get() > entitiesById.size())
-                    throw new RuntimeException("entitiesSize.get() > entitiesById.size(): " + entitiesSize.get() + ", " + entitiesById.size());
-                else
-                    throw new RuntimeException("entitiesSize.get() < entitiesById.size(): " + entitiesSize.get() + ", " + entitiesById.size());
+                if (entitiesSize.get() > entitiesById.size()) throw new RuntimeException("entitiesSize.get() > entitiesById.size(): " + entitiesSize.get() + ", " + entitiesById.size());
+                else throw new RuntimeException("entitiesSize.get() < entitiesById.size(): " + entitiesSize.get() + ", " + entitiesById.size());
             }
             tickTime = System.currentTimeMillis() - tickTime;
-            System.out.println(
-                "End tick all entities." +
+            System.out.println("End tick all entities." +
                     " Entities count: " + entitiesSize.get() +
                     ", rectangles count: " + screen.game.getRectMan().rectsCount() +
-                    ". Time spent seconds: " + tickTime / 1000d + "."
-            );
+                    ". Time spent seconds: " + tickTime / 1000d + ".");
         } catch (Exception e) {
             e.printStackTrace();
             screen.game.getRectMan().rollbackTransaction();
@@ -223,12 +218,15 @@ public class EntityManager {
         }
     }
 
-    public synchronized void startTransaction() {
+    public synchronized void startTransaction(List<Chunk> chunksInTransaction) {
         if (isTransaction) {
             throw new RuntimeException("Transaction has already started.");
         }
-        entitiesByChunks.forEach((key, value) -> entitiesByChunksClone.put(key, new HashSet<>(value)));
-        entitiesByIdClone.putAll(entitiesById);
+        entitiesByChunksClone = new HashMap<>(chunksInTransaction.size());
+        for (Chunk chunk : chunksInTransaction) {
+            entitiesByChunksClone.put(chunk, new HashSet<>(entitiesByChunks.get(chunk)));
+        }
+        entitiesByIdClone = new HashMap<>(entitiesById);
         transactionId = System.nanoTime();
         isTransaction = true;
     }
@@ -237,13 +235,11 @@ public class EntityManager {
         if (!isTransaction) {
             throw new RuntimeException("Transaction has already committed.");
         }
-        entitiesByChunks.clear();
-        entitiesById.clear();
         entitiesByChunks.putAll(entitiesByChunksClone);
-        entitiesById.putAll(entitiesByIdClone);
+        entitiesById = entitiesByIdClone;
         isTransaction = false;
-        entitiesByChunksClone.clear();
-        entitiesByIdClone.clear();
+        entitiesByChunksClone = new HashMap<>(0);
+        entitiesByIdClone = new HashMap<>(0);
     }
 
     public synchronized void rollbackTransaction() {
@@ -251,8 +247,8 @@ public class EntityManager {
             throw new RuntimeException("Transaction has already committed.");
         }
         isTransaction = false;
-        entitiesByChunksClone.clear();
-        entitiesByIdClone.clear();
+        entitiesByChunksClone = new HashMap<>(0);
+        entitiesByIdClone = new HashMap<>(0);
     }
 
     private Map<Chunk, Set<Entity>> getTransactionEntitiesByChunks() {

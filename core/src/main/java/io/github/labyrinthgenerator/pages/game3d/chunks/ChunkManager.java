@@ -46,10 +46,10 @@ public class ChunkManager {
     public List<Chunk> getNearestChunksInBox(float playerX, float playerZ, int offsetChunks) {
         List<Chunk> nearestChunks = new ArrayList<>();
         Vector2i position = getChunkPosition(playerX, playerZ);
-        int x1Position = position.x - CHUNKS_RANGE_AROUND_CAM - offsetChunks;
-        int y1Position = position.y - CHUNKS_RANGE_AROUND_CAM - offsetChunks;
-        int x2Position = position.x + CHUNKS_RANGE_AROUND_CAM + offsetChunks;
-        int y2Position = position.y + CHUNKS_RANGE_AROUND_CAM + offsetChunks;
+        int x1Position = position.x - CHUNKS_RANGE_AROUND_CAM_CHUNK - offsetChunks;
+        int y1Position = position.y - CHUNKS_RANGE_AROUND_CAM_CHUNK - offsetChunks;
+        int x2Position = position.x + CHUNKS_RANGE_AROUND_CAM_CHUNK + offsetChunks;
+        int y2Position = position.y + CHUNKS_RANGE_AROUND_CAM_CHUNK + offsetChunks;
         if (x1Position < 0) x1Position = 0;
         if (y1Position < 0) y1Position = 0;
         if (x2Position > size.x - 1) x2Position = size.x - 1;

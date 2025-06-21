@@ -14,10 +14,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class RectManager {
 
     private final Map<Chunk, Map<RectanglePlusFilter, Set<RectanglePlus>>> rects = new HashMap<>();
-    private final Map<Integer, RectanglePlus> rectsByConnectedEntityId = new HashMap<>();
+    private Map<Integer, RectanglePlus> rectsByConnectedEntityId = new HashMap<>();
 
-    private final Map<Chunk, Map<RectanglePlusFilter, Set<RectanglePlus>>> rectsClone = new HashMap<>();
-    private final Map<Integer, RectanglePlus> rectsByConnectedEntityIdClone = new HashMap<>();
+    private Map<Chunk, Map<RectanglePlusFilter, Set<RectanglePlus>>> rectsClone = new HashMap<>(0);
+    private Map<Integer, RectanglePlus> rectsByConnectedEntityIdClone = new HashMap<>(0);
 
     // Read Committed
     // But the current transaction can only read changes in synchronized blocks
@@ -205,13 +205,19 @@ public class RectManager {
         rectsByConnectedEntityIdClone.clear();
     }
 
-    public synchronized void startTransaction() {
+    public synchronized void startTransaction(List<Chunk> chunksInTransaction) {
         if (isTransaction) {
             throw new RuntimeException("Transaction has already started.");
         }
-        rects.forEach((c, m) -> rectsClone.computeIfAbsent(c, k -> new HashMap<>(m.size())));
-        rects.forEach((c, m) -> m.forEach((f, s) -> rectsClone.get(c).computeIfAbsent(f, k -> new HashSet<>(s))));
-        rectsByConnectedEntityIdClone.putAll(rectsByConnectedEntityId);
+        rectsClone = new HashMap<>(chunksInTransaction.size());
+        for (Chunk chunk : chunksInTransaction) {
+            // put chunks and filters
+            rectsClone.put(chunk, new HashMap<>(rects.get(chunk)));
+            Map<RectanglePlusFilter, Set<RectanglePlus>> filters = rectsClone.get(chunk);
+            // put rects
+            filters.replaceAll((f, v) -> new HashSet<>(filters.get(f)));
+        }
+        rectsByConnectedEntityIdClone = new HashMap<>(rectsByConnectedEntityId);
         isTransaction = true;
     }
 
@@ -219,13 +225,11 @@ public class RectManager {
         if (!isTransaction) {
             throw new RuntimeException("Transaction has already committed.");
         }
-        rects.clear();
         rects.putAll(rectsClone);
-        rectsByConnectedEntityId.clear();
-        rectsByConnectedEntityId.putAll(rectsByConnectedEntityIdClone);
+        rectsByConnectedEntityId = rectsByConnectedEntityIdClone;
         isTransaction = false;
-        rectsClone.clear();
-        rectsByConnectedEntityIdClone.clear();
+        rectsClone = new HashMap<>(0);
+        rectsByConnectedEntityIdClone = new HashMap<>(0);
     }
 
     public synchronized void rollbackTransaction() {
@@ -233,8 +237,8 @@ public class RectManager {
             throw new RuntimeException("Transaction has already committed.");
         }
         isTransaction = false;
-        rectsClone.clear();
-        rectsByConnectedEntityIdClone.clear();
+        rectsClone = new HashMap<>(0);
+        rectsByConnectedEntityIdClone = new HashMap<>(0);
     }
 
     private Map<Chunk, Map<RectanglePlusFilter, Set<RectanglePlus>>> getTransactionRects() {
