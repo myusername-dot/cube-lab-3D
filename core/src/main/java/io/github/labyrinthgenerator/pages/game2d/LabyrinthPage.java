@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import io.github.labyrinthgenerator.MyApplication;
 import io.github.labyrinthgenerator.additional.Vector2iSeedHash;
 import io.github.labyrinthgenerator.pages.Page;
+import io.github.labyrinthgenerator.pages.game2d.utils.Tools2d;
 import io.github.labyrinthgenerator.pages.game3d.CubeLab3D;
 
 import java.util.HashSet;

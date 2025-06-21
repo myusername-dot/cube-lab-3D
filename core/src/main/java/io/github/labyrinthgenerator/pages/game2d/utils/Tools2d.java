@@ -1,4 +1,4 @@
-package io.github.labyrinthgenerator.pages.game2d;
+package io.github.labyrinthgenerator.pages.game2d.utils;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.*;
