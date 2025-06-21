@@ -217,7 +217,9 @@ public class RectManager {
             // put rects
             filters.replaceAll((f, v) -> new HashSet<>(filters.get(f)));
         }
-        rectsByConnectedEntityIdClone = new HashMap<>(rectsByConnectedEntityId);
+        // it's faster than new HashMap<>(rectsByConnectedEntityId)
+        rectsByConnectedEntityIdClone = new HashMap<>(rectsByConnectedEntityId.size());
+        rectsByConnectedEntityIdClone.putAll(rectsByConnectedEntityId);
         this.transactionId = transactionId;
         isTransaction = true;
     }

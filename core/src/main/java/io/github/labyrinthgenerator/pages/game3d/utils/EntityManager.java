@@ -210,7 +210,9 @@ public class EntityManager {
         for (Chunk chunk : chunksInTransaction) {
             entitiesByChunksClone.put(chunk, new HashSet<>(entitiesByChunks.get(chunk)));
         }
-        entitiesByIdClone = new HashMap<>(entitiesById);
+        // it's faster than new HashMap<>(entitiesById)
+        entitiesByIdClone = new HashMap<>(entitiesById.size());
+        entitiesByIdClone.putAll(entitiesById);
         transactionId = System.nanoTime();
         isTransaction = true;
     }
