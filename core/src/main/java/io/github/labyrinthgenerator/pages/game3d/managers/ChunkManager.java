@@ -1,6 +1,7 @@
-package io.github.labyrinthgenerator.pages.game3d.chunks;
+package io.github.labyrinthgenerator.pages.game3d.managers;
 
 import com.badlogic.gdx.math.Vector2;
+import io.github.labyrinthgenerator.pages.game3d.chunks.Chunk;
 import io.github.labyrinthgenerator.pages.game3d.vectors.Vector2i;
 
 import java.util.ArrayList;

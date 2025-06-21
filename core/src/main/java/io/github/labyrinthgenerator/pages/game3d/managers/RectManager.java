@@ -1,10 +1,10 @@
-package io.github.labyrinthgenerator.pages.game3d.rect;
+package io.github.labyrinthgenerator.pages.game3d.managers;
 
 import io.github.labyrinthgenerator.pages.game3d.CubeLab3D;
 import io.github.labyrinthgenerator.pages.game3d.chunks.Chunk;
-import io.github.labyrinthgenerator.pages.game3d.chunks.ChunkManager;
 import io.github.labyrinthgenerator.pages.game3d.entities.Entity;
 import io.github.labyrinthgenerator.pages.game3d.entities.player.Player;
+import io.github.labyrinthgenerator.pages.game3d.rect.RectanglePlus;
 import io.github.labyrinthgenerator.pages.game3d.rect.filters.RectanglePlusFilter;
 import io.github.labyrinthgenerator.pages.game3d.screens.GameScreen;
 
