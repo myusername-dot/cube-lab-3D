@@ -172,7 +172,7 @@ public class PlayScreen extends GameScreen {
     }
 
     public void playItemSound() {
-        sfxItemId = sfxItem.play(game.getSfxVolume());
+        sfxItemId = sfxItem.play(game.currentSfxVolume);
     }
 
     @Override

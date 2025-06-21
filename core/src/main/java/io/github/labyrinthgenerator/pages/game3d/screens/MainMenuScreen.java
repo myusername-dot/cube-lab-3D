@@ -113,7 +113,7 @@ public class MainMenuScreen extends GameScreen {
 
         Gdx.input.setCursorCatched(false);
 
-        sfxAmbientId = sfxAmbient.play(game.getAmbientVolume());
+        sfxAmbientId = sfxAmbient.play(game.currentAmbientVolume);
         sfxAmbient.setLooping(sfxAmbientId, true);
     }
 
@@ -122,7 +122,7 @@ public class MainMenuScreen extends GameScreen {
         super.handleInput(delta);
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.ENTER) || Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
-            sfxChoiceId = sfxChoice.play(game.getSfxVolume());
+            sfxChoiceId = sfxChoice.play(game.currentSfxVolume);
             if (!displayControls) {
                 switch (selectedOption) {
                     case 0:
@@ -183,7 +183,7 @@ public class MainMenuScreen extends GameScreen {
                 selectedOption--;
                 limitSelectedOption();
 
-                sfxChoiceId = sfxChoice.play(game.getSfxVolume());
+                sfxChoiceId = sfxChoice.play(game.currentSfxVolume);
             }
         }
 
@@ -192,7 +192,7 @@ public class MainMenuScreen extends GameScreen {
                 selectedOption++;
                 limitSelectedOption();
 
-                sfxChoiceId = sfxChoice.play(game.getSfxVolume());
+                sfxChoiceId = sfxChoice.play(game.currentSfxVolume);
             }
         }
     }
