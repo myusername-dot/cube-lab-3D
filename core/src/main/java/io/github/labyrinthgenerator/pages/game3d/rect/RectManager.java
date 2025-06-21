@@ -22,6 +22,7 @@ public class RectManager {
     // Read Committed
     // But the current transaction can only read changes in synchronized blocks
     private volatile boolean isTransaction = false;
+    private long transactionId = -1;
 
     private final CubeLab3D game;
 
@@ -205,7 +206,7 @@ public class RectManager {
         rectsByConnectedEntityIdClone.clear();
     }
 
-    public synchronized void startTransaction(List<Chunk> chunksInTransaction) {
+    public synchronized void joinTransaction(List<Chunk> chunksInTransaction, long transactionId) {
         if (isTransaction) {
             throw new RuntimeException("Transaction has already started.");
         }
@@ -218,6 +219,7 @@ public class RectManager {
             filters.replaceAll((f, v) -> new HashSet<>(filters.get(f)));
         }
         rectsByConnectedEntityIdClone = new HashMap<>(rectsByConnectedEntityId);
+        this.transactionId = transactionId;
         isTransaction = true;
     }
 

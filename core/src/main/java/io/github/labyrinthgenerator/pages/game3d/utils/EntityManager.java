@@ -149,9 +149,7 @@ public class EntityManager {
     public synchronized void tickAllEntities(final float delta, float playerX, float playerZ) throws InterruptedException {
         long tickTime = System.currentTimeMillis();
         try {
-            System.out.println("Start tick all entities." +
-                    " Entities count: " + entitiesById.size() +
-                    ", rectangles count: " + screen.game.getRectMan().rectsCount() + ".");
+            startTickLog();
 
 
             long startTransactionTime = System.nanoTime();
@@ -159,13 +157,12 @@ public class EntityManager {
             List<Chunk> chunksInTransaction = chunkMan.getNearestChunksInBox(playerX, playerZ, 1);
             // TRANSACTION START
             startTransaction(chunksInTransaction);
-            screen.game.getRectMan().startTransaction(chunksInTransaction);
+            screen.game.getRectMan().joinTransaction(chunksInTransaction, transactionId);
 
-            startTransactionTime = System.nanoTime() - startTransactionTime;
-            double seconds = (double) startTransactionTime / 1_000_000_000.0;
-            System.out.println("Transaction started in " + seconds + " seconds ");
+            startTransactionLog(startTransactionTime);
 
 
+            // THREADS LOGIC START
             List<Chunk> nearestChunks = chunkMan.getNearestChunks(playerX, playerZ);
 
             List<Future<Boolean>> futures = new ArrayList<>(nearestChunks.size());
@@ -181,6 +178,7 @@ public class EntityManager {
                 future.get();
             }
             executorService.shutdown();
+            // THREADS LOGIC END
 
 
             long endTransactionTime = System.nanoTime();
@@ -189,32 +187,18 @@ public class EntityManager {
             commitTransaction();
             // TRANSACTION END
 
-            endTransactionTime = System.nanoTime() - endTransactionTime;
-            seconds = (double) endTransactionTime / 1_000_000_000.0;
-            System.out.println("Transaction ended in " + seconds + " seconds ");
+            endTransactionLog(endTransactionTime);
 
 
-            AtomicInteger entitiesSize = new AtomicInteger();
-            entitiesByChunks.forEach((key, value) -> entitiesSize.addAndGet(value.size()));
-            if (entitiesSize.get() != entitiesById.size()) {
-                if (entitiesSize.get() > entitiesById.size()) throw new RuntimeException("entitiesSize.get() > entitiesById.size(): " + entitiesSize.get() + ", " + entitiesById.size());
-                else throw new RuntimeException("entitiesSize.get() < entitiesById.size(): " + entitiesSize.get() + ", " + entitiesById.size());
-            }
-            tickTime = System.currentTimeMillis() - tickTime;
-            System.out.println("End tick all entities." +
-                    " Entities count: " + entitiesSize.get() +
-                    ", rectangles count: " + screen.game.getRectMan().rectsCount() +
-                    ". Time spent seconds: " + tickTime / 1000d + ".");
+            endTickLogAndChecks(tickTime);
+
         } catch (Exception e) {
             e.printStackTrace();
             screen.game.getRectMan().rollbackTransaction();
             rollbackTransaction();
             // TRANSACTION END
 
-            System.err.println(
-                "End tick all entities, transaction rollback." +
-                    " Time spent seconds: " + tickTime / 1000d + "."
-            );
+            rollbackTickLog(tickTime);
         }
     }
 
@@ -267,5 +251,44 @@ public class EntityManager {
 
     public long getTransactionId() {
         return transactionId;
+    }
+
+    private void startTickLog() {
+        System.out.println("Start tick all entities." +
+            " Entities count: " + entitiesById.size() +
+            ", rectangles count: " + screen.game.getRectMan().rectsCount() + ".");
+    }
+
+    private void startTransactionLog(long startTransactionTime) {
+        startTransactionTime = System.nanoTime() - startTransactionTime;
+        double seconds = (double) startTransactionTime / 1_000_000_000.0;
+        System.out.println("Transaction started in " + seconds + " seconds ");
+    }
+
+    private void endTransactionLog(long endTransactionTime) {
+        endTransactionTime = System.nanoTime() - endTransactionTime;
+        double seconds = (double) endTransactionTime / 1_000_000_000.0;
+        System.out.println("Transaction ended in " + seconds + " seconds ");
+    }
+
+    private void endTickLogAndChecks(long tickTime) {
+        AtomicInteger entitiesSize = new AtomicInteger();
+        entitiesByChunks.forEach((key, value) -> entitiesSize.addAndGet(value.size()));
+        if (entitiesSize.get() != entitiesById.size()) {
+            if (entitiesSize.get() > entitiesById.size()) throw new RuntimeException("entitiesSize.get() > entitiesById.size(): " + entitiesSize.get() + ", " + entitiesById.size());
+            else throw new RuntimeException("entitiesSize.get() < entitiesById.size(): " + entitiesSize.get() + ", " + entitiesById.size());
+        }
+        tickTime = System.currentTimeMillis() - tickTime;
+        System.out.println("End tick all entities." +
+            " Entities count: " + entitiesSize.get() +
+            ", rectangles count: " + screen.game.getRectMan().rectsCount() +
+            ". Time spent seconds: " + tickTime / 1000d + ".");
+    }
+
+    private void rollbackTickLog(long tickTime) {
+        System.err.println(
+            "End tick all entities, transaction rollback." +
+                " Time spent seconds: " + tickTime / 1000d + "."
+        );
     }
 }
