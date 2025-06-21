@@ -19,4 +19,4 @@ Special thanks to [PilzHere](https://github.com/PilzHere) for the project
 
 #### Contains:
 
-Chunks, frustum cull, overlap filters.
+Chunks, frustum cull, overlap filters, multithreading and transactions! And more fun!
