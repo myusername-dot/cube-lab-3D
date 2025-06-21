@@ -10,7 +10,6 @@ import io.github.labyrinthgenerator.pages.game3d.screens.GameScreen;
 import io.github.labyrinthgenerator.pages.game3d.thread.TickChunk;
 
 import java.util.*;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -146,10 +145,13 @@ public class EntityManager {
     }
 
     public synchronized void tickAllEntities(final float delta, float playerX, float playerZ) throws InterruptedException {
+        long tickTime = System.currentTimeMillis();
         try {
-            System.out.println("Start tick all entities:");
-            System.out.println("Entities count: " + entitiesById.size() + ",");
-            System.out.println("Rectangles count: " + screen.game.getRectMan().rectsCount() + ".");
+            System.out.println(
+                "Start tick all entities." +
+                    " Entities count: " + entitiesById.size() +
+                    ", rectangles count: " + screen.game.getRectMan().rectsCount() + "."
+            );
 
             List<Chunk> nearestChunks = chunkMan.getNearestChunks(playerX, playerZ);
 
@@ -166,7 +168,7 @@ public class EntityManager {
                 futures.add(executorService.submit(tickChunk));
             }
 
-            for(Future<Boolean> future : futures) {
+            for (Future<Boolean> future : futures) {
                 future.get();
             }
             executorService.shutdown();
@@ -184,16 +186,23 @@ public class EntityManager {
                 else
                     throw new RuntimeException("entitiesSize.get() < entitiesById.size(): " + entitiesSize.get() + ", " + entitiesById.size());
             }
-            System.out.println("End tick all entities:");
-            System.out.println("Entities count: " + entitiesSize.get() + ",");
-            System.out.println("Rectangles count: " + screen.game.getRectMan().rectsCount() + ".");
+            tickTime = System.currentTimeMillis() - tickTime;
+            System.out.println(
+                "End tick all entities." +
+                    " Entities count: " + entitiesSize.get() +
+                    ", rectangles count: " + screen.game.getRectMan().rectsCount() +
+                    ". Time spent seconds: " + tickTime / 1000d + "."
+            );
         } catch (Exception e) {
             e.printStackTrace();
             screen.game.getRectMan().rollbackTransaction();
             rollbackTransaction();
             // TRANSACTION END
 
-            System.err.println("End tick all entities, transaction rollback.");
+            System.err.println(
+                "End tick all entities, transaction rollback." +
+                    " Time spent seconds: " + tickTime / 1000d + "."
+            );
         }
     }
 
