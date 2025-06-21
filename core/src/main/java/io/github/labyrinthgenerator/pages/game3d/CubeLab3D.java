@@ -25,34 +25,25 @@ import io.github.labyrinthgenerator.pages.game3d.utils.EntityManager;
 
 public class CubeLab3D extends Game implements Page {
 	private SpriteBatch batch;
-
 	private ModelBatch mdlBatch;
-
 	private FrameBuffer fbo;
-
 	private AssetsManager assMan;
-
     private ChunkManager chunkMan;
 	private EntityManager entMan;
-
 	private RectManager rectMan;
-
 	private ModelMaker cellBuilder;
 	private OverlapFilterManager overlapFilterMan;
 	private LMapBuilder mapBuilder;
+    private ShaderProvider shaderProvider;
+    private GameInputProcessor gameInput;
 
 	public boolean gameIsPaused = false;
 
 	private float timeSinceLaunch = 0;
 
-	private float currentAmbientVolume = 0.1f;
-
-	private float currentSfxVolume = 0.25f;
-
-	private float currentMusicVolume = 0.05f;
-	private GameInputProcessor gameInput;
-
-    private ShaderProvider shaderProvider;
+	public float currentAmbientVolume = 0.1f;
+	public float currentSfxVolume = 0.25f;
+	public float currentMusicVolume = 0.05f;
 
 	@Override
 	public void create() {
@@ -78,7 +69,6 @@ public class CubeLab3D extends Game implements Page {
 
 		Gdx.input.setInputProcessor(gameInput = new GameInputProcessor());
 
-//		setScreen(new PlayScreen(this));
 		setScreen(new MainMenuScreen(this));
 
         batch = new SpriteBatch();
@@ -134,10 +124,6 @@ public class CubeLab3D extends Game implements Page {
         return null;
     }
 
-    public float getAmbientVolume() {
-		return currentAmbientVolume;
-	}
-
 	public AssetsManager getAssMan() {
 		return assMan;
 	}
@@ -174,20 +160,12 @@ public class CubeLab3D extends Game implements Page {
 		return mdlBatch;
 	}
 
-	public float getMusicVolume() {
-		return currentMusicVolume;
-	}
-
 	public OverlapFilterManager getOverlapFilterMan() {
 		return overlapFilterMan;
 	}
 
 	public RectManager getRectMan() {
 		return rectMan;
-	}
-
-	public float getSfxVolume() {
-		return currentSfxVolume;
 	}
 
 	public float getTimeSinceLaunch() {
@@ -208,17 +186,5 @@ public class CubeLab3D extends Game implements Page {
 		getScreen().render(Gdx.graphics.getDeltaTime());
 
 		gameInput.resetScrolled();
-	}
-
-	public void setAmbientVolume(final float currentAmbientVolume) {
-		this.currentAmbientVolume = currentAmbientVolume;
-	}
-
-	public void setMusicVolume(final float newMusicVolume) {
-		this.currentMusicVolume = newMusicVolume;
-	}
-
-	public void setSfxVolume(final float currentSfxVolume) {
-		this.currentSfxVolume = currentSfxVolume;
 	}
 }
