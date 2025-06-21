@@ -1,6 +1,6 @@
 # CubeLab3D
 
-This project is written with a [libGDX](https://libgdx.com/).
+This app is written just for fun with a [libGDX](https://libgdx.com/).
 
 The application generates difficult to navigate mazes.
 ____
@@ -15,9 +15,9 @@ ____
 
 #### Explore the generated maze.
 
-Special thanks to [PilzHere](https://github.com/PilzHere) for the project 
+Thanks to [PilzHere](https://github.com/PilzHere) for the project 
 [Foxenstein3D](https://github.com/PilzHere/Foxenstein3D) from which I took most of the code.
 
 #### Contains:
 
-Chunks, frustum cull, overlap filters, multithreading and transactions! And more fun!
+Chunks, frustum cull, overlap filters, multithreading and transactions!
