@@ -7,10 +7,12 @@ import com.badlogic.gdx.math.Vector3;
 import io.github.labyrinthgenerator.labyrinth.Labyrinth;
 import io.github.labyrinthgenerator.pages.game3d.CubeLab3D;
 import io.github.labyrinthgenerator.pages.game3d.cell.Cell3D;
+import io.github.labyrinthgenerator.pages.game3d.chunks.ChunkManager;
 import io.github.labyrinthgenerator.pages.game3d.entities.Firefly;
 import io.github.labyrinthgenerator.pages.game3d.models.ModelMaker;
 import io.github.labyrinthgenerator.pages.game3d.rect.RectanglePlus;
 import io.github.labyrinthgenerator.pages.game3d.rect.filters.RectanglePlusFilter;
+import io.github.labyrinthgenerator.pages.game3d.vectors.Vector2i;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -54,19 +56,21 @@ public class LMapBuilder {
         assert lines.size() != 0;
         assert lines.get(lines.size() - 1).length() != 0;
 
+
+        // CHUNKS
         int width = lines.get(lines.size() - 1).length(), height = lines.size();
 
-        // create chunks
-        for (int i = 0; i < width / CHUNK_SIZE + 1; i++) {
-            for (int j = 0; j < height / CHUNK_SIZE + 1; j++) {
-                game.getChunkMan().add(i * CHUNK_SIZE, j * CHUNK_SIZE);
+        Vector2i chunksSize = new Vector2i(width / CHUNK_SIZE + 1, height / CHUNK_SIZE + 1);
+        ChunkManager chunkMan = new ChunkManager(chunksSize);
+        game.setChunkMan(chunkMan);
+
+        for (int i = 0; i < chunksSize.x; i++) {
+            for (int j = 0; j < chunksSize.y; j++) {
+                chunkMan.add(i * CHUNK_SIZE, j * CHUNK_SIZE);
             }
         }
-        game.getChunkMan().setSize(new Vector2(
-            (float) (width / CHUNK_SIZE + 1) * CHUNK_SIZE,
-            (float) (height / CHUNK_SIZE + 1) * CHUNK_SIZE)
-        );
 
+        // WALLS
         final Texture texWall = ModelMaker.textureRegionToTexture(
             game.getAssMan().get(game.getAssMan().atlas01), 2 * TEXTURE_SIZE, 0, TEXTURE_SIZE, TEXTURE_SIZE);
         final Texture texFloor = ModelMaker.textureRegionToTexture(
@@ -140,7 +144,7 @@ public class LMapBuilder {
             cell3D.buildCell();
         }
 
-        // add entities
+        // ENTITIES
         for (Cell3D cell3D : cell3DList) {
             if (!cell3D.mobSpawn) continue;
             int minFirefliesCount = 2, maxFirefliesCount = 5;
@@ -155,6 +159,7 @@ public class LMapBuilder {
             }
         }
 
+        // SPAWN
         // -0.5, 0.5; 0.5, 1
         // height - 2 - 0.5; height - 1 - 0.5
         mapLoadSpawnPosition.x = HALF_UNIT;

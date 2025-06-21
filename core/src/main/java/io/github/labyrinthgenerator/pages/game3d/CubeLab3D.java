@@ -71,7 +71,6 @@ public class CubeLab3D extends Game implements Page {
 
 		cellBuilder = new ModelMaker(this); // builds models...
 
-        chunkMan = new ChunkManager();
 		entMan = new EntityManager();
 		rectMan = new RectManager(this);
 
@@ -112,6 +111,12 @@ public class CubeLab3D extends Game implements Page {
 		fbo = new FrameBuffer(Format.RGB888, width, height, true);
 		fbo.getColorBufferTexture().setFilter(TextureFilter.Nearest, TextureFilter.Nearest);
 	}
+
+    public void setChunkMan(ChunkManager chunkMan) {
+        this.chunkMan = chunkMan;
+        entMan.setChunkMan(chunkMan);
+        rectMan.setChunkMan(chunkMan);
+    }
 
 	@Override
 	public void dispose() {

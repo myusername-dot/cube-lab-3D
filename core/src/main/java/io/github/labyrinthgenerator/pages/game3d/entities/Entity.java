@@ -64,9 +64,9 @@ public abstract class Entity {
 
     public synchronized void updateChunk() {
         if (!isDestroyed) {
-            Vector2 chunksSize = chunkMan.getSize();
+            Vector2 worldSize = chunkMan.getWorldSize();
             if (position.x < -0.5 || position.z < -0.5 ||
-                position.x > chunksSize.x || position.z > chunksSize.y) {
+                position.x > worldSize.x || position.z > worldSize.y) {
                 System.err.println("Entity id: " + id + " position " + position + " out of bounds.");
                 return;
             }

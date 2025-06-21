@@ -23,13 +23,16 @@ public class RectManager {
     // But the current transaction can only read changes in synchronized blocks
     private volatile boolean isTransaction = false;
 
-    private final ChunkManager chunkMan;
-
     private final CubeLab3D game;
+
+    private ChunkManager chunkMan;
 
     public RectManager(final CubeLab3D game) {
         this.game = game;
-        this.chunkMan = game.getChunkMan();
+    }
+
+    public void setChunkMan(final ChunkManager chunkMan) {
+        this.chunkMan = chunkMan;
     }
 
     public void addRectTransactional(final RectanglePlus rect) {

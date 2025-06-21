@@ -29,9 +29,16 @@ public class EntityManager {
     private volatile boolean isTransaction = false;
     private long transactionId = -1;
 
+    private GameScreen screen;
     private ChunkManager chunkMan;
 
-    private GameScreen screen;
+    public void setScreen(final GameScreen screen) {
+        this.screen = screen;
+    }
+
+    public void setChunkMan(final ChunkManager chunkMan) {
+        this.chunkMan = chunkMan;
+    }
 
     public Chunk addEntityOnChunkTransactional(float x, float z, final Entity ent) {
         Chunk chunk;
@@ -137,11 +144,6 @@ public class EntityManager {
                 }
             }
         }
-    }
-
-    public void setScreen(final GameScreen screen) {
-        this.screen = screen;
-        this.chunkMan = screen.game.getChunkMan();
     }
 
     public synchronized void tickAllEntities(final float delta, float playerX, float playerZ) throws InterruptedException {
