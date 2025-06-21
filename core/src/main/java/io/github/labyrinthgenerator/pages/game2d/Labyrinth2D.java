@@ -13,7 +13,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
-public class LabyrinthPage implements Page {
+public class Labyrinth2D implements Page {
 
     public static String txtFilename;
 

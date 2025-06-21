@@ -14,7 +14,7 @@ import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
-import io.github.labyrinthgenerator.pages.game2d.LabyrinthPage;
+import io.github.labyrinthgenerator.pages.game2d.Labyrinth2D;
 import io.github.labyrinthgenerator.pages.game3d.CubeLab3D;
 import io.github.labyrinthgenerator.pages.game3d.constants.Constants;
 
@@ -95,7 +95,7 @@ public class MainMenuScreen extends GameScreen {
         sfxAmbient = game.getAssMan().get(game.getAssMan().sfxAmbientDark);
         sfxChoice = game.getAssMan().get(game.getAssMan().sfxItem);
 
-        game.getMapBuilder().buildMap(LabyrinthPage.txtFilename);
+        game.getMapBuilder().buildMap(Labyrinth2D.txtFilename);
 
         currentCam = new PerspectiveCamera(70, 640, 480);
         currentCam.position.set(new Vector3(0, HALF_UNIT, 0));

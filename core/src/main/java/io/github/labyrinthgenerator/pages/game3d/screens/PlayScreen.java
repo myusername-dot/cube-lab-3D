@@ -14,7 +14,7 @@ import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
-import io.github.labyrinthgenerator.pages.game2d.LabyrinthPage;
+import io.github.labyrinthgenerator.pages.game2d.Labyrinth2D;
 import io.github.labyrinthgenerator.pages.game3d.CubeLab3D;
 import io.github.labyrinthgenerator.pages.game3d.constants.Constants;
 import io.github.labyrinthgenerator.pages.game3d.entities.player.Player;
@@ -75,7 +75,7 @@ public class PlayScreen extends GameScreen {
         sfxItem = game.getAssMan().get(game.getAssMan().sfxItem);
         //musicBackground = game.getAssMan().get(game.getAssMan().musicBackground01);
 
-        game.getMapBuilder().buildMap(LabyrinthPage.txtFilename);
+        game.getMapBuilder().buildMap(Labyrinth2D.txtFilename);
 
         float playerRectWidth = (HALF_UNIT / 2f);
         float playerRectDepth = (HALF_UNIT / 2f);
