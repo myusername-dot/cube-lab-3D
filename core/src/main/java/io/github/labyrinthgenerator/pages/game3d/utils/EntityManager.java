@@ -155,9 +155,17 @@ public class EntityManager {
 
             List<Chunk> nearestChunks = chunkMan.getNearestChunks(playerX, playerZ);
 
+
+            long startTime = System.nanoTime();
+
             // TRANSACTION START
             startTransaction();
             screen.game.getRectMan().startTransaction();
+
+            startTime = System.nanoTime() - startTime;
+            double seconds = (double) startTime / 1_000_000_000.0;
+            System.out.println("Transaction started in " + seconds + " seconds ");
+
 
             List<Future<Boolean>> futures = new ArrayList<>(nearestChunks.size());
             ExecutorService executorService = Executors.newFixedThreadPool(4);
@@ -173,9 +181,16 @@ public class EntityManager {
             }
             executorService.shutdown();
 
+
+            long endTime = System.nanoTime();
+
             screen.game.getRectMan().commitTransaction();
             commitTransaction();
             // TRANSACTION END
+
+            endTime = System.nanoTime() - endTime;
+            seconds = (double) endTime / 1_000_000_000.0;
+            System.out.println("Transaction ended in " + seconds + " seconds ");
 
 
             AtomicInteger entitiesSize = new AtomicInteger();
