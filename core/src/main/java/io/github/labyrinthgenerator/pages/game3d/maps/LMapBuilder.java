@@ -62,6 +62,10 @@ public class LMapBuilder {
                 game.getChunkMan().add(i * CHUNK_SIZE, j * CHUNK_SIZE);
             }
         }
+        game.getChunkMan().setSize(new Vector2(
+            (float) (width / CHUNK_SIZE + 1) * CHUNK_SIZE,
+            (float) (height / CHUNK_SIZE + 1) * CHUNK_SIZE)
+        );
 
         final Texture texWall = ModelMaker.textureRegionToTexture(
             game.getAssMan().get(game.getAssMan().atlas01), 2 * TEXTURE_SIZE, 0, TEXTURE_SIZE, TEXTURE_SIZE);

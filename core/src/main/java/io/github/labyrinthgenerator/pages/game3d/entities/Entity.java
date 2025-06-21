@@ -2,6 +2,7 @@ package io.github.labyrinthgenerator.pages.game3d.entities;
 
 import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import io.github.labyrinthgenerator.pages.game3d.chunks.Chunk;
 import io.github.labyrinthgenerator.pages.game3d.chunks.ChunkManager;
@@ -63,15 +64,21 @@ public abstract class Entity {
 
     public synchronized void updateChunk() {
         if (!isDestroyed) {
+            Vector2 chunksSize = chunkMan.getSize();
+            if (position.x < -0.5 || position.z < -0.5 ||
+                position.x > chunksSize.x || position.z > chunksSize.y) {
+                System.err.println("Entity id: " + id + " position " + position + " out of bounds.");
+                return;
+            }
             if (chunk != chunkMan.get(chunk.x, chunk.z)) {
                 throw new RuntimeException("Entity id: " + id + ", method updateChunk(), " + chunk + " is invalid.");
             }
             Chunk newChunk = chunkMan.get(position.x, position.z);
             if (newChunk == null) {
-                throw new NullPointerException("Chunk at position " + position.x + ", " + position.z + " is null.");
+                throw new NullPointerException("Chunk at position " + position + " is null.");
             }
             if (newChunk.equals(chunk)) {
-                throw new UnsupportedOperationException("Ent id " + id + " newChunk == chunk.");
+                throw new UnsupportedOperationException("Ent id " + id + " at position " + position + " " + chunk + " newChunk == chunk.");
             }
             entMan.updateEntityChunkTransactional(chunk, newChunk, this);
             screen.game.getRectMan().updateEntityChunkIfExistsRectTransactional(chunk, newChunk, this);

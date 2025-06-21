@@ -158,7 +158,7 @@ public class EntityManager {
             screen.game.getRectMan().startTransaction();
 
             List<Future<Boolean>> futures = new ArrayList<>(nearestChunks.size());
-            ExecutorService executorService = Executors.newFixedThreadPool(1);
+            ExecutorService executorService = Executors.newFixedThreadPool(4);
 
             for (Chunk chunk : nearestChunks) {
                 Set<Entity> entitiesByChunkClone = new HashSet<>(entitiesByChunks.get(chunk));
@@ -189,6 +189,11 @@ public class EntityManager {
             System.out.println("Rectangles count: " + screen.game.getRectMan().rectsCount() + ".");
         } catch (Exception e) {
             e.printStackTrace();
+            screen.game.getRectMan().rollbackTransaction();
+            rollbackTransaction();
+            // TRANSACTION END
+
+            System.err.println("End tick all entities, transaction rollback.");
         }
     }
 
@@ -208,9 +213,17 @@ public class EntityManager {
         }
         entitiesByChunks.clear();
         entitiesById.clear();
-        // FIXME or put all to the new HashSet?
         entitiesByChunks.putAll(entitiesByChunksClone);
         entitiesById.putAll(entitiesByIdClone);
+        isTransaction = false;
+        entitiesByChunksClone.clear();
+        entitiesByIdClone.clear();
+    }
+
+    public synchronized void rollbackTransaction() {
+        if (!isTransaction) {
+            throw new RuntimeException("Transaction has already committed.");
+        }
         isTransaction = false;
         entitiesByChunksClone.clear();
         entitiesByIdClone.clear();

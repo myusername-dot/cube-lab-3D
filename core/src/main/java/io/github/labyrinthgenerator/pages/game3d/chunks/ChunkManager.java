@@ -11,6 +11,8 @@ import static io.github.labyrinthgenerator.pages.game3d.constants.Constants.HALF
 
 public class ChunkManager {
 
+    private Vector2 size;
+
     private final Map<Vector2i, Chunk> chunksByPosition = new HashMap<>();
 
     public Chunk add(float x, float z) {
@@ -45,6 +47,14 @@ public class ChunkManager {
             }
         }
         return nearestChunks;
+    }
+
+    public void setSize(Vector2 size) {
+        this.size = size;
+    }
+
+    public Vector2 getSize() {
+        return size;
     }
 
     private Vector2i getChunkVector2i(float x, float z) {

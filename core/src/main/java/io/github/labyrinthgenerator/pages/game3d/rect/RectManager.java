@@ -225,6 +225,15 @@ public class RectManager {
         rectsByConnectedEntityIdClone.clear();
     }
 
+    public synchronized void rollbackTransaction() {
+        if (!isTransaction) {
+            throw new RuntimeException("Transaction has already committed.");
+        }
+        isTransaction = false;
+        rectsClone.clear();
+        rectsByConnectedEntityIdClone.clear();
+    }
+
     private Map<Chunk, Map<RectanglePlusFilter, Set<RectanglePlus>>> getTransactionRects() {
         if (isTransaction) return rectsClone;
         else return this.rects;
