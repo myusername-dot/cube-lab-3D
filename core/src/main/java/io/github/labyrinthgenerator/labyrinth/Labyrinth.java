@@ -181,6 +181,8 @@ public class Labyrinth implements Lab {
 
     @Override
     public void convertTo3dGame() {
+        prevPosses.clear();
+        puffins.clear();
         buildFourth();
     }
 
