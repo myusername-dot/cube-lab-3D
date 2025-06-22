@@ -38,7 +38,8 @@ public class Labyrinth2 implements Lab {
     public static void main(String[] args) {
         Labyrinth2 labyrinth2 = new Labyrinth2(0, 0, 50, 10);
         labyrinth2.create();
-        while (!labyrinth2.puffinsStack.empty()) labyrinth2.passage();
+        while (!labyrinth2.puffinsStack.empty()) labyrinth2.passageStack();
+        labyrinth2.convert();
         labyrinth2.printMaze();
     }
 
@@ -56,7 +57,7 @@ public class Labyrinth2 implements Lab {
         puffinsStack = new Stack<>();
         prevPosses = new HashSet<>();
         puffins = new HashSet<>();
-        int randomSeed = 120;
+        int randomSeed = (int) (Math.random() * 10_000_000);
         random = new Random(randomSeed);
     }
 
@@ -72,6 +73,12 @@ public class Labyrinth2 implements Lab {
 
     @Override
     public boolean passage() {
+        boolean escape = false;
+        while (!isFin() && !dirty) escape = passageStack();
+        return escape;
+    }
+
+    public boolean passageStack() {
         int[] DX = {0, 0, 1, -1};
         int[] DY = {-1, 1, 0, 0};
         int[] OP = {Dirs.S.ordinal(), Dirs.N.ordinal(), Dirs.W.ordinal(), Dirs.E.ordinal()};
@@ -92,8 +99,8 @@ public class Labyrinth2 implements Lab {
             if (ny >= 0 && ny < height && nx >= 0 && nx < width && grid[ny][nx] == 0) {
                 grid[cy][cx] |= Dirs.values()[direction].value;
                 grid[ny][nx] |= Dirs.values()[OP[direction]].value;
-                pushPuffin(cx, cy, nx, ny);
                 dirty = true;
+                pushPuffin(cx, cy, nx, ny);
             }
         } else {
             this.puffinsStack.pop();
@@ -171,7 +178,8 @@ public class Labyrinth2 implements Lab {
                 }
             }
         }
-        gridFin[widthFin - 1][heightFin - 1] = 2;
+        //gridFin[widthFin - 1][heightFin - 1] = 2;
+        gridFin[0][heightFin - 1] = 1;
 
         dirty = false;
     }
@@ -195,6 +203,9 @@ public class Labyrinth2 implements Lab {
 
     @Override
     public void convertTo3dGame() {
+        puffinsStack.clear();
+        prevPosses.clear();
+        puffins.clear();
         convert();
     }
 
