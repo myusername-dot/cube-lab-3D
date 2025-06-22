@@ -5,13 +5,13 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import io.github.labyrinthgenerator.MyApplication;
 import io.github.labyrinthgenerator.additional.Vector2iSeedHash;
+import io.github.labyrinthgenerator.labyrinth.Lab;
 import io.github.labyrinthgenerator.pages.Page;
 import io.github.labyrinthgenerator.pages.game2d.utils.Tools2d;
 import io.github.labyrinthgenerator.pages.game3d.CubeLab3D;
+import io.github.labyrinthgenerator.pages.game3d.vectors.Vector2i;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 public class Labyrinth2D implements Page {
 
@@ -33,8 +33,10 @@ public class Labyrinth2D implements Page {
     private boolean screenshot;
     private boolean txtFile;
 
-    private Set<Vector2iSeedHash> prevPoses;
-    private Set<Vector2iSeedHash> puffins;
+    private Lab lab;
+
+    private Set<Vector2i> prevPoses;
+    private Set<Vector2i> puffins;
 
     @Override
     public void create() {
@@ -43,10 +45,10 @@ public class Labyrinth2D implements Page {
         puffinTexture = new Texture("labyrinth2d/puff.png");
 
         createToolsPage();
-        toolsPage.getLabyrinth().wormSecond(false, false, 0);
+        lab = toolsPage.getLabyrinth();
 
-        prevPoses = new HashSet<>();
-        puffins = new HashSet<>();
+        prevPoses = lab.getPrevPosses();
+        puffins = lab.getPuffins();
 
         puffPuffins = true;
     }
@@ -68,25 +70,21 @@ public class Labyrinth2D implements Page {
 
         if (!isLogicFrame()) return;
 
-        prevPoses.clear();
-        puffins.clear();
         /*if (newLab) {
             toolsPage.dispose();
             createToolsPage();
-            toolsPage.getLabyrinth().wormSecond(false, false, 0);
+            lab = toolsPage.getLabyrinth();
+            prevPoses = lab.getPrevPosses();
+            puffins = lab.getPuffins();
             newLab = false;
             puffPuffins = true;
         } else */
         if (puffPuffins) {
-            escape = toolsPage.getLabyrinth().wormThird(
-                1, 1,
-                prevPoses, puffins,
-                false, false
-            );
-            puffPuffins = !puffins.isEmpty();
+            escape = lab.passage();
+            puffPuffins = !lab.isFin();
         } else {
             // rest assured that the exit is open
-            toolsPage.getLabyrinth().buildFourth(escape);
+            lab.convertTo3dGame();
             escape = true;
             isFinished = true;
             screenshot = MyApplication.saveAsImage;
@@ -108,7 +106,7 @@ public class Labyrinth2D implements Page {
         int screenX = toolsPage.getScreenX();
         int screenY = toolsPage.getScreenY();
 
-        for (Vector2iSeedHash prevPose : prevPoses) {
+        for (Vector2i prevPose : prevPoses) {
             if (escape) {
                 spriteBatch.draw(
                     prefPoseAcceptEscapeTexture,
@@ -123,7 +121,7 @@ public class Labyrinth2D implements Page {
                 );
             }
         }
-        for (Vector2iSeedHash puffin : puffins) {
+        for (Vector2i puffin : puffins) {
             spriteBatch.draw(
                 puffinTexture,
                 screenX + puffin.x * scale, screenY + puffin.y * scale,

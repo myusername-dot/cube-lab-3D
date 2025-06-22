@@ -2,11 +2,12 @@ package io.github.labyrinthgenerator.labyrinth;
 
 import com.badlogic.gdx.math.MathUtils;
 import io.github.labyrinthgenerator.additional.Vector2iSeedHash;
+import io.github.labyrinthgenerator.pages.game3d.vectors.Vector2i;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class Labyrinth {
+public class Labyrinth implements Lab {
 
     public static int maxDistance;
 
@@ -30,21 +31,30 @@ public class Labyrinth {
     private final int width;
     private final int height;
     private int[][] labyrinth;
-    private int[][] convertedLabyrinth;
 
-    private final Vector2iSeedHash escape;
+    private final int startX, startY;
+    private boolean escape;
 
-    private final Set<Vector2iSeedHash> prevPoses;
+    private int[][] labyrinthFin;
 
-    public Labyrinth(int width, int height) {
+    private final Vector2iSeedHash escapePos;
+
+    private final Set<Vector2i> prevPosses;
+    private final Set<Vector2i> puffins;
+
+    public Labyrinth(int startX, int startY, int width, int height) {
+        this.startX = startX + 1;
+        this.startY = startY + 1;
         this.width = width;
         this.height = height;
-        escape = new Vector2iSeedHash(width - 2, height - 2);
-        prevPoses = new HashSet<>();
+        escapePos = new Vector2iSeedHash(width - 2, height - 2);
+        prevPosses = new HashSet<>();
+        puffins = new HashSet<>();
         maxDistance = Integer.MAX_VALUE;
         create();
     }
 
+    @Override
     public void create() {
         labyrinth = new int[width][height];
         for (int j = height - 2; j >= 0; j -= 2)
@@ -72,21 +82,11 @@ public class Labyrinth {
             }
             System.out.println();
         }
+
+        wormFirst(false, false, 0);
     }
 
-    public void wormFirst() {
-        for (int j = height - 2; j >= 1; j -= 2) {
-            for (int i = 1; i <= width - 2; i += 2) {
-                List<Direction> directions = getDirections(i, j, true, false);
-                if (directions.isEmpty()) continue;
-                int window = MathUtils.random(0, directions.size() - 1);
-                Direction direction = directions.get(window);
-                dig(direction, i, j);
-            }
-        }
-    }
-
-    public void wormSecond(boolean sortedByEscapeDistance, boolean sortedByDistance, int limit) {
+    public void wormFirst(boolean sortedByEscapeDistance, boolean sortedByDistance, int limit) {
         Map<Vector2iSeedHash, Integer> puffins = new HashMap<>();
         for (int j = height - 2; j >= 1; j -= 2) {
             for (int i = 1; i <= width - 2; i += 2) {
@@ -111,7 +111,7 @@ public class Labyrinth {
             .sorted(
                 (e1, e2) ->
                     sortedByEscapeDistance ?
-                        e1.getKey().getDistance(escape).compareTo(e2.getKey().getDistance(escape)) :
+                        e1.getKey().getDistance(escapePos).compareTo(e2.getKey().getDistance(escapePos)) :
                         sortedByDistance ? e1.getValue().compareTo(e2.getValue()) :
                             0
             )
@@ -126,25 +126,27 @@ public class Labyrinth {
         puffins.clear();
     }
 
-    public boolean wormThird(
-        int startX, int startY,
-        Set<Vector2iSeedHash> prevPoses, Set<Vector2iSeedHash> puffins,
-        boolean sortedByEscapeDistance,
-        boolean exitWhenFindEscape
-    ) {
+    @Override
+    public boolean passage() {
+        return passage(false, false);
+    }
+
+    public boolean passage(boolean sortedByEscapeDistance, boolean exitWhenFindEscape) {
         if (LEntity.values()[labyrinth[startX][startY]] != LEntity.EMPTY)
             throw new UnsupportedOperationException("wormSecondDebug: LEntity.values()[labyrinth[startX][startY]] != LEntity.EMPTY");
 
+        Set<Vector2iSeedHash> prevPosesTmp = new HashSet<>();
         Map<Vector2iSeedHash, Integer> puffinsTmp = new HashMap<>();
-        boolean escape = setPuffins(puffinsTmp, prevPoses, 0, startX, startY, new Vector2iSeedHash(startX, startY), exitWhenFindEscape);
-        this.prevPoses.addAll(prevPoses);
+        escape = setPuffins(puffinsTmp, prevPosesTmp, 0, startX, startY, new Vector2iSeedHash(startX, startY), exitWhenFindEscape);
+        this.prevPosses.addAll(prevPosesTmp);
 
+        Set<Vector2i> puffins = new HashSet<>();
         if (escape && exitWhenFindEscape) return true;
         if (!puffinsTmp.isEmpty()) {
             List<Vector2iSeedHash> sorted = puffinsTmp.entrySet().stream()
                 .sorted((e1, e2) ->
                     sortedByEscapeDistance ?
-                        e1.getKey().getDistance(this.escape).compareTo(e2.getKey().getDistance(this.escape)) :
+                        e1.getKey().getDistance(this.escapePos).compareTo(e2.getKey().getDistance(this.escapePos)) :
                         e1.getValue().compareTo(e2.getValue()))
                 .map(Map.Entry::getKey)
                 .collect(Collectors.toList());
@@ -153,15 +155,38 @@ public class Labyrinth {
             if (!escape) puffins.add(sorted.get(sorted.size() - 1));
             else puffins.add(sorted.get((int) (sorted.size() / 1.6)));
         }
-        for (Vector2iSeedHash puffin : puffins) {
+        for (Vector2i puffin : puffins) {
             puff(puffin, true);
         }
+        this.puffins.clear();
+        this.puffins.addAll(puffins);
+
         return escape;
     }
 
-    public void buildFourth(boolean escape) {
+    @Override
+    public int[][] get2D() {
+        return labyrinth;
+    }
+
+    @Override
+    public int[][] get3D() {
+        return labyrinthFin;
+    }
+
+    @Override
+    public boolean isFin() {
+        return puffins.isEmpty();
+    }
+
+    @Override
+    public void convertTo3dGame() {
+        buildFourth();
+    }
+
+    public void buildFourth() {
         if (!escape) {
-            Vector2iSeedHash escapePos = new Vector2iSeedHash(this.escape.x, this.escape.y);
+            Vector2iSeedHash escapePos = new Vector2iSeedHash(this.escapePos.x, this.escapePos.y);
             do {
                 // ToDo другие координаты
                 if (Math.random() > 0.5) escapePos.x--;
@@ -172,7 +197,7 @@ public class Labyrinth {
         }
         for (int j = height - 2; j >= 1; j--) {
             for (int i = 1; i < width - 1; i++) {
-                if (this.escape.x == i && this.escape.y == j) continue;
+                if (this.escapePos.x == i && this.escapePos.y == j) continue;
                 Info info = new Info(labyrinth, i, j, width, height);
                 if (info.notEmptyEntities == 4 && info.entity == LEntity.EMPTY) {
                     switch (MathUtils.random(1, 4)) {
@@ -242,7 +267,7 @@ public class Labyrinth {
             haveWindow2 = haveWindow2 && lEntity2 != LEntity.HORIZONTAL_WALL;
             haveWindow3 = haveWindow3 && lEntity3 != LEntity.VERTICAL_WALL;
             haveWindow4 = haveWindow4 && lEntity4 != LEntity.VERTICAL_WALL;
-            if (usePrevPoses && !prevPoses.isEmpty()) {
+            if (usePrevPoses && !prevPosses.isEmpty()) {
                 maybe1 = x > 2;
                 maybe2 = x < width - 3;
                 maybe3 = y < height - 3;
@@ -251,10 +276,10 @@ public class Labyrinth {
                 Vector2iSeedHash throughWall2 = new Vector2iSeedHash(x + 2, y);
                 Vector2iSeedHash throughWall3 = new Vector2iSeedHash(x, y + 2);
                 Vector2iSeedHash throughWall4 = new Vector2iSeedHash(x, y - 2);
-                haveWindow1 = haveWindow1 && maybe1 && !prevPoses.contains(throughWall1);
-                haveWindow2 = haveWindow2 && maybe2 && !prevPoses.contains(throughWall2);
-                haveWindow3 = haveWindow3 && maybe3 && !prevPoses.contains(throughWall3);
-                haveWindow4 = haveWindow4 && maybe4 && !prevPoses.contains(throughWall4);
+                haveWindow1 = haveWindow1 && maybe1 && !prevPosses.contains(throughWall1);
+                haveWindow2 = haveWindow2 && maybe2 && !prevPosses.contains(throughWall2);
+                haveWindow3 = haveWindow3 && maybe3 && !prevPosses.contains(throughWall3);
+                haveWindow4 = haveWindow4 && maybe4 && !prevPosses.contains(throughWall4);
             }
         }
         if (haveWindow1) directions.add(Direction.LEFT);
@@ -299,7 +324,7 @@ public class Labyrinth {
             return false;
         }
         prevPoses.add(currentPos);
-        if (currentPos.equals(this.escape)) {
+        if (currentPos.equals(this.escapePos)) {
             return true;
         }
         distance++;
@@ -396,7 +421,7 @@ public class Labyrinth {
         return escape;
     }
 
-    private void puff(Vector2iSeedHash puffin, boolean usePrevPoses) {
+    private void puff(Vector2i puffin, boolean usePrevPoses) {
         List<Direction> directions = getDirections(puffin.x, puffin.y, true, usePrevPoses);
         if (directions.isEmpty()) return;
         int window = MathUtils.random(0, directions.size() - 1);
@@ -405,39 +430,39 @@ public class Labyrinth {
     }
 
     private void convertToMapWithCorners() {
-        convertedLabyrinth = new int[width][height];
+        labyrinthFin = new int[width][height];
         for (int i = 0; i < width; i++)
-            System.arraycopy(labyrinth[i], 0, convertedLabyrinth[i], 0, height);
+            System.arraycopy(labyrinth[i], 0, labyrinthFin[i], 0, height);
         // walls
         for (int i = 1; i < width; i++) {
-            convertedLabyrinth[i][height - 1] = LEntity.HORIZONTAL_WALL.ordinal();
+            labyrinthFin[i][height - 1] = LEntity.HORIZONTAL_WALL.ordinal();
         }
         for (int j = height - 2; j >= 1; j--) {
-            convertedLabyrinth[0][j] = LEntity.VERTICAL_WALL.ordinal();
-            convertedLabyrinth[width - 1][j] = LEntity.VERTICAL_WALL.ordinal();
+            labyrinthFin[0][j] = LEntity.VERTICAL_WALL.ordinal();
+            labyrinthFin[width - 1][j] = LEntity.VERTICAL_WALL.ordinal();
         }
-        convertedLabyrinth[0][0] = LEntity.LU_CORNER.ordinal();
-        convertedLabyrinth[width - 1][0] = LEntity.RU_CORNER.ordinal();
-        convertedLabyrinth[0][height - 1] = LEntity.LD_CORNER.ordinal();
-        convertedLabyrinth[width - 1][height - 1] = LEntity.RD_CORNER.ordinal();
+        labyrinthFin[0][0] = LEntity.LU_CORNER.ordinal();
+        labyrinthFin[width - 1][0] = LEntity.RU_CORNER.ordinal();
+        labyrinthFin[0][height - 1] = LEntity.LD_CORNER.ordinal();
+        labyrinthFin[width - 1][height - 1] = LEntity.RD_CORNER.ordinal();
         for (int j = height - 2; j >= 1; j--) {
             for (int i = 1; i < width - 1; i++) {
-                Info info = new Info(convertedLabyrinth, i, j, width, height);
+                Info info = new Info(labyrinthFin, i, j, width, height);
                 LEntity entity = info.entity;
 
                 if (entity == LEntity.HORIZONTAL_WALL && info.up == LEntity.VERTICAL_WALL && info.down == LEntity.VERTICAL_WALL
                     || info.notEmptyEntities == 1 && (info.up == LEntity.VERTICAL_WALL || info.down == LEntity.VERTICAL_WALL)) {
                     entity = LEntity.VERTICAL_WALL;
-                    convertedLabyrinth[i][j] = entity.ordinal();
+                    labyrinthFin[i][j] = entity.ordinal();
                 }
 
-                setCorner(convertedLabyrinth, i, j, width, height);
+                setCorner(labyrinthFin, i, j, width, height);
             }
         }
         System.out.println("Finally:");
         for (int j = height - 1; j >= 0; j--) {
             for (int i = 0; i < width; i++) {
-                System.out.print(convertedLabyrinth[i][j]);
+                System.out.print(labyrinthFin[i][j]);
             }
             System.out.println();
         }
@@ -455,7 +480,17 @@ public class Labyrinth {
         return labyrinth;
     }
 
-    public int[][] getConvertedLabyrinth() {
-        return convertedLabyrinth;
+    public int[][] getLabyrinthFin() {
+        return labyrinthFin;
+    }
+
+    @Override
+    public Set<Vector2i> getPrevPosses() {
+        return prevPosses;
+    }
+
+    @Override
+    public Set<Vector2i> getPuffins() {
+        return puffins;
     }
 }

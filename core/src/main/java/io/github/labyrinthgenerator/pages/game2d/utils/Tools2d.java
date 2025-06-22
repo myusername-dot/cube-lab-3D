@@ -9,7 +9,9 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import io.github.labyrinthgenerator.MyApplication;
 import io.github.labyrinthgenerator.interfaces.ApplicationFacade;
+import io.github.labyrinthgenerator.labyrinth.Lab;
 import io.github.labyrinthgenerator.labyrinth.Labyrinth;
+import io.github.labyrinthgenerator.labyrinth.Labyrinth2;
 import io.github.labyrinthgenerator.pages.Page;
 
 import java.io.BufferedWriter;
@@ -36,7 +38,7 @@ public class Tools2d implements Page {
     private Texture entryTexture;
     private Texture escapeTexture;
 
-    private Labyrinth labyrinth;
+    private Lab labyrinth;
     private int lW, lH;
     private int screenX, screenY;
 
@@ -72,7 +74,8 @@ public class Tools2d implements Page {
         // in order for the labyrinth to have all outer walls, the width and height must be odd
         lW += lW % 2 == 0 ? 1 : 0;
         lH += lH % 2 == 0 ? 1 : 0;
-        labyrinth = new Labyrinth(lW, lH);
+        labyrinth = new Labyrinth2(0, 0, lW, lH);
+        labyrinth.create();
         screenX = (int) (windowW - lDivider * lW);
         screenY = (int) (windowH - lDivider * lH);
     }
@@ -91,13 +94,6 @@ public class Tools2d implements Page {
 
     @Override
     public void logic() {
-        frame++;
-        if (frame % 180 == 0) {
-            if (frame == 180)
-                labyrinth.wormSecond(false, false, 0);
-            else
-                labyrinth.wormSecond(true, true, 4);
-        }
     }
 
     @Override
@@ -108,7 +104,7 @@ public class Tools2d implements Page {
     }
 
     public void drawLabyrinth() {
-        int[][] labyrinth = this.labyrinth.getLabyrinth();
+        int[][] labyrinth = this.labyrinth.get2D();
         for (int j = 0; j < lH; j++)
             for (int i = 0; i < lW; i++) {
                 Labyrinth.LEntity lEntity = Labyrinth.LEntity.values()[(labyrinth[i][j])];
@@ -184,7 +180,7 @@ public class Tools2d implements Page {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        int[][] labyrinth = getLabyrinth().getConvertedLabyrinth();
+        int[][] labyrinth = this.labyrinth.get3D();
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(txtFile))) {
             for (int j = lH - 1; j >= 0; j--) {
                 for (int i = 0; i < lW; i++) {
@@ -202,7 +198,7 @@ public class Tools2d implements Page {
         return spriteBatch;
     }
 
-    public Labyrinth getLabyrinth() {
+    public Lab getLabyrinth() {
         return labyrinth;
     }
 
