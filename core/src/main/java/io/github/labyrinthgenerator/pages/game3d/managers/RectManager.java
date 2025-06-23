@@ -41,9 +41,9 @@ public class RectManager {
 
     public void addRectTransactional(final RectanglePlus rect) {
         synchronized (clonedRectsDoNotTouch) {
-            log.info("Method: addRect. Block synchronized (rectsClone).");
+            log.debug("Method: addRect. Block synchronized (rectsClone).");
             synchronized (clonedRectsByConnectedEntIdDoNotTouch) {
-                log.info("Method: addRect. Block synchronized (rectsByConnectedEntityIdClone).");
+                log.debug("Method: addRect. Block synchronized (rectsByConnectedEntityIdClone).");
                 //synchronized (rect) {
 
                 Map<Chunk, Map<RectanglePlusFilter, Set<RectanglePlus>>> rects = getRects();
@@ -57,21 +57,21 @@ public class RectManager {
                     rectsByConnectedEntityId.put(rect.getConnectedEntityId(), rect);
                 }
                 //}
-                log.info("Method: addRect. Block end synchronized (rectsByConnectedEntityIdClone).");
+                log.debug("Method: addRect. Block end synchronized (rectsByConnectedEntityIdClone).");
             }
-            log.info("Method: addRect. Block end synchronized (rectsClone).");
+            log.debug("Method: addRect. Block end synchronized (rectsClone).");
         }
     }
 
     public void updateEntityChunkIfExistsRectTransactional(final Chunk oldChunk, final Chunk newChunk, final Entity ent) {
         synchronized (clonedRectsDoNotTouch) {
-            log.info("Method: updateEntityChunkIfExistsRect. Block synchronized (rectsClone).");
+            log.debug("Method: updateEntityChunkIfExistsRect. Block synchronized (rectsClone).");
             synchronized (clonedRectsByConnectedEntIdDoNotTouch) {
-                log.info("Method: updateEntityChunkIfExistsRect. Block synchronized (rectsByConnectedEntityIdClone).");
+                log.debug("Method: updateEntityChunkIfExistsRect. Block synchronized (rectsByConnectedEntityIdClone).");
 
                 Player player = ((GameScreen) game.getScreen()).getPlayer();
                 if (player != null && player.getId() == ent.getId()) {
-                    log.info("Try to move the Player's rectangle to the other chunk.");
+                    log.debug("Try to move the Player's rectangle to the other chunk.");
                 }
 
                 Map<Chunk, Map<RectanglePlusFilter, Set<RectanglePlus>>> rects = getRects();
@@ -98,14 +98,14 @@ public class RectManager {
                 rects.get(newChunk).get(rect.filter).add(rect);
 
                 if (player != null && player.getId() == ent.getId()) {
-                    log.info("The Player's rectangle has been moved to the other chunk!");
+                    log.debug("The Player's rectangle has been moved to the other chunk!");
                 } else {
-                    log.info("Entity id: " + ent.getId() + " rectangle has been moved to the other chunk!");
+                    log.debug("Entity id: " + ent.getId() + " rectangle has been moved to the other chunk!");
                 }
             }
-            log.info("Method: updateEntityChunkIfExistsRect. Block end synchronized (rectsByConnectedEntityIdClone).");
+            log.debug("Method: updateEntityChunkIfExistsRect. Block end synchronized (rectsByConnectedEntityIdClone).");
         }
-        log.info("Method: updateEntityChunkIfExistsRect. Block end synchronized (rectsClone).");
+        log.debug("Method: updateEntityChunkIfExistsRect. Block end synchronized (rectsClone).");
     }
 
     public List<RectanglePlus> getNearestRectsByFilters(float playerX, float playerZ, final RectanglePlus rect) {
@@ -156,12 +156,12 @@ public class RectManager {
         if (otherRect != rect) { // if not itself...
             if (rect.overlaps(otherRect)) {
                 if (game.getEntMan().getEntityById(rect.getConnectedEntityId()) != null) {
-//							log.info("id1: " + rect.getConnectedEntityId());
+//							log.debug("id1: " + rect.getConnectedEntityId());
                     game.getEntMan().getEntityById(rect.getConnectedEntityId()).onCollision(otherRect);
                 }
 
                 if (game.getEntMan().getEntityById(otherRect.getConnectedEntityId()) != null) {
-//							log.info("id2: " + otherRect.getConnectedEntityId());
+//							log.debug("id2: " + otherRect.getConnectedEntityId());
                     game.getEntMan().getEntityById(otherRect.getConnectedEntityId()).onCollision(rect);
                 }
                 return true;
@@ -172,9 +172,9 @@ public class RectManager {
 
     public void removeRectTransactional(final RectanglePlus rect) {
         synchronized (clonedRectsDoNotTouch) {
-            log.info("Method: removeRect. Block synchronized (rectsClone).");
+            log.debug("Method: removeRect. Block synchronized (rectsClone).");
             synchronized (clonedRectsByConnectedEntIdDoNotTouch) {
-                log.info("Method: removeRect. Block synchronized (rectsByConnectedEntityIdClone).");
+                log.debug("Method: removeRect. Block synchronized (rectsByConnectedEntityIdClone).");
                 //synchronized (rect) {
 
                 Map<Chunk, Map<RectanglePlusFilter, Set<RectanglePlus>>> rects = getRects();
@@ -185,9 +185,9 @@ public class RectManager {
                 removedInTransactionRectsIds.add(rect.id);
                 //}
             }
-            log.info("Method: removeRect. Block end synchronized (rectsByConnectedEntityIdClone).");
+            log.debug("Method: removeRect. Block end synchronized (rectsByConnectedEntityIdClone).");
         }
-        log.info("Method: removeRect. Block end synchronized (rectsClone).");
+        log.debug("Method: removeRect. Block end synchronized (rectsClone).");
     }
 
     public int rectsCountAndCheck() {

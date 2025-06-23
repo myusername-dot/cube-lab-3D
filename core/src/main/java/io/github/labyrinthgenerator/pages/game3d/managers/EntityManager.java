@@ -45,9 +45,9 @@ public class EntityManager {
     public Chunk addEntityOnChunkTransactional(float x, float z, final Entity ent) {
         Chunk chunk;
         synchronized (clonedEntitiesByChunksDoNotTouch) {
-            log.info("Method: addEntityOnChunk. Block synchronized (entitiesByChunksClone).");
+            log.debug("Method: addEntityOnChunk. Block synchronized (entitiesByChunksClone).");
             synchronized (clonedEntitiesByIdDoNotTouch) {
-                log.info("Method: addEntityOnChunk. Block synchronized (entitiesByIdClone).");
+                log.debug("Method: addEntityOnChunk. Block synchronized (entitiesByIdClone).");
                 //synchronized (ent) {
 
                 Map<Integer, Entity> entitiesById = getEntitiesById();
@@ -63,21 +63,21 @@ public class EntityManager {
                 entitiesByChunks.get(chunk).add(ent);
                 //}
             }
-            log.info("Method: addEntityOnChunk. Block end synchronized (entitiesByIdClone).");
+            log.debug("Method: addEntityOnChunk. Block end synchronized (entitiesByIdClone).");
         }
-        log.info("Method: addEntityOnChunk. Block end synchronized (entitiesByChunksClone).");
+        log.debug("Method: addEntityOnChunk. Block end synchronized (entitiesByChunksClone).");
         return chunk;
     }
 
     public void updateEntityChunkTransactional(final Chunk oldChunk, final Chunk newChunk, final Entity ent) {
         synchronized (clonedEntitiesByChunksDoNotTouch) {
-            log.info("Method: updateEntityChunk. Block synchronized (entitiesByChunksClone).");
+            log.debug("Method: updateEntityChunk. Block synchronized (entitiesByChunksClone).");
             synchronized (clonedEntitiesByIdDoNotTouch) {
-                log.info("Method: updateEntityChunk. Block synchronized (entitiesByIdClone).");
+                log.debug("Method: updateEntityChunk. Block synchronized (entitiesByIdClone).");
 
                 Player player = getScreen().getPlayer();
                 if (player != null && player.getId() == ent.getId()) {
-                    log.info("Try to move the Player to the other chunk.");
+                    log.debug("Try to move the Player to the other chunk.");
                 }
 
                 Map<Chunk, Set<Entity>> entitiesByChunks = getEntitiesByChunks();
@@ -87,14 +87,14 @@ public class EntityManager {
                 entitiesByChunks.get(newChunk).add(ent);
 
                 if (player != null && player.getId() == ent.getId()) {
-                    log.info("Player moved to the other chunk!");
+                    log.debug("Player moved to the other chunk!");
                 } else {
-                    log.info("Entity id: " + ent.getId() + " moved to the other chunk!");
+                    log.debug("Entity id: " + ent.getId() + " moved to the other chunk!");
                 }
             }
-            log.info("Method: updateEntityChunk. Block end synchronized (entitiesByIdClone).");
+            log.debug("Method: updateEntityChunk. Block end synchronized (entitiesByIdClone).");
         }
-        log.info("Method: updateEntityChunk. Block end synchronized (entitiesByChunksClone).");
+        log.debug("Method: updateEntityChunk. Block end synchronized (entitiesByChunksClone).");
     }
 
     public int assignId() {
@@ -113,9 +113,9 @@ public class EntityManager {
 
     public void removeEntityTransactional(Entity ent) {
         synchronized (clonedEntitiesByChunksDoNotTouch) {
-            log.info("Method: removeEntity. Block synchronized (entitiesByChunksClone).");
+            log.debug("Method: removeEntity. Block synchronized (entitiesByChunksClone).");
             synchronized (clonedEntitiesByIdDoNotTouch) {
-                log.info("Method: removeEntity. Block synchronized (entitiesByIdClone).");
+                log.debug("Method: removeEntity. Block synchronized (entitiesByIdClone).");
                 //synchronized (ent) {
 
                 Map<Integer, Entity> entitiesById = getEntitiesById();
@@ -126,9 +126,9 @@ public class EntityManager {
                 removedInTransactionEntsIds.add(ent.getId());
                 //}
             }
-            log.info("Method: removeEntity. Block end synchronized (entitiesByIdClone).");
+            log.debug("Method: removeEntity. Block end synchronized (entitiesByIdClone).");
         }
-        log.info("Method: removeEntity. Block end synchronized (entitiesByChunksClone).");
+        log.debug("Method: removeEntity. Block end synchronized (entitiesByChunksClone).");
     }
 
     public void clear() {

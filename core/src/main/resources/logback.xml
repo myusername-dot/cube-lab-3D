@@ -1,6 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
-    <appender name="CONSOLE_DEBUG" class="ch.qos.logback.core.ConsoleAppender">
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logs/MyApplication.log</file>  <!-- Путь к файлу -->
+        <append>false</append>>
+        <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+            <fileNamePattern>logs/MyApplication.%i.log.zip</fileNamePattern>
+            <minIndex>1</minIndex>
+            <maxIndex>3</maxIndex>
+        </rollingPolicy>
+        <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+            <maxFileSize>10MB</maxFileSize>
+        </triggeringPolicy>
+        <encoder>
+            <pattern>[%d{HH:mm:ss.SSS}] %-5level [%-20(%replace(%file){'\..*',''}):%-4line] [%thread] - %m%n</pattern>
+        </encoder>
+    </appender>
+    <!--appender name="CONSOLE_DEBUG" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>[%d{HH:mm:ss.SSS}] %green(%-5level) [%-20(%replace(%file){'\..*',''}):%-4line] [%thread] - %m%n</pattern>
         </encoder>
@@ -9,7 +24,7 @@
             <onMatch>ACCEPT</onMatch>
             <onMismatch>DENY</onMismatch>
         </filter>
-    </appender>
+    </appender-->
     <appender name="CONSOLE_INFO" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>[%d{HH:mm:ss.SSS}] %green(%-5level) [%-20(%replace(%file){'\..*',''}):%-4line] [%thread] - %m%n</pattern>
@@ -42,7 +57,8 @@
     </appender>
 
     <logger name="io.github.labyrinthgenerator" level="DEBUG" additivity="false">
-        <appender-ref ref="CONSOLE_DEBUG" />
+        <appender-ref ref="FILE" />
+        <!--appender-ref ref="CONSOLE_DEBUG" /-->
         <appender-ref ref="CONSOLE_INFO" />
         <appender-ref ref="CONSOLE_WARN" />
         <appender-ref ref="CONSOLE_ERROR" />
