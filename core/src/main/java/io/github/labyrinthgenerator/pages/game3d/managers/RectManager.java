@@ -212,16 +212,18 @@ public class RectManager {
             throw new RuntimeException("Transaction has already started.");
         }
         clonedRectsDoNotTouch = new HashMap<>(chunksInTransaction.size());
+        clonedRectsByConnectedEntIdDoNotTouch = new HashMap<>(rectsByConnectedEntIdDoNotTouch.size() / chunksInTransaction.size());
         for (Chunk chunk : chunksInTransaction) {
-            // put chunks and filters
+            // todo optimize cycle
+            // put chunk and filters to new HashMap
             clonedRectsDoNotTouch.put(chunk, new HashMap<>(rectsDoNotTouch.get(chunk)));
+            // cloned filters by chunk
             Map<RectanglePlusFilter, Set<RectanglePlus>> filters = clonedRectsDoNotTouch.get(chunk);
-            // put rects
+            // replace filter rects to new HashSet
             filters.replaceAll((f, v) -> new HashSet<>(filters.get(f)));
+            // put all rects of chunk
+            filters.forEach((f, s) -> s.forEach(r -> clonedRectsByConnectedEntIdDoNotTouch.put(r.getConnectedEntityId(), r)));
         }
-        // it's faster than new HashMap<>(rectsByConnectedEntityId)
-        clonedRectsByConnectedEntIdDoNotTouch = new HashMap<>(rectsByConnectedEntIdDoNotTouch.size());
-        clonedRectsByConnectedEntIdDoNotTouch.putAll(rectsByConnectedEntIdDoNotTouch);
         this.transactionId = transactionId;
         saveMode = true;
         isTransaction = true;
@@ -244,7 +246,8 @@ public class RectManager {
         }
         if (saveMode) {
             rectsDoNotTouch.putAll(clonedRectsDoNotTouch);
-            rectsByConnectedEntIdDoNotTouch = clonedRectsByConnectedEntIdDoNotTouch;
+            rectsByConnectedEntIdDoNotTouch.putAll(clonedRectsByConnectedEntIdDoNotTouch);
+            // todo remove removed rects
         }
         isTransaction = false;
         clonedRectsDoNotTouch = new HashMap<>(0);
