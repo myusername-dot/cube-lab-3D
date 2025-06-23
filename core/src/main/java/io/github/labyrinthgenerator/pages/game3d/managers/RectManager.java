@@ -214,15 +214,17 @@ public class RectManager {
         clonedRectsDoNotTouch = new HashMap<>(chunksInTransaction.size());
         clonedRectsByConnectedEntIdDoNotTouch = new HashMap<>(rectsByConnectedEntIdDoNotTouch.size() / chunksInTransaction.size());
         for (Chunk chunk : chunksInTransaction) {
-            // todo optimize cycle
-            // put chunk and filters to new HashMap
+            // put chunk and filters to new HashMaps
             clonedRectsDoNotTouch.put(chunk, new HashMap<>(rectsDoNotTouch.get(chunk)));
-            // cloned filters by chunk
-            Map<RectanglePlusFilter, Set<RectanglePlus>> filters = clonedRectsDoNotTouch.get(chunk);
-            // replace filter rects to new HashSet
-            filters.replaceAll((f, v) -> new HashSet<>(filters.get(f)));
-            // put all rects of chunk
-            filters.forEach((f, s) -> s.forEach(r -> clonedRectsByConnectedEntIdDoNotTouch.put(r.getConnectedEntityId(), r)));
+            for (Map.Entry<RectanglePlusFilter, Set<RectanglePlus>> filterEntry : rectsDoNotTouch.get(chunk).entrySet()) {
+                // create new HashSet and put all entities from filter
+                Set<RectanglePlus> clonedSetRectsByFilter = new HashSet<>(filterEntry.getValue().size());
+                clonedSetRectsByFilter.addAll(filterEntry.getValue());
+                // put all rects from filter by chunk
+                clonedRectsDoNotTouch.get(chunk).put(filterEntry.getKey(), clonedSetRectsByFilter);
+                // put rects from filter by chunk to the new HashMap by id
+                clonedSetRectsByFilter.forEach(r -> clonedRectsByConnectedEntIdDoNotTouch.put(r.getConnectedEntityId(), r));
+            }
         }
         this.transactionId = transactionId;
         saveMode = true;
