@@ -208,8 +208,7 @@ public class EntityManager {
         clonedEntitiesByChunksDoNotTouch = new HashMap<>(chunksInTransaction.size());
         clonedEntitiesByIdDoNotTouch = new HashMap<>(entitiesByIdDoNotTouch.size() / chunksInTransaction.size());
         for (Chunk chunk : chunksInTransaction) {
-            // todo optimize cycle
-            // put chunk and entities to new HashSet
+            // put chunk and entities to the new HashSet
             clonedEntitiesByChunksDoNotTouch.put(chunk, new HashSet<>(entitiesByChunksDoNotTouch.get(chunk)));
             // put all entities of chunk
             entitiesByChunksDoNotTouch.get(chunk).forEach(e -> clonedEntitiesByIdDoNotTouch.put(e.getId(), e));
@@ -219,7 +218,7 @@ public class EntityManager {
         isTransaction = true;
     }
 
-    public synchronized void startTransactionUnsave() {
+    public synchronized void startTransactionUnsafe() {
         if (isTransaction) {
             throw new RuntimeException("Transaction has already started.");
         }
