@@ -208,13 +208,11 @@ public class EntityManager {
         clonedEntitiesByChunksDoNotTouch = new HashMap<>(chunksInTransaction.size());
         clonedEntitiesByIdDoNotTouch = new HashMap<>(entitiesByIdDoNotTouch.size() / chunksInTransaction.size());
         for (Chunk chunk : chunksInTransaction) {
-            // create new HashSet and put all entities from chunk
-            Set<Entity> clonedSetEntitiesByChunk = new HashSet<>(entitiesByChunksDoNotTouch.get(chunk).size());
-            clonedSetEntitiesByChunk.addAll(entitiesByChunksDoNotTouch.get(chunk));
-            // put chunk and all entities of chunk to the new HashMap
-            clonedEntitiesByChunksDoNotTouch.put(chunk, clonedSetEntitiesByChunk);
-            // put all entities of chunk by id to the new HashMap
-            clonedSetEntitiesByChunk.forEach(e -> clonedEntitiesByIdDoNotTouch.put(e.getId(), e));
+            // todo optimize cycle
+            // put chunk and entities to new HashSet
+            clonedEntitiesByChunksDoNotTouch.put(chunk, new HashSet<>(entitiesByChunksDoNotTouch.get(chunk)));
+            // put all entities of chunk
+            entitiesByChunksDoNotTouch.get(chunk).forEach(e -> clonedEntitiesByIdDoNotTouch.put(e.getId(), e));
         }
         transactionId = System.nanoTime();
         saveMode = true;
