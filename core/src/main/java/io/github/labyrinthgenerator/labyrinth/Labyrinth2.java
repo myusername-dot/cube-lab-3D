@@ -170,7 +170,7 @@ public class Labyrinth2 implements Lab {
                 if (yf % 2 == 0 && (gridPlus[y][x] & Dirs.E.value) != 0) {
                     gridFin[x * 2 + 2][yf] = ((gridPlus[y][x] & gridPlus[y][x + 1]) & Dirs.S.value) != 0 ? 0 : 1;
                 } else if (yf % 2 == 0) {
-                    gridFin[x * 2 + 2][yf] = yf != height * 2 ? 2 : 1;
+                    gridFin[x * 2 + 2][yf] = /*yf != height * 2 ? 2 :*/ 1;
                 } else if ((gridPlus[y + 1][x] & (Dirs.E.value)) == 0) {
                     gridFin[x * 2 + 2][yf] = 2;
                 } else {
@@ -178,7 +178,7 @@ public class Labyrinth2 implements Lab {
                 }
             }
         }
-        //gridFin[widthFin - 1][heightFin - 1] = 2;
+        gridFin[0][0] = 1;
         gridFin[0][heightFin - 1] = 1;
 
         dirty = false;
