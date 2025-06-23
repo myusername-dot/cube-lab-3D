@@ -144,14 +144,14 @@ public class Labyrinth2 implements Lab {
             System.out.print("\n");
         }
 
-        convert();
+       /* convert();
 
         for (int y = 0; y < heightFin; y++) {
             for (int x = 0; x < widthFin; x++) {
                 System.out.print(gridFin[x][y]);
             }
             System.out.println();
-        }
+        }*/
     }
 
     private void convert() {
@@ -203,6 +203,7 @@ public class Labyrinth2 implements Lab {
 
     @Override
     public void convertTo3dGame() {
+        printMaze();
         puffinsStack.clear();
         prevPosses.clear();
         puffins.clear();
