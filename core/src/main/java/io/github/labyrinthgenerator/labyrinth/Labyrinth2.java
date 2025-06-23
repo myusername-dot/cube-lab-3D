@@ -27,6 +27,8 @@ public class Labyrinth2 implements Lab {
     private boolean dirty;
 
     private final int startX, startY;
+    private boolean exit;
+    private final Vector2i exitPos;
 
     private final Random random;
 
@@ -48,6 +50,7 @@ public class Labyrinth2 implements Lab {
         this.startY = startY;
         this.width = width / 2;
         this.height = height / 2;
+        exitPos = new Vector2i(this.width - startX - 1, this.height - startY - 1);
         heightFin = this.height * 2 + 1;
         widthFin = this.width * 2 + 1;
         assert heightFin == height;
@@ -106,7 +109,8 @@ public class Labyrinth2 implements Lab {
             this.puffinsStack.pop();
         }
 
-        return true;
+        if (!exit) exit = exitPos.equals(new Vector2i(cx, cy));
+        return exit;
     }
 
     private void pushPuffin(int cx, int cy, int nx, int ny) {
