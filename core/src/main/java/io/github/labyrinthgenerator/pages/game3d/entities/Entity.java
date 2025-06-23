@@ -107,7 +107,7 @@ public abstract class Entity {
     }
 
     public void onCollision(final RectanglePlus otherRect) {
-        collidedEntity = entMan.getEntityFromId(otherRect.getConnectedEntityId());
+        collidedEntity = entMan.getEntityById(otherRect.getConnectedEntityId());
     }
 
     public void render3D(final ModelBatch mdlBatch, final Environment env, final float delta) {
