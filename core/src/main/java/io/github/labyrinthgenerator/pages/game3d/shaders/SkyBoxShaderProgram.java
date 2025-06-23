@@ -176,7 +176,7 @@ public class SkyBoxShaderProgram implements Disposable {
 
 
     public void render(Camera camera) {
-        program.begin();
+        program.bind();
         program.setUniformMatrix(u_projTrans, camera.combined);
 
         //front
@@ -244,7 +244,7 @@ public class SkyBoxShaderProgram implements Disposable {
         program.setUniformi("s_diffuse", 0);
         quad.render(program, GL20.GL_TRIANGLES);
 
-        program.end();
+        //program.end();
     }
 
     @Override
