@@ -13,6 +13,7 @@ import io.github.labyrinthgenerator.pages.game3d.models.ModelMaker;
 import io.github.labyrinthgenerator.pages.game3d.rect.RectanglePlus;
 import io.github.labyrinthgenerator.pages.game3d.rect.filters.RectanglePlusFilter;
 import io.github.labyrinthgenerator.pages.game3d.vectors.Vector2i;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -23,6 +24,7 @@ import java.util.List;
 
 import static io.github.labyrinthgenerator.pages.game3d.constants.Constants.*;
 
+@Slf4j
 public class LMapBuilder {
 
     private final CubeLab3D game;
@@ -51,7 +53,7 @@ public class LMapBuilder {
             }
             while (line != null);
         } catch (IOException e) {
-            System.err.println("Error reading file: " + e.getMessage());
+            log.error("Error reading file: " + e.getMessage());
         }
         assert lines.size() != 0;
         assert lines.get(lines.size() - 1).length() != 0;

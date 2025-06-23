@@ -12,10 +12,11 @@ import io.github.labyrinthgenerator.pages.game3d.entities.Firefly;
 import io.github.labyrinthgenerator.pages.game3d.rect.RectanglePlus;
 import io.github.labyrinthgenerator.pages.game3d.rect.filters.RectanglePlusFilter;
 import io.github.labyrinthgenerator.pages.game3d.screens.GameScreen;
+import lombok.extern.slf4j.Slf4j;
 
 import static io.github.labyrinthgenerator.pages.game3d.constants.Constants.HALF_UNIT;
 
-
+@Slf4j
 public class Player extends Entity {
     private final Vector3 movementDir = new Vector3();
     private final Vector2 movementDirVec2 = new Vector2(movementDir.x, movementDir.z);
@@ -82,7 +83,7 @@ public class Player extends Entity {
             currentHP = maxHP;
         }
 
-//		System.out.println("Current HP: " + currentHP);
+//		log.info("Current HP: " + currentHP);
     }
 
     public int getCurrentHP() {
@@ -256,7 +257,7 @@ public class Player extends Entity {
 
         if (currentHP == 0) {
             isDead = true;
-//			System.out.println("Player is dead.");
+//			log.info("Player is dead.");
         }
 
         screen.checkOverlaps(rect, delta);
@@ -272,14 +273,14 @@ public class Player extends Entity {
 
     @Override
     public void beforeTick() {
-        System.out.println("Start tick player thread id: " + Thread.currentThread().getId() + ".");
+        log.info("Start tick player thread id: " + Thread.currentThread().getId() + ".");
         super.beforeTick();
     }
 
     @Override
     public void afterTick() {
         super.afterTick();
-        System.out.println("End tick player thread id: " + Thread.currentThread().getId() + ".");
+        log.info("End tick player thread id: " + Thread.currentThread().getId() + ".");
     }
 
 	/*private void useUsableInterface(final IUsable usableInterface) {

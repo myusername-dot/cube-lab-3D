@@ -7,6 +7,7 @@ import io.github.labyrinthgenerator.pages.game3d.entities.Entity;
 import io.github.labyrinthgenerator.pages.game3d.entities.player.Player;
 import io.github.labyrinthgenerator.pages.game3d.screens.GameScreen;
 import io.github.labyrinthgenerator.pages.game3d.thread.TickChunk;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
 import java.util.concurrent.ExecutorService;
@@ -14,6 +15,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
+@Slf4j
 public class EntityManager {
     private final AtomicInteger nextId = new AtomicInteger(0);
 
@@ -43,9 +45,9 @@ public class EntityManager {
     public Chunk addEntityOnChunkTransactional(float x, float z, final Entity ent) {
         Chunk chunk;
         synchronized (clonedEntitiesByChunksDoNotTouch) {
-            System.out.println("Method: addEntityOnChunk. Block synchronized (entitiesByChunksClone).");
+            log.info("Method: addEntityOnChunk. Block synchronized (entitiesByChunksClone).");
             synchronized (clonedEntitiesByIdDoNotTouch) {
-                System.out.println("Method: addEntityOnChunk. Block synchronized (entitiesByIdClone).");
+                log.info("Method: addEntityOnChunk. Block synchronized (entitiesByIdClone).");
                 //synchronized (ent) {
 
                 Map<Integer, Entity> entitiesById = getEntitiesById();
@@ -61,21 +63,21 @@ public class EntityManager {
                 entitiesByChunks.get(chunk).add(ent);
                 //}
             }
-            System.out.println("Method: addEntityOnChunk. Block end synchronized (entitiesByIdClone).");
+            log.info("Method: addEntityOnChunk. Block end synchronized (entitiesByIdClone).");
         }
-        System.out.println("Method: addEntityOnChunk. Block end synchronized (entitiesByChunksClone).");
+        log.info("Method: addEntityOnChunk. Block end synchronized (entitiesByChunksClone).");
         return chunk;
     }
 
     public void updateEntityChunkTransactional(final Chunk oldChunk, final Chunk newChunk, final Entity ent) {
         synchronized (clonedEntitiesByChunksDoNotTouch) {
-            System.out.println("Method: updateEntityChunk. Block synchronized (entitiesByChunksClone).");
+            log.info("Method: updateEntityChunk. Block synchronized (entitiesByChunksClone).");
             synchronized (clonedEntitiesByIdDoNotTouch) {
-                System.out.println("Method: updateEntityChunk. Block synchronized (entitiesByIdClone).");
+                log.info("Method: updateEntityChunk. Block synchronized (entitiesByIdClone).");
 
                 Player player = getScreen().getPlayer();
                 if (player != null && player.getId() == ent.getId()) {
-                    System.out.println("Try to move the Player to the other chunk.");
+                    log.info("Try to move the Player to the other chunk.");
                 }
 
                 Map<Chunk, Set<Entity>> entitiesByChunks = getEntitiesByChunks();
@@ -85,14 +87,14 @@ public class EntityManager {
                 entitiesByChunks.get(newChunk).add(ent);
 
                 if (player != null && player.getId() == ent.getId()) {
-                    System.out.println("Player moved to the other chunk!");
+                    log.info("Player moved to the other chunk!");
                 } else {
-                    System.out.println("Entity id: " + ent.getId() + " moved to the other chunk!");
+                    log.info("Entity id: " + ent.getId() + " moved to the other chunk!");
                 }
             }
-            System.out.println("Method: updateEntityChunk. Block end synchronized (entitiesByIdClone).");
+            log.info("Method: updateEntityChunk. Block end synchronized (entitiesByIdClone).");
         }
-        System.out.println("Method: updateEntityChunk. Block end synchronized (entitiesByChunksClone).");
+        log.info("Method: updateEntityChunk. Block end synchronized (entitiesByChunksClone).");
     }
 
     public int assignId() {
@@ -111,9 +113,9 @@ public class EntityManager {
 
     public void removeEntityTransactional(Entity ent) {
         synchronized (clonedEntitiesByChunksDoNotTouch) {
-            System.out.println("Method: removeEntity. Block synchronized (entitiesByChunksClone).");
+            log.info("Method: removeEntity. Block synchronized (entitiesByChunksClone).");
             synchronized (clonedEntitiesByIdDoNotTouch) {
-                System.out.println("Method: removeEntity. Block synchronized (entitiesByIdClone).");
+                log.info("Method: removeEntity. Block synchronized (entitiesByIdClone).");
                 //synchronized (ent) {
 
                 Map<Integer, Entity> entitiesById = getEntitiesById();
@@ -124,9 +126,9 @@ public class EntityManager {
                 removedInTransactionEntsIds.add(ent.getId());
                 //}
             }
-            System.out.println("Method: removeEntity. Block end synchronized (entitiesByIdClone).");
+            log.info("Method: removeEntity. Block end synchronized (entitiesByIdClone).");
         }
-        System.out.println("Method: removeEntity. Block end synchronized (entitiesByChunksClone).");
+        log.info("Method: removeEntity. Block end synchronized (entitiesByChunksClone).");
     }
 
     public void clear() {
@@ -168,7 +170,7 @@ public class EntityManager {
             List<Chunk> nearestChunks = chunkMan.getNearestChunks(playerX, playerZ);
 
             List<Future<Boolean>> futures = new ArrayList<>(nearestChunks.size());
-            ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() - 2);
+            ExecutorService executorService = Executors.newFixedThreadPool(4/*Runtime.getRuntime().availableProcessors() - 2*/);
 
             for (Chunk chunk : nearestChunks) {
                 Set<Entity> entitiesByChunkClone = new HashSet<>(entitiesByChunksDoNotTouch.get(chunk));
@@ -195,7 +197,7 @@ public class EntityManager {
             endTickLogAndChecks(tickTime);
 
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("An error occurred during tickAllEntities()", e);
             screen.game.getRectMan().rollbackTransaction();
             rollbackTransaction();
             // TRANSACTION END
@@ -275,7 +277,7 @@ public class EntityManager {
     }
 
     private void startTickLog() {
-        System.out.println("Start tick all entities." +
+        log.info("Start tick all entities." +
             " Entities count: " + entitiesByIdDoNotTouch.size() +
             ", rectangles count: " + screen.game.getRectMan().rectsCountAndCheck() + ".");
     }
@@ -283,13 +285,13 @@ public class EntityManager {
     private void startTransactionLog(long startTransactionTime) {
         startTransactionTime = System.nanoTime() - startTransactionTime;
         double seconds = (double) startTransactionTime / 1_000_000_000.0;
-        System.out.println("Transaction started in " + seconds + " seconds ");
+        log.info("Transaction started in " + seconds + " seconds ");
     }
 
     private void endTransactionLog(long endTransactionTime) {
         endTransactionTime = System.nanoTime() - endTransactionTime;
         double seconds = (double) endTransactionTime / 1_000_000_000.0;
-        System.out.println("Transaction ended in " + seconds + " seconds ");
+        log.info("Transaction ended in " + seconds + " seconds ");
     }
 
     private void endTickLogAndChecks(long tickTime) {
@@ -302,14 +304,14 @@ public class EntityManager {
                 throw new RuntimeException("entitiesSize.get() < entitiesById.size(): " + entitiesSize.get() + ", " + entitiesByIdDoNotTouch.size());
         }
         tickTime = System.currentTimeMillis() - tickTime;
-        System.out.println("End tick all entities." +
+        log.info("End tick all entities." +
             " Entities count: " + entitiesSize.get() +
             ", rectangles count: " + screen.game.getRectMan().rectsCountAndCheck() +
             ". Time spent seconds: " + tickTime / 1000d + ".");
     }
 
     private void rollbackTickLog(long tickTime) {
-        System.err.println(
+        log.error(
             "End tick all entities, transaction rollback." +
                 " Time spent seconds: " + tickTime / 1000d + "."
         );

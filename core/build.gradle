@@ -6,6 +6,15 @@ dependencies {
   api "com.badlogicgames.gdx:gdx-box2d:$gdxVersion"
   api "com.badlogicgames.gdx:gdx-freetype:$gdxVersion"
   api "com.badlogicgames.gdx:gdx:$gdxVersion"
+  implementation 'org.slf4j:slf4j-api:2.1.0-alpha1'
+  compileOnly 'org.projectlombok:lombok:1.18.32'
+  annotationProcessor 'org.projectlombok:lombok:1.18.32'
+  implementation 'ch.qos.logback:logback-classic:1.5.18'
+  //annotationProcessor 'ch.qos.logback:logback-classic:1.5.18'
+  implementation 'ch.qos.logback:logback-core:1.5.18'
+  //annotationProcessor 'ch.qos.logback:logback-core:1.5.18'
+  implementation 'ch.qos.logback:logback-access:1.5.18'
+  //annotationProcessor 'ch.qos.logback:logback-access:1.5.18'
 
   if(enableGraalNative == 'true') {
     implementation "io.github.berstanio:gdx-svmhelper-annotations:$graalHelperVersion"

@@ -13,6 +13,7 @@ import io.github.labyrinthgenerator.labyrinth.Lab;
 import io.github.labyrinthgenerator.labyrinth.Labyrinth;
 import io.github.labyrinthgenerator.labyrinth.Labyrinth2;
 import io.github.labyrinthgenerator.pages.Page;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -23,6 +24,7 @@ import java.util.zip.Deflater;
 
 import static io.github.labyrinthgenerator.MyApplication.*;
 
+@Slf4j
 public class Tools2d implements Page {
 
     private ApplicationFacade application;
@@ -189,7 +191,7 @@ public class Tools2d implements Page {
                 writer.newLine();
             }
         } catch (IOException e) {
-            System.err.println("Error writing to file: " + e.getMessage());
+            log.error("Error writing to file: " + e.getMessage());
         }
         return txtFile.getAbsolutePath();
     }
