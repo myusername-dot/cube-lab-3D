@@ -124,7 +124,7 @@ public abstract class Entity {
     public void tick(final float delta) {
     }
 
-    public void beforeTick() {
+    public synchronized void beforeTick() {
         long transactionId = entMan.getTransactionId();
         if (!entMan.isTransaction() || this.transactionId != transactionId) this.transactionId = transactionId;
         else
@@ -132,7 +132,7 @@ public abstract class Entity {
         isTick = true;
     }
 
-    public void afterTick() {
+    public synchronized void afterTick() {
         isTick = false;
     }
 
