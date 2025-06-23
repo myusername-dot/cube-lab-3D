@@ -273,14 +273,14 @@ public class Player extends Entity {
 
     @Override
     public void beforeTick() {
-        log.info("Start tick player thread id: " + Thread.currentThread().getId() + ".");
+        log.debug("Start tick player thread id: " + Thread.currentThread().getId() + ".");
         super.beforeTick();
     }
 
     @Override
     public void afterTick() {
         super.afterTick();
-        log.info("End tick player thread id: " + Thread.currentThread().getId() + ".");
+        log.debug("End tick player thread id: " + Thread.currentThread().getId() + ".");
     }
 
 	/*private void useUsableInterface(final IUsable usableInterface) {
