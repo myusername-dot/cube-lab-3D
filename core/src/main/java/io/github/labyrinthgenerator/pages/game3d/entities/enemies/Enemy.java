@@ -7,9 +7,11 @@ import io.github.labyrinthgenerator.pages.game3d.entities.Entity;
 import io.github.labyrinthgenerator.pages.game3d.models.ModelInstanceBB;
 import io.github.labyrinthgenerator.pages.game3d.rect.RectanglePlus;
 import io.github.labyrinthgenerator.pages.game3d.screens.GameScreen;
+import lombok.extern.slf4j.Slf4j;
 
 import static io.github.labyrinthgenerator.pages.game3d.constants.Constants.HALF_UNIT;
 
+@Slf4j
 public abstract class Enemy extends Entity {
     protected ModelInstanceBB mdlInst;
 
@@ -47,7 +49,7 @@ public abstract class Enemy extends Entity {
 
     private void destroyIfDead() {
         if (isDead) {
-            System.out.println("Enemy is dead.");
+            log.info("Enemy is dead.");
             destroy();
         }
     }

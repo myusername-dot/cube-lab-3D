@@ -3,10 +3,12 @@ package io.github.labyrinthgenerator.labyrinth;
 import com.badlogic.gdx.math.MathUtils;
 import io.github.labyrinthgenerator.additional.Vector2iSeedHash;
 import io.github.labyrinthgenerator.pages.game3d.vectors.Vector2i;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Slf4j
 public class Labyrinth implements Lab {
 
     public static int maxDistance;
@@ -97,7 +99,7 @@ public class Labyrinth implements Lab {
                 Map<Vector2iSeedHash, Integer> puffinsTmp = new HashMap<>();
                 boolean escape = setPuffins(puffinsTmp, prevPosesTmp, 0, i, j, new Vector2iSeedHash(i, j), false);
                 if (escape) {
-                    System.out.println("x:" + i + "y:" + j + " escape == true");
+                    log.info("x:" + i + "y:" + j + " escape == true");
                     continue;
                 }
 

@@ -9,9 +9,11 @@ import io.github.labyrinthgenerator.pages.game3d.managers.ChunkManager;
 import io.github.labyrinthgenerator.pages.game3d.rect.RectanglePlus;
 import io.github.labyrinthgenerator.pages.game3d.screens.GameScreen;
 import io.github.labyrinthgenerator.pages.game3d.managers.EntityManager;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Objects;
 
+@Slf4j
 public abstract class Entity {
     protected final int id;
 
@@ -68,7 +70,7 @@ public abstract class Entity {
         Vector2 worldSize = chunkMan.getWorldSize();
         if (position.x < -0.5 || position.z < -0.5 ||
             position.x > worldSize.x || position.z > worldSize.y) {
-            System.err.println("Entity id: " + id + " position " + position + " out of bounds.");
+            log.error("Entity id: " + id + " position " + position + " out of bounds.");
             return;
         }
         if (chunk != chunkMan.get(chunk.x, chunk.z)) {

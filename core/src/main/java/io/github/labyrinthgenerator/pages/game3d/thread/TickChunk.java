@@ -1,11 +1,13 @@
 package io.github.labyrinthgenerator.pages.game3d.thread;
 
 import io.github.labyrinthgenerator.pages.game3d.entities.Entity;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 
+@Slf4j
 public class TickChunk implements Callable<Boolean> {
 
     private final Set<Entity> entitiesByChunkClone;
@@ -19,7 +21,7 @@ public class TickChunk implements Callable<Boolean> {
 
     @Override
     public Boolean call() {
-        System.out.println("TickChunk thread id: " + Thread.currentThread().getId() + " begin.");
+        log.info("TickChunk thread id: " + Thread.currentThread().getId() + " begin.");
         for (Entity ent : entitiesByChunkClone) {
             if (ent.shouldTick()) {
                 ent.beforeTick();
@@ -27,7 +29,7 @@ public class TickChunk implements Callable<Boolean> {
                 ent.afterTick();
             }
         }
-        System.out.println("TickChunk thread id: " + Thread.currentThread().getId() + " end.");
+        log.info("TickChunk thread id: " + Thread.currentThread().getId() + " end.");
         return true;
     }
 
