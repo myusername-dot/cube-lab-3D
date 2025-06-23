@@ -152,14 +152,14 @@ public class EntityManager {
             startTickLog();
 
 
-            long startTransactionTime = System.nanoTime();
+            /*long startTransactionTime = System.nanoTime();
 
             List<Chunk> chunksInTransaction = chunkMan.getNearestChunksInBox(playerX, playerZ, 1);
             // TRANSACTION START
             startTransaction(chunksInTransaction);
             screen.game.getRectMan().joinTransaction(chunksInTransaction, transactionId);
 
-            startTransactionLog(startTransactionTime);
+            startTransactionLog(startTransactionTime);*/
 
 
             // THREADS LOGIC START
@@ -181,24 +181,24 @@ public class EntityManager {
             // THREADS LOGIC END
 
 
-            long endTransactionTime = System.nanoTime();
+            /*long endTransactionTime = System.nanoTime();
 
             screen.game.getRectMan().commitTransaction();
             commitTransaction();
             // TRANSACTION END
 
-            endTransactionLog(endTransactionTime);
+            endTransactionLog(endTransactionTime);*/
 
 
             endTickLogAndChecks(tickTime);
 
         } catch (Exception e) {
             e.printStackTrace();
-            screen.game.getRectMan().rollbackTransaction();
+            /*screen.game.getRectMan().rollbackTransaction();
             rollbackTransaction();
             // TRANSACTION END
 
-            rollbackTickLog(tickTime);
+            rollbackTickLog(tickTime);*/
         }
     }
 
