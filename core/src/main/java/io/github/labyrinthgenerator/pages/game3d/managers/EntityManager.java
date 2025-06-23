@@ -165,7 +165,7 @@ public class EntityManager {
             List<Chunk> nearestChunks = chunkMan.getNearestChunks(playerX, playerZ);
 
             List<Future<Boolean>> futures = new ArrayList<>(nearestChunks.size());
-            ExecutorService executorService = Executors.newFixedThreadPool(4);
+            ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() - 2);
 
             for (Chunk chunk : nearestChunks) {
                 Set<Entity> entitiesByChunkClone = new HashSet<>(entitiesByChunksDoNotTouch.get(chunk));
@@ -206,12 +206,14 @@ public class EntityManager {
             throw new RuntimeException("Transaction has already started.");
         }
         clonedEntitiesByChunksDoNotTouch = new HashMap<>(chunksInTransaction.size());
+        clonedEntitiesByIdDoNotTouch = new HashMap<>(entitiesByIdDoNotTouch.size() / chunksInTransaction.size());
         for (Chunk chunk : chunksInTransaction) {
+            // todo optimize cycle
+            // put chunk and entities to new HashSet
             clonedEntitiesByChunksDoNotTouch.put(chunk, new HashSet<>(entitiesByChunksDoNotTouch.get(chunk)));
+            // put all entities of chunk
+            entitiesByChunksDoNotTouch.get(chunk).forEach(e -> clonedEntitiesByIdDoNotTouch.put(e.getId(), e));
         }
-        // it's faster than new HashMap<>(entitiesById)
-        clonedEntitiesByIdDoNotTouch = new HashMap<>(entitiesByIdDoNotTouch.size());
-        clonedEntitiesByIdDoNotTouch.putAll(entitiesByIdDoNotTouch);
         transactionId = System.nanoTime();
         saveMode = true;
         isTransaction = true;
@@ -234,7 +236,8 @@ public class EntityManager {
         }
         if (saveMode) {
             entitiesByChunksDoNotTouch.putAll(clonedEntitiesByChunksDoNotTouch);
-            entitiesByIdDoNotTouch = clonedEntitiesByIdDoNotTouch;
+            entitiesByIdDoNotTouch.putAll(clonedEntitiesByIdDoNotTouch);
+            // todo remove removed entities
         }
         isTransaction = false;
         clonedEntitiesByChunksDoNotTouch = new HashMap<>(0);
