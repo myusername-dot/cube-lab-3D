@@ -18,10 +18,11 @@ public class EntityManager {
     private final AtomicInteger nextId = new AtomicInteger(0);
 
     private final Map<Chunk, Set<Entity>> entitiesByChunksDoNotTouch = new HashMap<>();
-    private Map<Integer, Entity> entitiesByIdDoNotTouch = new HashMap<>();
+    private final Map<Integer, Entity> entitiesByIdDoNotTouch = new HashMap<>();
 
     private Map<Chunk, Set<Entity>> clonedEntitiesByChunksDoNotTouch = new HashMap<>(0);
     private Map<Integer, Entity> clonedEntitiesByIdDoNotTouch = new HashMap<>(0);
+    private final Set<Integer> removedInTransactionEntsIds = new HashSet<>();
 
     // Read Committed
     private volatile boolean isTransaction = false;
@@ -120,6 +121,7 @@ public class EntityManager {
 
                 entitiesById.remove(ent.getId());
                 entitiesByChunks.values().forEach(c -> c.remove(ent));
+                removedInTransactionEntsIds.add(ent.getId());
                 //}
             }
             System.out.println("Method: removeEntity. Block end synchronized (entitiesByIdClone).");
@@ -133,6 +135,7 @@ public class EntityManager {
         entitiesByIdDoNotTouch.clear();
         clonedEntitiesByChunksDoNotTouch.clear();
         clonedEntitiesByIdDoNotTouch.clear();
+        removedInTransactionEntsIds.clear();
     }
 
     public void render3DAllEntities(final ModelBatch mdlBatch, final Environment env, final float delta, float playerX, float playerZ) {
@@ -207,6 +210,7 @@ public class EntityManager {
         }
         clonedEntitiesByChunksDoNotTouch = new HashMap<>(chunksInTransaction.size());
         clonedEntitiesByIdDoNotTouch = new HashMap<>(entitiesByIdDoNotTouch.size() / chunksInTransaction.size());
+        removedInTransactionEntsIds.clear();
         for (Chunk chunk : chunksInTransaction) {
             // put chunk and entities to the new HashSet
             clonedEntitiesByChunksDoNotTouch.put(chunk, new HashSet<>(entitiesByChunksDoNotTouch.get(chunk)));
@@ -236,7 +240,7 @@ public class EntityManager {
         if (saveMode) {
             entitiesByChunksDoNotTouch.putAll(clonedEntitiesByChunksDoNotTouch);
             entitiesByIdDoNotTouch.putAll(clonedEntitiesByIdDoNotTouch);
-            // todo remove removed entities
+            removedInTransactionEntsIds.forEach(entitiesByIdDoNotTouch::remove);
         }
         isTransaction = false;
         clonedEntitiesByChunksDoNotTouch = new HashMap<>(0);

@@ -14,10 +14,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class RectManager {
 
     private final Map<Chunk, Map<RectanglePlusFilter, Set<RectanglePlus>>> rectsDoNotTouch = new HashMap<>();
-    private Map<Integer, RectanglePlus> rectsByConnectedEntIdDoNotTouch = new HashMap<>();
+    private final Map<Integer, RectanglePlus> rectsByConnectedEntIdDoNotTouch = new HashMap<>();
 
     private Map<Chunk, Map<RectanglePlusFilter, Set<RectanglePlus>>> clonedRectsDoNotTouch = new HashMap<>(0);
     private Map<Integer, RectanglePlus> clonedRectsByConnectedEntIdDoNotTouch = new HashMap<>(0);
+    private final Set<Integer> removedInTransactionRectsIds = new HashSet<>();
 
     // Read Committed
     private volatile boolean isTransaction = false;
@@ -179,6 +180,7 @@ public class RectManager {
 
                 rects.values().forEach(c -> c.values().forEach(l -> l.remove(rect)));
                 rectsByConnectedEntityId.remove(rect.getConnectedEntityId());
+                removedInTransactionRectsIds.add(rect.id);
                 //}
             }
             System.out.println("Method: removeRect. Block end synchronized (rectsByConnectedEntityIdClone).");
@@ -213,6 +215,7 @@ public class RectManager {
         }
         clonedRectsDoNotTouch = new HashMap<>(chunksInTransaction.size());
         clonedRectsByConnectedEntIdDoNotTouch = new HashMap<>(rectsByConnectedEntIdDoNotTouch.size() / chunksInTransaction.size());
+        removedInTransactionRectsIds.clear();
         for (Chunk chunk : chunksInTransaction) {
             // put chunk and filters to the new HashMap
             clonedRectsDoNotTouch.put(chunk, new HashMap<>(rectsDoNotTouch.get(chunk)));
@@ -246,7 +249,7 @@ public class RectManager {
         if (saveMode) {
             rectsDoNotTouch.putAll(clonedRectsDoNotTouch);
             rectsByConnectedEntIdDoNotTouch.putAll(clonedRectsByConnectedEntIdDoNotTouch);
-            // todo remove removed rects
+            removedInTransactionRectsIds.forEach(rectsByConnectedEntIdDoNotTouch::remove);
         }
         isTransaction = false;
         clonedRectsDoNotTouch = new HashMap<>(0);
