@@ -214,22 +214,21 @@ public class RectManager {
         clonedRectsDoNotTouch = new HashMap<>(chunksInTransaction.size());
         clonedRectsByConnectedEntIdDoNotTouch = new HashMap<>(rectsByConnectedEntIdDoNotTouch.size() / chunksInTransaction.size());
         for (Chunk chunk : chunksInTransaction) {
-            // todo optimize cycle
-            // put chunk and filters to new HashMap
+            // put chunk and filters to the new HashMap
             clonedRectsDoNotTouch.put(chunk, new HashMap<>(rectsDoNotTouch.get(chunk)));
             // cloned filters by chunk
             Map<RectanglePlusFilter, Set<RectanglePlus>> filters = clonedRectsDoNotTouch.get(chunk);
-            // replace filter rects to new HashSet
+            // replace filter rects to the new HashSet
             filters.replaceAll((f, v) -> new HashSet<>(filters.get(f)));
             // put all rects of chunk
-            filters.forEach((f, s) -> s.forEach(r -> clonedRectsByConnectedEntIdDoNotTouch.put(r.getConnectedEntityId(), r)));
+            filters.values().forEach(s -> s.forEach(r -> clonedRectsByConnectedEntIdDoNotTouch.put(r.getConnectedEntityId(), r)));
         }
         this.transactionId = transactionId;
         saveMode = true;
         isTransaction = true;
     }
 
-    public synchronized void joinTransactionUnsave(long transactionId) {
+    public synchronized void joinTransactionUnsafe(long transactionId) {
         if (isTransaction) {
             throw new RuntimeException("Transaction has already started.");
         }
