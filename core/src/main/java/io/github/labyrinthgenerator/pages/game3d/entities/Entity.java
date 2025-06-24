@@ -6,11 +6,12 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import io.github.labyrinthgenerator.pages.game3d.chunks.Chunk;
 import io.github.labyrinthgenerator.pages.game3d.managers.ChunkManager;
+import io.github.labyrinthgenerator.pages.game3d.managers.EntityManager;
 import io.github.labyrinthgenerator.pages.game3d.rect.RectanglePlus;
 import io.github.labyrinthgenerator.pages.game3d.screens.GameScreen;
-import io.github.labyrinthgenerator.pages.game3d.managers.EntityManager;
 import lombok.extern.slf4j.Slf4j;
 
+import java.nio.channels.AlreadyConnectedException;
 import java.util.Objects;
 
 @Slf4j
@@ -39,7 +40,7 @@ public abstract class Entity {
 
         entMan = screen.game.getEntMan();
         id = entMan.assignId();
-        chunk = entMan.addEntityOnChunkTransactional(this.position.x, this.position.z, this);
+        chunk = entMan.addEntityOnChunk(this.position.x, this.position.z, this);
         chunkMan = screen.game.getChunkMan();
     }
 
@@ -69,7 +70,7 @@ public abstract class Entity {
         Vector2 worldSize = chunkMan.getWorldSize();
         if (position.x < -0.5 || position.z < -0.5 ||
             position.x > worldSize.x || position.z > worldSize.y) {
-            log.error("Entity id: " + id + " position " + position + " out of bounds.");
+            log.warn("Entity id: " + id + " position " + position + " out of bounds.");
             return;
         }
         if (chunk != chunkMan.get(chunk.x, chunk.z)) {
@@ -82,8 +83,8 @@ public abstract class Entity {
         if (newChunk.equals(chunk)) {
             throw new UnsupportedOperationException("Ent id " + id + " at position " + position + " " + chunk + " newChunk == chunk.");
         }
-        entMan.updateEntityChunkTransactional(chunk, newChunk, this);
-        screen.game.getRectMan().updateEntityChunkIfExistsRectTransactional(chunk, newChunk, this);
+        entMan.updateEntityChunk(chunk, newChunk, this);
+        screen.game.getRectMan().updateEntityChunkIfExistsRect(chunk, newChunk, this);
         chunk = newChunk;
     }
 
@@ -128,8 +129,7 @@ public abstract class Entity {
     public synchronized void beforeTick() {
         long transactionId = entMan.getTransactionId();
         if (!entMan.isTransaction() || this.transactionId != transactionId) this.transactionId = transactionId;
-        else
-            throw new UnsupportedOperationException("Entity id: " + id + " has already been ticked in this transaction.");
+        else throw new AlreadyConnectedException(); // todo create exception
         isTick = true;
     }
 
@@ -139,7 +139,7 @@ public abstract class Entity {
 
     public synchronized void destroy() {
         if (!isDestroyed) {
-            entMan.removeEntityTransactional(this);
+            entMan.removeEntity(this);
             isDestroyed = true;
         }
     }
