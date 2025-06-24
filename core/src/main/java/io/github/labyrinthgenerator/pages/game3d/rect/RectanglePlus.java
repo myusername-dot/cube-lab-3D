@@ -38,7 +38,7 @@ public class RectanglePlus {
         this.connectedEntityId = connectedEntityId;
         this.filter = filter;
 
-        rectMan.addRectTransactional(this);
+        rectMan.addRect(this);
     }
 
     public boolean overlaps(RectanglePlus r) {

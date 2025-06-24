@@ -3,9 +3,9 @@ package io.github.labyrinthgenerator.pages.game3d.thread;
 import io.github.labyrinthgenerator.pages.game3d.entities.Entity;
 import lombok.extern.slf4j.Slf4j;
 
+import java.nio.channels.AlreadyConnectedException;
 import java.util.Set;
 import java.util.concurrent.Callable;
-import java.util.concurrent.CountDownLatch;
 
 @Slf4j
 public class TickChunk implements Callable<Boolean> {
@@ -23,10 +23,14 @@ public class TickChunk implements Callable<Boolean> {
     public Boolean call() {
         log.debug("TickChunk thread id: " + Thread.currentThread().getId() + " begin.");
         for (Entity ent : entitiesByChunkClone) {
-            if (ent.shouldTick()) {
-                ent.beforeTick();
-                ent.tick(delta);
-                ent.afterTick();
+            try {
+                if (ent.shouldTick()) {
+                    ent.beforeTick();
+                    ent.tick(delta);
+                    ent.afterTick();
+                }
+            } catch (AlreadyConnectedException e) {
+                log.warn("Entity id: " + ent.getId() + " has already been ticked in this transaction.");
             }
         }
         log.debug("TickChunk thread id: " + Thread.currentThread().getId() + " end.");

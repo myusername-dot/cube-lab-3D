@@ -10,21 +10,18 @@ import io.github.labyrinthgenerator.pages.game3d.screens.GameScreen;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
 public class RectManager {
 
-    private final Map<Chunk, Map<RectanglePlusFilter, Set<RectanglePlus>>> rectsDoNotTouch = new HashMap<>();
-    private final Map<Integer, RectanglePlus> rectsByConnectedEntIdDoNotTouch = new HashMap<>();
+    // ConcurrentHashMap, ConcurrentSkipListSet/ConcurrentHashMap<Object,null>
+    private final ConcurrentHashMap<Chunk, ConcurrentHashMap<RectanglePlusFilter, ConcurrentHashMap<RectanglePlus, Object>>> rects = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Integer, RectanglePlus> rectsByConnectedEntityId = new ConcurrentHashMap<>();
+    private final Object justObject = new Object();
 
-    private Map<Chunk, Map<RectanglePlusFilter, Set<RectanglePlus>>> clonedRectsDoNotTouch = new HashMap<>(0);
-    private Map<Integer, RectanglePlus> clonedRectsByConnectedEntIdDoNotTouch = new HashMap<>(0);
-    private final Set<Integer> removedInTransactionRectsIds = new HashSet<>();
-
-    // Read Committed
     private volatile boolean isTransaction = false;
-    private volatile boolean saveMode = false;
     private volatile long transactionId = -1;
 
     private final CubeLab3D game;
@@ -39,73 +36,47 @@ public class RectManager {
         this.chunkMan = chunkMan;
     }
 
-    public void addRectTransactional(final RectanglePlus rect) {
-        synchronized (clonedRectsDoNotTouch) {
-            log.debug("Method: addRect. Block synchronized (rectsClone).");
-            synchronized (clonedRectsByConnectedEntIdDoNotTouch) {
-                log.debug("Method: addRect. Block synchronized (rectsByConnectedEntityIdClone).");
-                //synchronized (rect) {
+    public void addRect(final RectanglePlus rect) {
+        Chunk chunk = chunkMan.get(rect.getX() + rect.getWidth() / 2f, rect.getZ() + rect.getDepth() / 2f);
 
-                Map<Chunk, Map<RectanglePlusFilter, Set<RectanglePlus>>> rects = getRects();
-                Map<Integer, RectanglePlus> rectsByConnectedEntityId = getRectsByConnectedEntId();
-
-                Chunk chunk = chunkMan.get(rect.getX() + rect.getWidth() / 2f, rect.getZ() + rect.getDepth() / 2f);
-                rects.computeIfAbsent(chunk, k -> new HashMap<>());
-                rects.get(chunk).computeIfAbsent(rect.filter, k -> new HashSet<>());
-                rects.get(chunk).get(rect.filter).add(rect);
-                if (rect.getConnectedEntityId() >= 0) {
-                    rectsByConnectedEntityId.put(rect.getConnectedEntityId(), rect);
-                }
-                //}
-                log.debug("Method: addRect. Block end synchronized (rectsByConnectedEntityIdClone).");
-            }
-            log.debug("Method: addRect. Block end synchronized (rectsClone).");
+        rects.computeIfAbsent(chunk, k -> new ConcurrentHashMap<>());
+        rects.get(chunk).computeIfAbsent(rect.filter, k -> new ConcurrentHashMap<>());
+        rects.get(chunk).get(rect.filter).put(rect, justObject);
+        if (rect.getConnectedEntityId() >= 0) {
+            rectsByConnectedEntityId.put(rect.getConnectedEntityId(), rect);
         }
     }
 
-    public void updateEntityChunkIfExistsRectTransactional(final Chunk oldChunk, final Chunk newChunk, final Entity ent) {
-        synchronized (clonedRectsDoNotTouch) {
-            log.debug("Method: updateEntityChunkIfExistsRect. Block synchronized (rectsClone).");
-            synchronized (clonedRectsByConnectedEntIdDoNotTouch) {
-                log.debug("Method: updateEntityChunkIfExistsRect. Block synchronized (rectsByConnectedEntityIdClone).");
-
-                Player player = ((GameScreen) game.getScreen()).getPlayer();
-                if (player != null && player.getId() == ent.getId()) {
-                    log.debug("Try to move the Player's rectangle to the other chunk.");
-                }
-
-                Map<Chunk, Map<RectanglePlusFilter, Set<RectanglePlus>>> rects = getRects();
-                Map<Integer, RectanglePlus> rectsByConnectedEntityId = getRectsByConnectedEntId();
-
-                RectanglePlus rect = rectsByConnectedEntityId.get(ent.getId());
-                if (rect == null) {
-                    // must be removed
-                    if (this.rectsByConnectedEntIdDoNotTouch.get(ent.getId()) != null) {
-                        throw new RuntimeException("Entity id: " + ent.getId() + " rect == null && this.rectsByConnectedEntIdDoNotTouch.get(ent.getId()) != null");
-                    }
-                    return;
-                }
-                //synchronized (rect) {
-                if (!rects.get(oldChunk).containsKey(rect.filter)) {
-                    throw new RuntimeException("Entity id: " + ent.getId() + " !rects.get(oldChunk).containsKey(rect.filter)");
-                }
-                if (!rects.get(oldChunk).get(rect.filter).contains(rect)) {
-                    throwWhyChunkDoesNotContainRect(ent.getId(), oldChunk, newChunk, rects, rect);
-                }
-
-                rects.get(oldChunk).get(rect.filter).remove(rect);
-                rects.get(newChunk).computeIfAbsent(rect.filter, k -> new HashSet<>());
-                rects.get(newChunk).get(rect.filter).add(rect);
-
-                if (player != null && player.getId() == ent.getId()) {
-                    log.debug("The Player's rectangle has been moved to the other chunk!");
-                } else {
-                    log.debug("Entity id: " + ent.getId() + " rectangle has been moved to the other chunk!");
-                }
-            }
-            log.debug("Method: updateEntityChunkIfExistsRect. Block end synchronized (rectsByConnectedEntityIdClone).");
+    public void updateEntityChunkIfExistsRect(final Chunk oldChunk, final Chunk newChunk, final Entity ent) {
+        Player player = ((GameScreen) game.getScreen()).getPlayer();
+        if (player != null && player.getId() == ent.getId()) {
+            log.debug("Try to move the Player's rectangle to the other chunk.");
         }
-        log.debug("Method: updateEntityChunkIfExistsRect. Block end synchronized (rectsClone).");
+
+        RectanglePlus rect = rectsByConnectedEntityId.get(ent.getId());
+        if (rect == null) {
+            // must be removed
+            if (this.rectsByConnectedEntityId.get(ent.getId()) != null) {
+                throw new RuntimeException("Entity id: " + ent.getId() + " rect == null && this.rectsByConnectedEntIdDoNotTouch.get(ent.getId()) != null");
+            }
+            return;
+        }
+        if (!rects.get(oldChunk).containsKey(rect.filter)) {
+            throw new RuntimeException("Entity id: " + ent.getId() + " !rects.get(oldChunk).containsKey(rect.filter)");
+        }
+        if (!rects.get(oldChunk).get(rect.filter).containsKey(rect)) {
+            throwWhyChunkDoesNotContainRect(ent.getId(), oldChunk, newChunk, rect);
+        }
+
+        rects.get(oldChunk).get(rect.filter).remove(rect);
+        rects.get(newChunk).computeIfAbsent(rect.filter, k -> new ConcurrentHashMap<>());
+        rects.get(newChunk).get(rect.filter).put(rect, justObject);
+
+        if (player != null && player.getId() == ent.getId()) {
+            log.debug("The Player's rectangle has been moved to the other chunk!");
+        } else {
+            log.debug("Entity id: " + ent.getId() + " rectangle has been moved to the other chunk!");
+        }
     }
 
     public List<RectanglePlus> getNearestRectsByFilters(float playerX, float playerZ, final RectanglePlus rect) {
@@ -117,14 +88,12 @@ public class RectManager {
             throw new NullPointerException("nearestChunks == null || nearestChunks.isEmpty() at position " + playerX + ", " + playerZ + ".");
         }
 
-        Map<Chunk, Map<RectanglePlusFilter, Set<RectanglePlus>>> rects/* = getRects()*/;  // ConcurrentModificationException
-        rects = rectsDoNotTouch;
         List<RectanglePlus> nearestRects = new ArrayList<>();
         for (Chunk chunk : nearestChunks) {
             for (RectanglePlusFilter filter : filters) {
-                Set<RectanglePlus> otherRects = rects.get(chunk).get(filter);
+                Map<RectanglePlus, Object> otherRects = rects.get(chunk).get(filter);
                 if (otherRects == null) continue;
-                for (final RectanglePlus otherRect : otherRects) {
+                for (final RectanglePlus otherRect : otherRects.keySet()) {
                     if (overlapsPlusDistance(rect, otherRect)) {
                         nearestRects.add(otherRect);
                     }
@@ -170,77 +139,33 @@ public class RectManager {
         return false;
     }
 
-    public void removeRectTransactional(final RectanglePlus rect) {
-        synchronized (clonedRectsDoNotTouch) {
-            log.debug("Method: removeRect. Block synchronized (rectsClone).");
-            synchronized (clonedRectsByConnectedEntIdDoNotTouch) {
-                log.debug("Method: removeRect. Block synchronized (rectsByConnectedEntityIdClone).");
-                //synchronized (rect) {
-
-                Map<Chunk, Map<RectanglePlusFilter, Set<RectanglePlus>>> rects = getRects();
-                Map<Integer, RectanglePlus> rectsByConnectedEntityId = getRectsByConnectedEntId();
-
-                rects.values().forEach(c -> c.values().forEach(l -> l.remove(rect)));
-                rectsByConnectedEntityId.remove(rect.getConnectedEntityId());
-                removedInTransactionRectsIds.add(rect.id);
-                //}
-            }
-            log.debug("Method: removeRect. Block end synchronized (rectsByConnectedEntityIdClone).");
-        }
-        log.debug("Method: removeRect. Block end synchronized (rectsClone).");
+    public void removeRect(final RectanglePlus rect) {
+        rects.values().forEach(c -> c.values().forEach(l -> l.remove(rect)));
+        rectsByConnectedEntityId.remove(rect.getConnectedEntityId());
     }
 
     public int rectsCountAndCheck() {
         AtomicInteger rectsCount = new AtomicInteger();
-        rectsDoNotTouch.forEach((c, m) -> m.forEach((f, s) -> rectsCount.addAndGet(s.size())));
-        if (rectsCount.get() != rectsByConnectedEntIdDoNotTouch.size()) {
-            if (rectsCount.get() > rectsByConnectedEntIdDoNotTouch.size())
-                throw new RuntimeException("rectsCount.get() > rectsByConnectedEntityId.size(): " + rectsCount.get() + ", " + rectsByConnectedEntIdDoNotTouch.size());
+        rects.forEach((c, m) -> m.forEach((f, s) -> rectsCount.addAndGet(s.size())));
+        if (rectsCount.get() != rectsByConnectedEntityId.size()) {
+            if (rectsCount.get() > rectsByConnectedEntityId.size())
+                throw new RuntimeException("rectsCount.get() > rectsByConnectedEntityId.size(): " + rectsCount.get() + ", " + rectsByConnectedEntityId.size());
             else
-                throw new RuntimeException("rectsCount.get() < rectsByConnectedEntityId.size(): " + rectsCount.get() + ", " + rectsByConnectedEntIdDoNotTouch.size());
+                throw new RuntimeException("rectsCount.get() < rectsByConnectedEntityId.size(): " + rectsCount.get() + ", " + rectsByConnectedEntityId.size());
         }
         return rectsCount.get();
     }
 
     public void clear() {
-        //rects.values().forEach(c -> c.values().forEach(Set::clear));
-        //rects.values().forEach(Map::clear);
-        rectsDoNotTouch.clear();
-        rectsByConnectedEntIdDoNotTouch.clear();
-        clonedRectsDoNotTouch.clear();
-        clonedRectsByConnectedEntIdDoNotTouch.clear();
+        rects.clear();
+        rectsByConnectedEntityId.clear();
     }
 
-    public synchronized void joinTransaction(List<Chunk> chunksInTransaction, long transactionId) {
+    public synchronized void joinTransaction(long transactionId) {
         if (isTransaction) {
             throw new RuntimeException("Transaction has already started.");
         }
-        clonedRectsDoNotTouch = new HashMap<>(chunksInTransaction.size());
-        clonedRectsByConnectedEntIdDoNotTouch = new HashMap<>(rectsByConnectedEntIdDoNotTouch.size() / chunksInTransaction.size());
-        removedInTransactionRectsIds.clear();
-        for (Chunk chunk : chunksInTransaction) {
-            // put chunk and filters to the new HashMap
-            clonedRectsDoNotTouch.put(chunk, new HashMap<>(rectsDoNotTouch.get(chunk)));
-            // cloned filters by chunk
-            Map<RectanglePlusFilter, Set<RectanglePlus>> filters = clonedRectsDoNotTouch.get(chunk);
-            // replace filter rects to the new HashSet
-            filters.replaceAll((f, v) -> new HashSet<>(filters.get(f)));
-            // put all rects of chunk
-            filters.values().forEach(s -> s.forEach(r -> clonedRectsByConnectedEntIdDoNotTouch.put(r.getConnectedEntityId(), r)));
-        }
         this.transactionId = transactionId;
-        saveMode = true;
-        isTransaction = true;
-    }
-
-    public synchronized void joinTransactionUnsafe(long transactionId) {
-        if (isTransaction) {
-            throw new RuntimeException("Transaction has already started.");
-        }
-        clonedRectsDoNotTouch = rectsDoNotTouch;
-        clonedRectsByConnectedEntIdDoNotTouch = rectsByConnectedEntIdDoNotTouch;
-        this.transactionId = transactionId;
-        saveMode = false;
         isTransaction = true;
     }
 
@@ -248,14 +173,7 @@ public class RectManager {
         if (!isTransaction) {
             throw new RuntimeException("Transaction has already committed.");
         }
-        if (saveMode) {
-            rectsDoNotTouch.putAll(clonedRectsDoNotTouch);
-            rectsByConnectedEntIdDoNotTouch.putAll(clonedRectsByConnectedEntIdDoNotTouch);
-            removedInTransactionRectsIds.forEach(rectsByConnectedEntIdDoNotTouch::remove);
-        }
         isTransaction = false;
-        clonedRectsDoNotTouch = new HashMap<>(0);
-        clonedRectsByConnectedEntIdDoNotTouch = new HashMap<>(0);
     }
 
     public synchronized void rollbackTransaction() {
@@ -263,38 +181,20 @@ public class RectManager {
             throw new RuntimeException("Transaction has already committed.");
         }
         isTransaction = false;
-        clonedRectsDoNotTouch = new HashMap<>(0);
-        clonedRectsByConnectedEntIdDoNotTouch = new HashMap<>(0);
-    }
-
-    private Map<Chunk, Map<RectanglePlusFilter, Set<RectanglePlus>>> getRects() {
-        if (isTransaction) return clonedRectsDoNotTouch;
-        else return this.rectsDoNotTouch;
-    }
-
-    private Map<Integer, RectanglePlus> getRectsByConnectedEntId() {
-        if (isTransaction) return clonedRectsByConnectedEntIdDoNotTouch;
-        else return this.rectsByConnectedEntIdDoNotTouch;
     }
 
     private void throwWhyChunkDoesNotContainRect(
         int entId,
         Chunk oldChunk, Chunk newChunk,
-        Map<Chunk, Map<RectanglePlusFilter, Set<RectanglePlus>>> rectsTransaction,
         RectanglePlus rect) {
-        Optional<Chunk> transactionChunk = rectsTransaction.entrySet()
+        Optional<Chunk> chunk = this.rects.entrySet()
             .stream()
-            .filter(e -> e.getValue().values().stream().anyMatch(s -> s.stream().anyMatch(r -> r.equals(rect))))
-            .map(Map.Entry::getKey).findAny();
-        Optional<Chunk> chunk = this.rectsDoNotTouch.entrySet()
-            .stream()
-            .filter(e -> e.getValue().values().stream().anyMatch(s -> s.stream().anyMatch(r -> r.equals(rect))))
+            .filter(e -> e.getValue().values().stream().anyMatch(s -> s.keySet().stream().anyMatch(r -> r.equals(rect))))
             .map(Map.Entry::getKey).findAny();
 
         throw new RuntimeException(
             "Entity id: " + entId + " !rects.get(oldChunk).get(rect.filter).contains(rect). " +
                 "Old is: " + oldChunk + ", new is: " + newChunk +
-                ", transaction is: " + transactionChunk.orElse(null) +
                 ", is: " + chunk.orElse(null)
         );
     }
