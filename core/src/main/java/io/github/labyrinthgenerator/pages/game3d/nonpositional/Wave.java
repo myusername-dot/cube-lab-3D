@@ -11,28 +11,29 @@ public class Wave extends NonPosEntity {
 
     private final float size = 5f;
     private final float speed = 20f;
-    private final float frequencySec = 0.5f;
+    private final int count = 2;
 
     private final float startX;
     private final float endX;
-    private float x;
-    private float timer = frequencySec;
+    private final float[] waveX;
 
     public Wave(GameScreen screen) {
         super(screen);
         worldSize = screen.game.getChunkMan().getWorldSize();
         startX = -HALF_UNIT - size - Math.max(worldSize.x, worldSize.y);
         endX = -HALF_UNIT + size + worldSize.x;
-        x = startX;
+        waveX = new float[count];
+        float step = Math.abs(endX - startX) / count;
+        for (int i = 0; i < count; i++) {
+            waveX[i] = startX + step * i;
+        }
     }
 
     public void tick(final float delta) {
-        timer += delta;
-        if ((int) (timer / frequencySec) > 0) {
-            x += speed * delta;
-            if (x > endX) {
-                x = startX;
-                timer = 0f;
+        for (int i = 0; i < count; i++) {
+            waveX[i] += speed * delta;
+            if (waveX[i] > endX) {
+                waveX[i] = startX + waveX[i] - endX;
             }
         }
     }
@@ -41,9 +42,12 @@ public class Wave extends NonPosEntity {
         // Вычисляем расстояние от точки (x, z) до линии, проходящей через (x0, y0)
         // Уравнение линии: z - y0 = (x - x0)
         // Переписываем в виде: z - x = y0 - x0
-        float distance = Math.abs((z - x) - this.x);
+        for (float waveX : this.waveX) {
+            float distance = Math.abs((z - x) - waveX);
 
-        // Проверяем, находится ли расстояние в пределах ширины линии
-        return distance <= size / 2;
+            // Проверяем, находится ли расстояние в пределах ширины линии
+            if (distance <= size / 2) return true;
+        }
+        return false;
     }
 }
