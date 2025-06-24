@@ -150,7 +150,7 @@ public class EntityManager {
         }
     }
 
-    public synchronized void tickAllEntities(final float delta, float playerX, float playerZ) throws InterruptedException {
+    public synchronized void tickAllEntities(final float delta, float playerX, float playerZ) {
         long tickTime = System.currentTimeMillis();
         try {
             startTickLog();

@@ -15,6 +15,7 @@ import io.github.labyrinthgenerator.pages.game3d.models.ModelInstanceBB;
 import io.github.labyrinthgenerator.pages.game3d.rect.RectanglePlus;
 import io.github.labyrinthgenerator.pages.game3d.rect.filters.RectanglePlusFilter;
 import io.github.labyrinthgenerator.pages.game3d.screens.GameScreen;
+import io.github.labyrinthgenerator.pages.game3d.nonpositional.Wave;
 
 import static io.github.labyrinthgenerator.pages.game3d.constants.Constants.TEXTURE_SIZE;
 
@@ -23,10 +24,19 @@ public class Firefly extends Enemy {
 
     private final TextureRegion yellowTexReg;
     private final TextureRegion greenTexReg;
+
+    public enum Color {
+        YELLOW,
+        GREEN
+    }
+    private Color color;
+    private final Wave wave;
+    private boolean isOnWave = false;
     //private PointLight pointLight;
 
-    public Firefly(final Vector3 position, final GameScreen screen) {
+    public Firefly(final Vector3 position, final GameScreen screen, final Wave wave) {
         super(position, screen);
+        this.wave = wave;
 
         mdlInst = new ModelInstanceBB(screen.game.getCellBuilder().mdlPoint);
 
@@ -37,6 +47,7 @@ public class Firefly extends Enemy {
             TEXTURE_SIZE, 0,
             TEXTURE_SIZE, TEXTURE_SIZE);
 
+        color = Color.YELLOW;
         mdlInst.materials.get(0).set(TextureAttribute.createDiffuse(yellowTexReg));
         mdlInst.materials.get(0).set(new BlendingAttribute(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA));
         mdlInst.materials.get(0).set(new FloatAttribute(FloatAttribute.AlphaTest));
@@ -88,11 +99,34 @@ public class Firefly extends Enemy {
         //pointLight.setPosition(position);
 
         rect.oldPosition.set(rect.getPosition());
+
+        if (isOnWave != wave.isOnWave(getPositionX(), getPositionZ())) {
+            switchColor();
+            switchTexture(color);
+            isOnWave = wave.isOnWave(getPositionX(), getPositionZ());
+        }
     }
 
-    public void switchTexture() {
-        mdlInst.materials.get(0).set(TextureAttribute.createDiffuse(greenTexReg));
-        mdlInst.materials.get(0).set(new BlendingAttribute(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA));
-        mdlInst.materials.get(0).set(new FloatAttribute(FloatAttribute.AlphaTest));
+    private void switchColor() {
+        switch (color) {
+            case GREEN:
+                color = Color.YELLOW;
+                break;
+            case YELLOW:
+                color = Color.GREEN;
+                break;
+        }
+    }
+
+    public void switchTexture(Color color) {
+        this.color = color;
+        switch (color) {
+            case GREEN:
+                mdlInst.materials.get(0).set(TextureAttribute.createDiffuse(greenTexReg));
+                break;
+            case YELLOW:
+                mdlInst.materials.get(0).set(TextureAttribute.createDiffuse(yellowTexReg));
+                break;
+        }
     }
 }

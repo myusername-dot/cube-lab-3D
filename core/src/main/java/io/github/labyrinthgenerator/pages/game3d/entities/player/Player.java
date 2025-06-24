@@ -216,7 +216,7 @@ public class Player extends Entity {
         super.onCollision(otherRect);
 
         if (collidedEntity instanceof Firefly) {
-            ((Firefly) collidedEntity).switchTexture();
+            ((Firefly) collidedEntity).switchTexture(Firefly.Color.GREEN);
         }
 
 		/*if (otherRect.filter == RectanglePlusFilter.ITEM) {

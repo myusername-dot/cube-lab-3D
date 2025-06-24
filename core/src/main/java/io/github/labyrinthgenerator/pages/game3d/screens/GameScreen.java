@@ -129,6 +129,7 @@ public abstract class GameScreen implements Screen {
         game.getRectMan().clear();
         game.getEntMan().clear();
         game.getChunkMan().clear();
+        game.getNonPosMan().clear();
     }
 
     @Override
@@ -160,12 +161,8 @@ public abstract class GameScreen implements Screen {
 
     public void tick(final float delta) {
         if (!game.gameIsPaused) {
-            try {
-                game.getEntMan().tickAllEntities(delta, currentCam.position.x, currentCam.position.z);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+            game.getEntMan().tickAllEntities(delta, currentCam.position.x, currentCam.position.z);
+            game.getNonPosMan().tickAllEntities(delta);
         }
     }
-
 }
