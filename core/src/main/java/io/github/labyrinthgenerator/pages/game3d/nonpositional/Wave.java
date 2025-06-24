@@ -13,23 +13,25 @@ public class Wave extends NonPosEntity {
     private final float speed = 20f;
     private final float frequencySec = 0.5f;
 
-    private float offsetX;
-    //private final float offsetZ;
+    private final float startX;
+    private final float endX;
+    private float x;
     private float timer = frequencySec;
 
     public Wave(GameScreen screen) {
         super(screen);
         worldSize = screen.game.getChunkMan().getWorldSize();
-        offsetX = -HALF_UNIT - worldSize.x - size;
-        //offsetZ = -HALF_UNIT + worldSize.y + size;
+        startX = -HALF_UNIT - size - Math.max(worldSize.x, worldSize.y);
+        endX = -HALF_UNIT + size + worldSize.x;
+        x = startX;
     }
 
     public void tick(final float delta) {
         timer += delta;
         if ((int) (timer / frequencySec) > 0) {
-            offsetX += speed * delta;
-            if (offsetX > -HALF_UNIT + worldSize.x + size) {
-                offsetX = -HALF_UNIT - worldSize.x - size;
+            x += speed * delta;
+            if (x > endX) {
+                x = startX;
                 timer = 0f;
             }
         }
@@ -39,7 +41,7 @@ public class Wave extends NonPosEntity {
         // Вычисляем расстояние от точки (x, z) до линии, проходящей через (x0, y0)
         // Уравнение линии: z - y0 = (x - x0)
         // Переписываем в виде: z - x = y0 - x0
-        float distance = Math.abs((z - x) - offsetX);
+        float distance = Math.abs((z - x) - this.x);
 
         // Проверяем, находится ли расстояние в пределах ширины линии
         return distance <= size / 2;
