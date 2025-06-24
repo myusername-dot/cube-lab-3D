@@ -7,8 +7,6 @@ import static io.github.labyrinthgenerator.pages.game3d.constants.Constants.HALF
 
 public class Wave extends NonPosEntity {
 
-    private final Vector2 worldSize;
-
     private final float size = 5f;
     private final float speed = 20f;
     private final int count = 2;
@@ -19,7 +17,7 @@ public class Wave extends NonPosEntity {
 
     public Wave(GameScreen screen) {
         super(screen);
-        worldSize = screen.game.getChunkMan().getWorldSize();
+        Vector2 worldSize = screen.game.getChunkMan().getWorldSize();
         startX = -HALF_UNIT - size - Math.max(worldSize.x, worldSize.y);
         endX = -HALF_UNIT + size + worldSize.x;
         waveX = new float[count];
