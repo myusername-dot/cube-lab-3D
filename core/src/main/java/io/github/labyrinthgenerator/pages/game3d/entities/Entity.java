@@ -25,7 +25,6 @@ public abstract class Entity {
     private volatile Chunk chunk;
 
     protected boolean shouldTick = true;
-    protected boolean render2D = true;
     protected boolean render3D = true;
 
     protected volatile boolean isTick = false;

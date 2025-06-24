@@ -14,14 +14,11 @@ import io.github.labyrinthgenerator.pages.Page;
 import io.github.labyrinthgenerator.pages.game3d.constants.Constants;
 import io.github.labyrinthgenerator.pages.game3d.filters.OverlapFilterManager;
 import io.github.labyrinthgenerator.pages.game3d.input.GameInputProcessor;
-import io.github.labyrinthgenerator.pages.game3d.managers.AssetsManager;
+import io.github.labyrinthgenerator.pages.game3d.managers.*;
 import io.github.labyrinthgenerator.pages.game3d.maps.LMapBuilder;
 import io.github.labyrinthgenerator.pages.game3d.models.ModelMaker;
-import io.github.labyrinthgenerator.pages.game3d.managers.ChunkManager;
-import io.github.labyrinthgenerator.pages.game3d.managers.RectManager;
 import io.github.labyrinthgenerator.pages.game3d.screens.MainMenuScreen;
 import io.github.labyrinthgenerator.pages.game3d.shaders.MyShaderProvider;
-import io.github.labyrinthgenerator.pages.game3d.managers.EntityManager;
 
 public class CubeLab3D extends Game implements Page {
 	private SpriteBatch batch;
@@ -31,6 +28,7 @@ public class CubeLab3D extends Game implements Page {
     private ChunkManager chunkMan;
 	private EntityManager entMan;
 	private RectManager rectMan;
+    private NonPosManager nonPosMan;
 	private ModelMaker cellBuilder;
 	private OverlapFilterManager overlapFilterMan;
 	private LMapBuilder mapBuilder;
@@ -64,6 +62,7 @@ public class CubeLab3D extends Game implements Page {
 
 		entMan = new EntityManager();
 		rectMan = new RectManager(this);
+        nonPosMan = new NonPosManager();
 
 		mapBuilder = new LMapBuilder(this);
 
@@ -167,6 +166,10 @@ public class CubeLab3D extends Game implements Page {
 	public RectManager getRectMan() {
 		return rectMan;
 	}
+
+    public NonPosManager getNonPosMan() {
+        return nonPosMan;
+    }
 
 	public float getTimeSinceLaunch() {
 		return timeSinceLaunch;

@@ -7,11 +7,12 @@ import com.badlogic.gdx.math.Vector3;
 import io.github.labyrinthgenerator.labyrinth.Labyrinth;
 import io.github.labyrinthgenerator.pages.game3d.CubeLab3D;
 import io.github.labyrinthgenerator.pages.game3d.cell.Cell3D;
-import io.github.labyrinthgenerator.pages.game3d.managers.ChunkManager;
 import io.github.labyrinthgenerator.pages.game3d.entities.Firefly;
+import io.github.labyrinthgenerator.pages.game3d.managers.ChunkManager;
 import io.github.labyrinthgenerator.pages.game3d.models.ModelMaker;
 import io.github.labyrinthgenerator.pages.game3d.rect.RectanglePlus;
 import io.github.labyrinthgenerator.pages.game3d.rect.filters.RectanglePlusFilter;
+import io.github.labyrinthgenerator.pages.game3d.nonpositional.Wave;
 import io.github.labyrinthgenerator.pages.game3d.vectors.Vector2i;
 import lombok.extern.slf4j.Slf4j;
 
@@ -81,7 +82,7 @@ public class LMapBuilder {
         List<Cell3D> cell3DList = new ArrayList<>();
         for (int j = 0; j < height; j++) {
             String line = lines.get(j);
-            System.out.println(line);
+            //System.out.println(line);
             int length = line.length();
             assert length == width;
             for (int i = 0; i < width; i++) {
@@ -146,6 +147,9 @@ public class LMapBuilder {
             cell3D.buildCell();
         }
 
+        // NONPOS
+        Wave wave = new Wave(game.getEntMan().getScreen());
+
         // ENTITIES
         for (Cell3D cell3D : cell3DList) {
             if (!cell3D.mobSpawn) continue;
@@ -157,7 +161,8 @@ public class LMapBuilder {
                         cell3D.getPositionX() - HALF_UNIT,
                         MathUtils.random(0f, 0.4f),
                         cell3D.getPositionZ() - HALF_UNIT),
-                    game.getEntMan().getScreen());
+                    game.getEntMan().getScreen(),
+                    wave);
             }
         }
 
