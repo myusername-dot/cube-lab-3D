@@ -75,9 +75,9 @@ public class SpotLightFreeShader implements Shader {
             "{\n" +
             "   vec4 c = texture2D(u_texture, v_texCoords);\n" +
             "   float fogDistanceFactor = exp(-fogDensity * v_distance);\n" + // Вычисляем фактор тумана
-            "   float heightFactor = max(0.0, v_height * 2);\n" + // Чем ниже фрагмент, тем больше плотность, 0 y в центре камеры, положительные значения ниже
-            "   float fogFactor = clamp(fogDistanceFactor + heightFactor, 0.0, 1.0);\n" +
-            "   gl_FragColor = mix(mix(c, spotColor, 0.5), fogColor, clamp(fogFactor, 0.0, 0.8));\n" + // Интерполяция между цветом текстуры и цветом тумана
+            "   float heightFactor = max(0.0, v_height);\n" + // Чем ниже фрагмент, тем больше плотность, 0 y в центре камеры, положительные значения ниже
+            "   float fogFactor = clamp((1 - fogDistanceFactor) + heightFactor, 0.0, 1.0);\n" +
+            "   gl_FragColor = mix(mix(c, spotColor, 0.5), fogColor, clamp(fogFactor, 0.0, 1.0));\n" + // Интерполяция между цветом текстуры и цветом тумана
             "}";
 
 
@@ -103,8 +103,8 @@ public class SpotLightFreeShader implements Shader {
         program.setUniformi("u_texture", 0);
 
         // Устанавливаем цвет тумана и его плотность
-        program.setUniformf("fogColor", new Color(0.1f, 0.1f, 0.1f, 1.0f)); // Цвет тумана (например, серый)
-        program.setUniformf("fogDensity", 1f); // Плотность тумана (можно настроить)
+        program.setUniformf("fogColor", new Color(0.9f, 0.9f, 0.9f, 0.9f)); // Цвет тумана (например, серый)
+        program.setUniformf("fogDensity", 0.1f); // Плотность тумана (можно настроить)
 
         context.begin();
         context.setDepthTest(GL20.GL_LEQUAL);
