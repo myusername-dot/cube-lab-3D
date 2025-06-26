@@ -84,7 +84,7 @@ public class FogFreeShader extends SpotLightFreeShader {
             "   float heightFactor = max(0.0, position.y);\n" + // Чем ниже фрагмент, тем больше плотность, y = 0 в центре камеры, положительные значения ниже
             "   float wave = sin(position.x + position.z + u_time) * 0.3;\n" + // Создание эффекта волн
             "   float fogFactor = clamp((fogDistanceFactor + heightFactor + wave) * 1.0, 0.0, 0.5);\n" +
-            "   if (v_distance < 1) fogFactor += (1 - v_distance);\n" +
+            "   if (v_distance < 1) fogFactor += pow(1 - v_distance, 0.6);\n" +
             "   gl_FragColor = mix(mix(c, spotColor, 0.5), fogColor, fogFactor);\n" + // Интерполяция между цветом текстуры и цветом тумана
             "}";
 
