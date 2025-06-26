@@ -20,9 +20,9 @@ public class SpotLightFreeShader implements Shader {
     public float cutoffAngle = 30f;
     public Color color = Color.ORANGE;
 
-    private ShaderProgram program;
+    protected ShaderProgram program;
 
-    String vertexShader =
+    private final String vertexShader =
         "attribute vec4 a_position;\n" +
             "attribute vec2 a_texCoord0;\n" +
             "uniform mat4 u_worldTrans;\n" +
@@ -30,12 +30,9 @@ public class SpotLightFreeShader implements Shader {
             "uniform float spotCutoff;\n" +
             "varying vec2 v_texCoords;\n" +
             "varying vec4 spotColor;\n" +
-            "varying float v_distance;\n" + // Расстояние до камеры
-            "varying float v_height;\n" + // Передаем высоту
             "void main(void)\n" +
             "{\n" +
             "    gl_Position = u_projTrans * u_worldTrans * a_position;\n" +
-            "    v_height = gl_Position.y; // Передаем высоту в фрагментный шейдер\n" +
             "\n" +
             "    vec3 lightPosition  = (gl_Position).xyz;\n" +
             "    vec3 spotDirection  = normalize(lightPosition.xyz + vec3(0,0,1)).xyz;\n" +
@@ -51,39 +48,28 @@ public class SpotLightFreeShader implements Shader {
             "       spotColor = vec4(1,1,0.1,1); // lit (yellow)\n" +
             "    else\n" +
             "       spotColor = vec4(0.1,0.1,0.1,1); // unlit(black);\n" +
-            "\n" +
-            "    v_distance = length(gl_Position.xyz);\n" + // Вычисляем расстояние
             "}";
 
-    String fragmentShader =
+    private final String fragmentShader =
         "#ifdef GL_ES \n" +
             "#define LOWP lowp\n" +
             "precision mediump float;\n" +
             "#else\n" +
             "#define LOWP \n" +
             "#endif\n" +
-            "uniform mat4 u_worldTrans;\n" +
-            "uniform mat4 u_projTrans;\n" +
             "varying LOWP vec2 v_texCoords;\n" +
             "uniform sampler2D u_texture;\n" +
             "varying vec4 spotColor;\n" +
-            "uniform vec4 fogColor;\n" + // Цвет тумана
-            "varying float v_distance;\n" +
-            "uniform float fogDensity;\n" + // Плотность тумана
-            "varying float v_height;\n" + // Передаем высоту
             "void main(void)\n" +
             "{\n" +
             "   vec4 c = texture2D(u_texture, v_texCoords);\n" +
-            "   float fogDistanceFactor = exp(-fogDensity * v_distance);\n" + // Вычисляем фактор тумана
-            "   float heightFactor = max(0.0, v_height);\n" + // Чем ниже фрагмент, тем больше плотность, 0 y в центре камеры, положительные значения ниже
-            "   float fogFactor = clamp((1 - fogDistanceFactor) + heightFactor, 0.0, 1.0);\n" +
-            "   gl_FragColor = mix(mix(c, spotColor, 0.5), fogColor, clamp(fogFactor, 0.0, 1.0));\n" + // Интерполяция между цветом текстуры и цветом тумана
+            "   gl_FragColor = mix(c, spotColor, 0.5);\n" + // Интерполяция между цветом текстуры и цветом тумана
             "}";
 
 
-    private RenderContext context;
-    private int u_projTrans;
-    private int u_worldTrans;
+    protected RenderContext context;
+    protected int u_projTrans;
+    protected int u_worldTrans;
 
     @Override
     public void init() {
@@ -101,10 +87,6 @@ public class SpotLightFreeShader implements Shader {
         program.setUniformMatrix(u_projTrans, camera.combined);
         program.setUniformf("spotCutoff", cutoffAngle);
         program.setUniformi("u_texture", 0);
-
-        // Устанавливаем цвет тумана и его плотность
-        program.setUniformf("fogColor", new Color(0.9f, 0.9f, 0.9f, 0.9f)); // Цвет тумана (например, серый)
-        program.setUniformf("fogDensity", 0.1f); // Плотность тумана (можно настроить)
 
         context.begin();
         context.setDepthTest(GL20.GL_LEQUAL);

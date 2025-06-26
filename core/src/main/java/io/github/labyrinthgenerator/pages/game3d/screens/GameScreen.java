@@ -138,7 +138,7 @@ public abstract class GameScreen implements Screen {
     public void render(final float delta) {
         Shader shader = game.getShaderProvider().getShader();
         if (shader instanceof FogFreeShader) {
-            ((FogFreeShader) shader).increaseTimer();
+            ((FogFreeShader) shader).increaseTimer(delta);
         }
         handleInput(delta);
         tick(delta);
