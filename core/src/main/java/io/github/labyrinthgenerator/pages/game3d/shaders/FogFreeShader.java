@@ -43,10 +43,12 @@ public class FogFreeShader implements Shader {
             "uniform mat4 u_worldTrans;\n" +
             "uniform mat4 u_projTrans;\n" +
             "uniform float spotCutoff;\n" +
+            "uniform float fogDensity;\n" + // Плотность тумана
+            "varying vec4 position;\n" + // Передаем высоту
             "varying vec2 v_texCoords;\n" +
             "varying vec4 spotColor;\n" +
             "varying float v_distance;\n" + // Расстояние до камеры
-            "varying vec4 position;\n" + // Передаем высоту
+            "varying float fogDistanceFactor;\n" +
             "void main(void)\n" +
             "{\n" +
             "    gl_Position = u_projTrans * u_worldTrans * a_position;\n" +
@@ -68,11 +70,7 @@ public class FogFreeShader implements Shader {
             "       spotColor = vec4(0.1,0.1,0.1,1); // unlit(black);\n" +
             "\n" +
             "    v_distance = length(vec3(gl_Position.x, min(0.0, gl_Position.y * 4.0), gl_Position.z));\n" + // Вычисляем расстояние
-            "\n" +    // Вычисляем запаздывание тумана на основе скорости игрока
-            //"   float fogVelocityX = u_fogVelocity.x * 0.2; // Умножаем на коэффициент для контроля влияния скорости\n" +
-            //"   float fogVelocityZ = u_fogVelocity.z * 0.2; // Умножаем на коэффициент для контроля влияния скорости\n" +
-            // todo density xz
-            //"   float density = fogBaseDensity + fogVelocity.x + fogVelocity.y;\n" + // Плотность тумана зависит от скорости. ускорение может быть отрицательной
+            "    fogDistanceFactor = (fogDensity * v_distance / 20);\n" + // Вычисляем фактор тумана // float fogDistanceFactor = exp(-fogDensity * v_distance);
             "}";
 
     String fragmentShader =
@@ -82,30 +80,24 @@ public class FogFreeShader implements Shader {
             "#else\n" +
             "#define LOWP \n" +
             "#endif\n" +
-            "uniform mat4 u_worldTrans;\n" +
-            "uniform mat4 u_projTrans;\n" +
             "varying LOWP vec2 v_texCoords;\n" +
             "uniform sampler2D u_texture;\n" +
-            "varying vec4 spotColor;\n" +
             "uniform vec4 fogColor;\n" + // Цвет тумана
-            "varying float v_distance;\n" +
-            //"uniform float fogDensity;\n" + // Плотность тумана
             "uniform float u_time;\n" +
-            "varying vec4 position;\n" + // Передаем gl_Position
             //"uniform vec3 u_fogVelocity;\n" + // Скорость тумана
+            "varying vec4 position;\n" + // Передаем gl_Position
+            "varying vec4 spotColor;\n" +
+            "varying float v_distance;\n" +
+            "varying float fogDistanceFactor;\n" +
             "void main(void)\n" +
             "{\n" +
             "   \n" +
             "   vec4 c = texture2D(u_texture, v_texCoords);\n" +
-            "   float fogDistanceFactor = 1;\n" + // Вычисляем фактор тумана float fogDistanceFactor = exp(-fogDensity * v_distance);
-            "   float heightFactor = max(0.0, position.y);\n" + // Чем ниже фрагмент, тем больше плотность, 0 y в центре камеры, положительные значения ниже
-            // Создание эффекта волн
-            "   float wave = sin(position.x + position.z + u_time) * 0.3;\n" +
-            //"   vec2 waveOffset = vec2(0.0, wave);\n" +
-            "   float fogFactor = clamp((1 - fogDistanceFactor) + heightFactor  + wave, 0.0, 1.0);\n" +
-            "   float maxFogFactor = 0.7;\n" +
-            "   if (v_distance < 1) maxFogFactor = 1.0;\n" +
-            "   gl_FragColor = mix(mix(c, spotColor, 0.5), fogColor, clamp(fogFactor, 0.0, maxFogFactor));\n" + // Интерполяция между цветом текстуры и цветом тумана
+            "   float heightFactor = max(0.0, position.y);\n" + // Чем ниже фрагмент, тем больше плотность, y = 0 в центре камеры, положительные значения ниже
+            "   float wave = sin(position.x + position.z + u_time) * 0.3;\n" + // Создание эффекта волн
+            "   float fogFactor = clamp((fogDistanceFactor + heightFactor + wave) * 1.0, 0.0, 0.5);\n" +
+            "   if (v_distance < 1) fogFactor += (1 - v_distance);\n" +
+            "   gl_FragColor = mix(mix(c, spotColor, 0.5), fogColor, fogFactor);\n" + // Интерполяция между цветом текстуры и цветом тумана
             "}";
 
 
@@ -144,7 +136,7 @@ public class FogFreeShader implements Shader {
 
         // Устанавливаем цвет тумана и его плотность
         program.setUniformf("fogColor", new Color(0.9f, 0.9f, 0.9f, 0.9f)); // Цвет тумана (например, серый)
-        //program.setUniformf("fogDensity", fogBaseDensity); // Плотность тумана (можно настроить)
+        program.setUniformf("fogDensity", fogBaseDensity); // Плотность тумана (можно настроить)
 
         float[] fogVelocity = new float[] {playerVelocity.x, playerVelocity.y, playerVelocity.z};
         //program.setUniform3fv("u_fogVelocity", fogVelocity, 0, 3);
