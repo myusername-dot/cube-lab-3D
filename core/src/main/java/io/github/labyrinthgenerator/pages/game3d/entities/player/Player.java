@@ -19,7 +19,6 @@ import static io.github.labyrinthgenerator.pages.game3d.constants.Constants.HALF
 @Slf4j
 public class Player extends Entity {
     private final Vector3 movementDir = new Vector3();
-    private final Vector2 movementDirVec2 = new Vector2(movementDir.x, movementDir.z);
 
     public final RectanglePlus rect;
     public final PerspectiveCamera playerCam;
@@ -30,6 +29,9 @@ public class Player extends Entity {
     float camY = HALF_UNIT;
 
     private final float playerMoveSpeed = 4f;
+    private final float acceleration = 10f; // Ускорение
+    private final float deceleration = 10f; // Замедление
+    private Vector3 velocity = new Vector3(); // Текущая скорость игрока
 
     private final int maxHP = 100;
     private int currentHP = 100;
@@ -144,23 +146,48 @@ public class Player extends Entity {
         }
 
         if (Gdx.input.isKeyPressed(Input.Keys.W)) {
-            movementDir.add(playerCam.direction.cpy());
+            movementDir.add(playerCam.direction);
             headbob = true;
         }
 
         if (Gdx.input.isKeyPressed(Input.Keys.S)) {
-            movementDir.sub(playerCam.direction.cpy());
+            movementDir.sub(playerCam.direction);
             headbob = true;
         }
 
+        boolean horizontalMovement = false;
+
         if (Gdx.input.isKeyPressed(Input.Keys.A)) {
             movementDir.sub(playerCam.direction.cpy().crs(playerCam.up));
+            horizontalMovement = true;
             headbob = true;
         }
 
         if (Gdx.input.isKeyPressed(Input.Keys.D)) {
             movementDir.add(playerCam.direction.cpy().crs(playerCam.up));
+            horizontalMovement = true;
             headbob = true;
+        }
+
+        // Нормализуем направление движения и применяем ускорение
+        if (movementDir.len() > 0) {
+            movementDir.nor(); // Нормализуем
+            velocity.add(movementDir.cpy().scl(acceleration * delta)); // Увеличиваем скорость
+        } else {
+            // Если игрок не движется, замедляем скорость
+            velocity.scl(1 - deceleration * delta);
+        }
+
+        if (!horizontalMovement) {
+            // Ограничиваем скорость только в направлении камеры, чтобы игрока не заносило на поворотах
+            Vector3 cameraForward = playerCam.direction.cpy().nor();
+            float forwardVelocity = velocity.dot(cameraForward); // Получаем скорость в направлении камеры
+            velocity.set(cameraForward.scl(forwardVelocity)); // Устанавливаем скорость только в направлении
+        }
+
+        // Ограничиваем скорость
+        if (velocity.len() > playerMoveSpeed) {
+            velocity.nor().scl(playerMoveSpeed);
         }
 
 		/*if (Gdx.input.isKeyJustPressed(Input.Keys.E)) {
@@ -204,16 +231,13 @@ public class Player extends Entity {
             headbob = false;
         }
 
-        Vector2 newPositionXZ = rect.rectangle.getPosition(
-            new Vector2()).cpy().add(movementDirVec2.nor().cpy().scl(playerMoveSpeed * delta)
-        );
-        movementDirVec2.set(movementDir.x, movementDir.z);
+        // Обновляем позицию игрока
+        Vector2 newPositionXZ = rect.rectangle.getPosition(new Vector2()).cpy().add(velocity.x * delta, velocity.z * delta);
         rect.newPosition.set(newPositionXZ.x, rect.getY(), newPositionXZ.y);
     }
 
     public Vector3 getVelocity() {
-        // todo
-        return movementDir.cpy().scl(playerMoveSpeed);
+        return velocity.cpy();
     }
 
     @Override
