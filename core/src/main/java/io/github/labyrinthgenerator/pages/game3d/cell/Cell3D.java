@@ -84,7 +84,7 @@ public class Cell3D extends Entity {
 
     @Override
     public void render3D(final ModelBatch mdlBatch, final Environment env, final float delta) {
-        Shader shader = ((MyShaderProvider) screen.game.getShaderProvider()).getShader();
+        Shader shader = screen.game.getShaderProvider().getShader();
 
         if (hasWallNorth) {
             setInFrustum(mdlInstWallNorth, mdlBatch, env, shader);

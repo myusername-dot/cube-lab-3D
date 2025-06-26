@@ -11,6 +11,7 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.g3d.Environment;
+import com.badlogic.gdx.graphics.g3d.Shader;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
@@ -18,6 +19,8 @@ import io.github.labyrinthgenerator.pages.game2d.Labyrinth2D;
 import io.github.labyrinthgenerator.pages.game3d.CubeLab3D;
 import io.github.labyrinthgenerator.pages.game3d.constants.Constants;
 import io.github.labyrinthgenerator.pages.game3d.entities.player.Player;
+import io.github.labyrinthgenerator.pages.game3d.shaders.FogFreeShader;
+import io.github.labyrinthgenerator.pages.game3d.shaders.MyShaderProvider;
 import io.github.labyrinthgenerator.pages.game3d.shaders.SkyBoxShaderProgram;
 
 import static io.github.labyrinthgenerator.pages.game3d.constants.Constants.HALF_UNIT;

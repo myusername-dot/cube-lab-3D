@@ -3,12 +3,14 @@ package io.github.labyrinthgenerator.pages.game3d.screens;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Camera;
+import com.badlogic.gdx.graphics.g3d.Shader;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import io.github.labyrinthgenerator.pages.game3d.CubeLab3D;
 import io.github.labyrinthgenerator.pages.game3d.entities.player.Player;
 import io.github.labyrinthgenerator.pages.game3d.models.ModelInstanceBB;
 import io.github.labyrinthgenerator.pages.game3d.rect.RectanglePlus;
+import io.github.labyrinthgenerator.pages.game3d.shaders.FogFreeShader;
 
 import java.util.List;
 
@@ -134,6 +136,10 @@ public abstract class GameScreen implements Screen {
 
     @Override
     public void render(final float delta) {
+        Shader shader = game.getShaderProvider().getShader();
+        if (shader instanceof FogFreeShader) {
+            ((FogFreeShader) shader).increaseTimer();
+        }
         handleInput(delta);
         tick(delta);
     }
