@@ -211,6 +211,11 @@ public class Player extends Entity {
         rect.newPosition.set(newPositionXZ.x, rect.getY(), newPositionXZ.y);
     }
 
+    public Vector3 getVelocity() {
+        // todo
+        return movementDir.cpy().scl(playerMoveSpeed);
+    }
+
     @Override
     public void onCollision(final RectanglePlus otherRect) {
         super.onCollision(otherRect);

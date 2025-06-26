@@ -71,7 +71,7 @@ public class CubeLab3D extends Game implements Page {
 		setScreen(new MainMenuScreen(this));
 
         batch = new SpriteBatch();
-        shaderProvider = new MyShaderProvider(false);
+        shaderProvider = new MyShaderProvider(this, false);
         mdlBatch = new ModelBatch(shaderProvider);
 	}
 
@@ -116,6 +116,7 @@ public class CubeLab3D extends Game implements Page {
 		fbo.dispose();
 
 		assMan.dispose();
+        shaderProvider.dispose();
 	}
 
     @Override
