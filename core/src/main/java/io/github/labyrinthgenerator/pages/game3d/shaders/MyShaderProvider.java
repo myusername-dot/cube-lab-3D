@@ -42,7 +42,7 @@ public class MyShaderProvider implements ShaderProvider {
     }
 
     public Shader getShader() {
-        return spotLightFreeShader;
+        return fogFreeShader;
     }
 
     @Override

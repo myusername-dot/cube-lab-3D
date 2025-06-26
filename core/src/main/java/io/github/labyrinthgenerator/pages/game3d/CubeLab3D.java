@@ -32,7 +32,7 @@ public class CubeLab3D extends Game implements Page {
 	private ModelMaker cellBuilder;
 	private OverlapFilterManager overlapFilterMan;
 	private LMapBuilder mapBuilder;
-    private ShaderProvider shaderProvider;
+    private MyShaderProvider shaderProvider;
     private GameInputProcessor gameInput;
 
 	public boolean gameIsPaused = false;
@@ -176,7 +176,7 @@ public class CubeLab3D extends Game implements Page {
 		return timeSinceLaunch;
 	}
 
-    public ShaderProvider getShaderProvider() {
+    public MyShaderProvider getShaderProvider() {
         return shaderProvider;
     }
 
