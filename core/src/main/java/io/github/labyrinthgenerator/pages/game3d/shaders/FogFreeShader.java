@@ -1,14 +1,8 @@
 package io.github.labyrinthgenerator.pages.game3d.shaders;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g3d.Attribute;
-import com.badlogic.gdx.graphics.g3d.Renderable;
-import com.badlogic.gdx.graphics.g3d.Shader;
-import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
 import com.badlogic.gdx.graphics.g3d.utils.RenderContext;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.Vector3;
@@ -17,27 +11,21 @@ import io.github.labyrinthgenerator.pages.game3d.CubeLab3D;
 import io.github.labyrinthgenerator.pages.game3d.entities.player.Player;
 import io.github.labyrinthgenerator.pages.game3d.screens.PlayScreen;
 
-import java.util.Iterator;
+public class FogFreeShader extends SpotLightFreeShader {
 
-public class FogFreeShader implements Shader {
-
-    float fogBaseDensity = 1.0f; // Задайте базовую плотность тумана
+    public float fogBaseDensity = 1.0f; // Задайте базовую плотность тумана
     //float heightFactor = 0.6f;
-    public float cutoffAngle = 30f;
-    float fogDistance = 1.0f; // Задайте дистанцию для изменения плотности
-    float playerHeight = 0.5f; // Получите высоту игрока
-    float timer;
+    public float fogDistance = 1.0f; // Задайте дистанцию для изменения плотности
+    private float timer;
 
-    private ShaderProgram program;
-
-    private final CubeLab3D game;
+    protected final CubeLab3D game;
 
     public FogFreeShader(CubeLab3D game) {
         this.game = game;
     }
 
 
-    String vertexShader =
+    private final String vertexShader =
         "attribute vec4 a_position;\n" +
             "attribute vec2 a_texCoord0;\n" +
             "uniform mat4 u_worldTrans;\n" +
@@ -69,11 +57,11 @@ public class FogFreeShader implements Shader {
             "    else\n" +
             "       spotColor = vec4(0.1,0.1,0.1,1); // unlit(black);\n" +
             "\n" +
-            "    v_distance = length(vec3(gl_Position.x, min(0.0, gl_Position.y * 4.0), gl_Position.z));\n" + // Вычисляем расстояние
+            "    v_distance = length(vec3(gl_Position.x, min(0.0, gl_Position.y * 4.0), gl_Position.z));\n" + // Вычисляем расстояние // Чем ниже фрагмент, тем больше плотность, y = 0 в центре камеры, положительные значения ниже
             "    fogDistanceFactor = (fogDensity * v_distance / 20);\n" + // Вычисляем фактор тумана // float fogDistanceFactor = exp(-fogDensity * v_distance);
             "}";
 
-    String fragmentShader =
+    private final String fragmentShader =
         "#ifdef GL_ES \n" +
             "#define LOWP lowp\n" +
             "precision mediump float;\n" +
@@ -101,10 +89,6 @@ public class FogFreeShader implements Shader {
             "}";
 
 
-    private RenderContext context;
-    private int u_projTrans;
-    private int u_worldTrans;
-
     @Override
     public void init() {
         program = new ShaderProgram(vertexShader, fragmentShader);
@@ -114,18 +98,17 @@ public class FogFreeShader implements Shader {
         u_worldTrans = program.getUniformLocation("u_worldTrans");
     }
 
-    public void increaseTimer() {
-        timer += Gdx.graphics.getDeltaTime();
+    public void increaseTimer(float delta) {
+        timer += delta;
     }
 
     @Override
     public void begin(Camera camera, RenderContext context) {
         this.context = context;
 
-        Player player = null;
         Vector3 playerVelocity = new Vector3(0, 0, 0);
         if (game.getScreen() instanceof PlayScreen) {
-            player = ((PlayScreen) game.getScreen()).getPlayer();
+            Player player = ((PlayScreen) game.getScreen()).getPlayer();
             playerVelocity = player.getVelocity();
         }
 
@@ -138,51 +121,13 @@ public class FogFreeShader implements Shader {
         program.setUniformf("fogColor", new Color(0.9f, 0.9f, 0.9f, 0.9f)); // Цвет тумана (например, серый)
         program.setUniformf("fogDensity", fogBaseDensity); // Плотность тумана (можно настроить)
 
-        float[] fogVelocity = new float[] {playerVelocity.x, playerVelocity.y, playerVelocity.z};
+        float[] fogVelocity = new float[]{playerVelocity.x, playerVelocity.y, playerVelocity.z};
         //program.setUniform3fv("u_fogVelocity", fogVelocity, 0, 3);
         program.setUniformf("u_time", timer);
 
         context.begin();
         context.setDepthTest(GL20.GL_LEQUAL);
         context.setCullFace(GL20.GL_BACK);
-    }
-
-    @Override
-    public void render(Renderable renderable) {
-        program.setUniformMatrix(u_worldTrans, renderable.worldTransform);
-
-        // bind texture
-        Iterator<Attribute> matIter = renderable.material.iterator();
-        if (matIter.hasNext()) {
-            Attribute attribute = matIter.next();
-            if (attribute instanceof TextureAttribute) {
-                TextureAttribute textureAttribute = (TextureAttribute) attribute;
-                Texture texture = textureAttribute.textureDescription.texture;
-                texture.bind(0);
-            }
-        }
-
-        renderable.meshPart.render(program);
-    }
-
-    @Override
-    public void end() {
-        context.end();
-    }
-
-    @Override
-    public void dispose() {
-        program.dispose();
-    }
-
-    @Override
-    public int compareTo(Shader other) {
-        return 0;
-    }
-
-    @Override
-    public boolean canRender(Renderable instance) {
-        return true;
     }
 }
 
