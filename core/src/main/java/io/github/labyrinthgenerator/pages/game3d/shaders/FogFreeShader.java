@@ -95,8 +95,8 @@ public class FogFreeShader extends SpotLightFreeShader {
             "   float shiftedRadius = 0;\n" +
             "   if (radius > 0) {\n" +
             "       if (sign(u_fogVelocity.y) > 0) shiftedRadius = 1.0;\n" +
-            "       else shiftedRadius = 0.4;\n" +
-            "       shiftedRadius -= sign(u_fogVelocity.y) * radius / (shiftedRadius / 0.2);\n" +
+            "       else shiftedRadius = 0.3;\n" +
+            "       shiftedRadius -= sign(u_fogVelocity.y) * radius / (shiftedRadius / 0.15);\n" +
             "   }\n" +
             "   if (v_distance / 1.5 < shiftedRadius)\n" +
             "   {\n" +
