@@ -180,19 +180,21 @@ public class Player extends Entity {
             velocity.scl(1 - deceleration * delta);
         }
 
-        // Ограничиваем скорость
-        if (velocity.len() > playerMoveSpeed) {
-            // получаем единичный скаляр по отношению к длине и умножаем на макс скорость
-            velocity.nor().scl(playerMoveSpeed);
-        }
-
         // Ограничиваем скорость только в направлении камеры, чтобы игрока не заносило на поворотах
         Vector3 cameraForward = playerCam.direction.cpy().nor();
-        float forwardVelocityScl = velocity.dot(cameraForward); // Получаем скорость в направлении камеры
+        float forwardVelocityScl = velocity.cpy().dot(cameraForward); // Получаем скорость в направлении камеры
         forwardVelocity.set(cameraForward.scl(forwardVelocityScl)); // Устанавливаем скорость только в направлении
 
-        Vector3 velocity = this.velocity;
-        if (!horizontalMovement) velocity = this.forwardVelocity;
+        // Ограничиваем скорость
+        if (forwardVelocity.len() > playerMoveSpeed) {
+            // получаем единичный скаляр по отношению к длине и умножаем на макс скорость
+            forwardVelocity.nor().scl(playerMoveSpeed);
+        }
+
+        if (!horizontalMovement) velocity.set(forwardVelocity);
+        else if (velocity.len() > playerMoveSpeed) {
+            velocity.nor().scl(playerMoveSpeed);
+        }
 
 		/*if (Gdx.input.isKeyJustPressed(Input.Keys.E)) {
 			useUsableInterface(currentUsableInterface);
