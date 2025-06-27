@@ -15,7 +15,6 @@ import io.github.labyrinthgenerator.pages.game3d.screens.PlayScreen;
 public class FogFreeShader extends SpotLightFreeShader {
 
     public float fogBaseDensity = 1.0f; // Задайте базовую плотность тумана
-    //float heightFactor = 0.6f;
     public float fogDistance = 1.0f; // Задайте дистанцию для изменения плотности
     private float timer;
 
@@ -37,8 +36,8 @@ public class FogFreeShader extends SpotLightFreeShader {
             "varying vec4 position_a;\n" +
             "varying vec2 v_texCoords;\n" +
             "varying vec4 spotColor;\n" +
-            "varying float v_distance;\n" + // Расстояние до камеры
-            "varying float fogDistanceFactor;\n" +
+            "varying float wrong2Distance;\n" + // Расстояние до камеры
+            "varying float fogWrongDistanceFactor;\n" +
             "void main(void)\n" +
             "{\n" +
             "    gl_Position = u_projTrans * u_worldTrans * a_position;\n" +
@@ -60,8 +59,8 @@ public class FogFreeShader extends SpotLightFreeShader {
             "    else\n" +
             "       spotColor = vec4(0.1,0.1,0.1,1); // unlit(black);\n" +
             "\n" +
-            "    v_distance = length(vec3(position.x, min(0.0, position.y * 4.0), position.z));\n" + // Вычисляем расстояние // Чем ниже фрагмент, тем больше плотность, y = 0 в центре камеры, положительные значения ниже
-            "    fogDistanceFactor = (fogDensity * length(position) / 20);\n" + // Вычисляем фактор тумана // float fogDistanceFactor = exp(-fogDensity * v_distance);
+            "    wrong2Distance = length(vec3(position.x, min(0.0, position.y * 4.0), position.z));\n" + // Вычисляем расстояние // Чем ниже фрагмент, тем больше плотность, y = 0 в центре камеры, положительные значения ниже
+            "    fogWrongDistanceFactor = (fogDensity * length(position) / 20);\n" + // Вычисляем фактор тумана // float fogWrongDistanceFactor = exp(-fogDensity * v_distance);
             "}";
 
     private final String fragmentShader =
@@ -79,8 +78,8 @@ public class FogFreeShader extends SpotLightFreeShader {
             "varying vec4 position;\n" + // Передаем gl_Position
             "varying vec4 position_a;\n" +
             "varying vec4 spotColor;\n" +
-            "varying float v_distance;\n" +
-            "varying float fogDistanceFactor;\n" +
+            "varying float wrong2Distance;\n" +
+            "varying float fogWrongDistanceFactor;\n" +
             "uniform vec3 u_normalTexture;\n" +
             "void main(void)\n" +
             "{\n" +
@@ -89,7 +88,7 @@ public class FogFreeShader extends SpotLightFreeShader {
             "   float longWave = clamp(sin(position_a.x + position_a.z + u_time) * (max(-0.5, position.y) + 0.5) * 0.4, 0.0, 1.0);\n" + // Создание эффекта волн
             //"   float smallWave = sin((position_a.x * position_a.y * position_a.z) / 10 + u_time * 5) * heightFactor;\n" + // Создание эффекта волн
             "   \n" +
-            "   float fogFactor = clamp((fogDistanceFactor + heightFactor + longWave), 0.0, 0.8);\n" +
+            "   float fogFactor = clamp((fogWrongDistanceFactor + heightFactor + longWave), 0.0, 0.8);\n" +
             "   \n" +
             "   float radius = length(u_fogVelocity / 2.0);\n" + // 4.0 - players max move speed, max radius = 2
             //"   float radius = abs(u_fogVelocity.y / 2.0);\n" + // 4.0 - players max move speed, max radius = 2
@@ -99,11 +98,11 @@ public class FogFreeShader extends SpotLightFreeShader {
             "       else shiftedRadius = 0.3;\n" +
             "       shiftedRadius -= sign(u_fogVelocity.y) * radius / (shiftedRadius / 0.15);\n" +
             "   }\n" +
-            "   if (v_distance / 1.5 < shiftedRadius)\n" +
+            "   if (wrong2Distance / 1.5 < shiftedRadius)\n" +
             "   {\n" +
             "       fogFactor += clamp(" +
             "           sign(u_fogVelocity.y)\n" +
-            "               * pow(shiftedRadius - v_distance / 1.5, (1.0 - sign(u_fogVelocity.y) * (radius / 2.0 - 0.5)))\n" +
+            "               * pow(shiftedRadius - wrong2Distance / 1.5, (1.0 - sign(u_fogVelocity.y) * (radius / 2.0 - 0.5)))\n" +
             "               * heightFactor,\n" +
             "           -0.3, 0.3);\n" +
             "       fogFactor = clamp(fogFactor, 0.0, 1.0);\n" +
@@ -115,17 +114,6 @@ public class FogFreeShader extends SpotLightFreeShader {
             "   vec3 gray = vec3(dot(color, vec3(0.299, 0.587, 0.114)));\n" + // Преобразуем в градацию серого (универсальный метод)
             "   color = mix(gray, color, saturation);\n" + // Интерполируем между серым и исходным цветом
             "   gl_FragColor = vec4(color, 1.0);" + // Выводим цвет
-            /*"   \n" + // ambient
-            "   float ambientF = 0.8;\n" +
-            "   vec4 ambient = gl_FragColor * (ambientF * spotColor);\n" +
-            "   \n" + // light diffuse
-            "   vec3 norm = normalize(u_normalTexture);\n" +
-            "   vec3 fragPos = position_a.xyz;\n" +
-            "   vec3 lightDir = normalize(position.xyz - fragPos);\n" +
-            "   float diff = max(dot(norm, lightDir), 0.0);\n" +
-            "   vec3 diffuse = diff * spotColor.xyz;\n" +
-            "   vec3 result = (ambient.xyz + diffuse) * gl_FragColor.xyz;\n" +
-            "   gl_FragColor = vec4(result, 1.0);\n" +*/
             "}";
 
 
