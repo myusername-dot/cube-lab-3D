@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g3d.utils.RenderContext;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 import io.github.labyrinthgenerator.pages.game3d.CubeLab3D;
@@ -32,7 +33,8 @@ public class FogFreeShader extends SpotLightFreeShader {
             "uniform mat4 u_projTrans;\n" +
             "uniform float spotCutoff;\n" +
             "uniform float fogDensity;\n" + // Плотность тумана
-            "varying vec4 position;\n" + // Передаем высоту
+            "varying vec4 position;\n" +
+            "varying vec4 position_a;\n" +
             "varying vec2 v_texCoords;\n" +
             "varying vec4 spotColor;\n" +
             "varying float v_distance;\n" + // Расстояние до камеры
@@ -41,6 +43,7 @@ public class FogFreeShader extends SpotLightFreeShader {
             "{\n" +
             "    gl_Position = u_projTrans * u_worldTrans * a_position;\n" +
             "    position = gl_Position;\n" +
+            "    position_a = a_position;\n" +
             "\n" +
             "    vec3 lightPosition  = (gl_Position).xyz;\n" +
             "    vec3 spotDirection  = normalize(lightPosition.xyz + vec3(0,0,1));\n" +
@@ -58,7 +61,7 @@ public class FogFreeShader extends SpotLightFreeShader {
             "       spotColor = vec4(0.1,0.1,0.1,1); // unlit(black);\n" +
             "\n" +
             "    v_distance = length(vec3(gl_Position.x, min(0.0, gl_Position.y * 4.0), gl_Position.z));\n" + // Вычисляем расстояние // Чем ниже фрагмент, тем больше плотность, y = 0 в центре камеры, положительные значения ниже
-            "    fogDistanceFactor = (fogDensity * v_distance / 20);\n" + // Вычисляем фактор тумана // float fogDistanceFactor = exp(-fogDensity * v_distance);
+            "    fogDistanceFactor = (fogDensity * v_distance / 10);\n" + // Вычисляем фактор тумана // float fogDistanceFactor = exp(-fogDensity * v_distance);
             "}";
 
     private final String fragmentShader =
@@ -74,6 +77,7 @@ public class FogFreeShader extends SpotLightFreeShader {
             "uniform float u_time;\n" +
             //"uniform vec3 u_fogVelocity;\n" + // Скорость тумана
             "varying vec4 position;\n" + // Передаем gl_Position
+            "varying vec4 position_a;\n" +
             "varying vec4 spotColor;\n" +
             "varying float v_distance;\n" +
             "varying float fogDistanceFactor;\n" +
@@ -82,8 +86,9 @@ public class FogFreeShader extends SpotLightFreeShader {
             "   \n" +
             "   vec4 c = texture2D(u_texture, v_texCoords);\n" +
             "   float heightFactor = max(0.0, position.y);\n" + // Чем ниже фрагмент, тем больше плотность, y = 0 в центре камеры, положительные значения ниже
-            "   float wave = sin(position.x + position.z + u_time) * 0.3;\n" + // Создание эффекта волн
-            "   float fogFactor = clamp((fogDistanceFactor + heightFactor + wave) * 1.0, 0.0, 0.5);\n" +
+            "   float longWave = clamp(sin(position_a.x + position_a.z + u_time) * pow(max(-0.2, position.y) + 0.2, 0.5) * 0.4, 0.0, 1.0);\n" + // Создание эффекта волн
+            //"   float smallWave = sin((position_a.x * position_a.y * position_a.z) / 10 + u_time * 5) * heightFactor;\n" + // Создание эффекта волн
+            "   float fogFactor = clamp((fogDistanceFactor + heightFactor + longWave), 0.0, 0.7);\n" +
             "   if (v_distance < 1) fogFactor += pow(1 - v_distance, 0.6);\n" +
             "   gl_FragColor = mix(mix(c, spotColor, 0.5), fogColor, fogFactor);\n" + // Интерполяция между цветом текстуры и цветом тумана
             "}";
@@ -106,10 +111,11 @@ public class FogFreeShader extends SpotLightFreeShader {
     public void begin(Camera camera, RenderContext context) {
         this.context = context;
 
-        Vector3 playerVelocity = new Vector3(0, 0, 0);
+        Vector2 playerVelocity = new Vector2(0, 0);
         if (game.getScreen() instanceof PlayScreen) {
             Player player = ((PlayScreen) game.getScreen()).getPlayer();
-            playerVelocity = player.getVelocity();
+            Vector3 playerVelocity3 = player.getVelocity();
+            playerVelocity = new Vector2(playerVelocity3.x, playerVelocity3.z);
         }
 
         program.bind();
@@ -121,8 +127,8 @@ public class FogFreeShader extends SpotLightFreeShader {
         program.setUniformf("fogColor", new Color(0.9f, 0.9f, 0.9f, 0.9f)); // Цвет тумана (например, серый)
         program.setUniformf("fogDensity", fogBaseDensity); // Плотность тумана (можно настроить)
 
-        float[] fogVelocity = new float[]{playerVelocity.x, playerVelocity.y, playerVelocity.z};
-        //program.setUniform3fv("u_fogVelocity", fogVelocity, 0, 3);
+        float[] fogVelocity = new float[]{playerVelocity.x, playerVelocity.y};
+        //program.setUniform2fv("u_fogVelocity", fogVelocity, 0, 2);
         program.setUniformf("u_time", timer);
 
         context.begin();
