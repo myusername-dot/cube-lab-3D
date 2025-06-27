@@ -73,9 +73,9 @@ public class FogFreeShader extends SpotLightFreeShader {
             "#endif\n" +
             "varying LOWP vec2 v_texCoords;\n" +
             "uniform sampler2D u_texture;\n" +
-            "uniform vec4 fogColor;\n" + // Цвет тумана
+            "uniform vec4 fogColor;\n" +
             "uniform float u_time;\n" +
-            "uniform vec2 u_fogVelocity;\n" + // Скорость тумана
+            "uniform vec2 u_fogVelocity;\n" +
             "varying vec4 position;\n" + // Передаем gl_Position
             "varying vec4 position_a;\n" +
             "varying vec4 spotColor;\n" +
@@ -95,8 +95,8 @@ public class FogFreeShader extends SpotLightFreeShader {
             "   float shiftedRadius = 0;\n" +
             "   if (radius > 0) {\n" +
             "       if (sign(u_fogVelocity.y) > 0) shiftedRadius = 1.0;\n" +
-            "       else shiftedRadius = 0.3;\n" +
-            "       shiftedRadius -= sign(u_fogVelocity.y) * radius / (shiftedRadius / 0.15);\n" +
+            "       else shiftedRadius = 0.4;\n" +
+            "       shiftedRadius -= sign(u_fogVelocity.y) * radius / (shiftedRadius / 0.2);\n" +
             "   }\n" +
             "   if (v_distance / 1.5 < shiftedRadius)\n" +
             "   {\n" +
