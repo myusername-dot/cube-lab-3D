@@ -81,6 +81,7 @@ public class FogFreeShader extends SpotLightFreeShader {
             "varying vec4 spotColor;\n" +
             "varying float v_distance;\n" +
             "varying float fogDistanceFactor;\n" +
+            "uniform vec3 u_normalTexture;\n" +
             "void main(void)\n" +
             "{\n" +
             "   vec4 c = texture2D(u_texture, v_texCoords);\n" +
@@ -88,7 +89,7 @@ public class FogFreeShader extends SpotLightFreeShader {
             "   float longWave = clamp(sin(position_a.x + position_a.z + u_time) * (max(-0.5, position.y) + 0.5) * 0.4, 0.0, 1.0);\n" + // Создание эффекта волн
             //"   float smallWave = sin((position_a.x * position_a.y * position_a.z) / 10 + u_time * 5) * heightFactor;\n" + // Создание эффекта волн
             "   \n" +
-            "   float fogFactor = clamp((fogDistanceFactor + heightFactor + longWave), 0.0, 0.7);\n" +
+            "   float fogFactor = clamp((fogDistanceFactor + heightFactor + longWave), 0.0, 0.8);\n" +
             "   \n" +
             "   float radius = length(u_fogVelocity / 2.0);\n" + // 4.0 - players max move speed, max radius = 2
             //"   float radius = abs(u_fogVelocity.y / 2.0);\n" + // 4.0 - players max move speed, max radius = 2
@@ -107,7 +108,24 @@ public class FogFreeShader extends SpotLightFreeShader {
             "           -0.3, 0.3);\n" +
             "       fogFactor = clamp(fogFactor, 0.0, 1.0);\n" +
             "   }\n" +
-            "   gl_FragColor = mix(mix(c, spotColor, 0.5), fogColor, fogFactor);\n" + // Интерполяция между цветом текстуры и цветом тумана
+            "   gl_FragColor = mix(mix(mix(c, spotColor, 0.3), fogColor, fogFactor), spotColor, 0.1);\n" + // Интерполяция между цветом текстуры и цветом тумана
+            "   \n" +
+            "   vec3 color = gl_FragColor.rgb;\n" +
+            "   float saturation = 1.3;\n" + //  - heightFactor Устанавливаем желаемую насыщенность (1.0 - без изменений, больше 1 - увеличение, меньше 1 - уменьшение)
+            "   vec3 gray = vec3(dot(color, vec3(0.299, 0.587, 0.114)));\n" + // Преобразуем в градацию серого (универсальный метод)
+            "   color = mix(gray, color, saturation);\n" + // Интерполируем между серым и исходным цветом
+            "   gl_FragColor = vec4(color, 1.0);" + // Выводим цвет
+            /*"   \n" + // ambient
+            "   float ambientF = 0.8;\n" +
+            "   vec4 ambient = gl_FragColor * (ambientF * spotColor);\n" +
+            "   \n" + // light diffuse
+            "   vec3 norm = normalize(u_normalTexture);\n" +
+            "   vec3 fragPos = position_a.xyz;\n" +
+            "   vec3 lightDir = normalize(position.xyz - fragPos);\n" +
+            "   float diff = max(dot(norm, lightDir), 0.0);\n" +
+            "   vec3 diffuse = diff * spotColor.xyz;\n" +
+            "   vec3 result = (ambient.xyz + diffuse) * gl_FragColor.xyz;\n" +
+            "   gl_FragColor = vec4(result, 1.0);\n" +*/
             "}";
 
 
