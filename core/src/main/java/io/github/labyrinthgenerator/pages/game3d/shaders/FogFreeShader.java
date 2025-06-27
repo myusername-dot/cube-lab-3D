@@ -61,7 +61,7 @@ public class FogFreeShader extends SpotLightFreeShader {
             "       spotColor = vec4(0.1,0.1,0.1,1); // unlit(black);\n" +
             "\n" +
             "    v_distance = length(vec3(gl_Position.x, min(0.0, gl_Position.y * 4.0), gl_Position.z));\n" + // Вычисляем расстояние // Чем ниже фрагмент, тем больше плотность, y = 0 в центре камеры, положительные значения ниже
-            "    fogDistanceFactor = (fogDensity * v_distance / 10);\n" + // Вычисляем фактор тумана // float fogDistanceFactor = exp(-fogDensity * v_distance);
+            "    fogDistanceFactor = (fogDensity * v_distance / 20);\n" + // Вычисляем фактор тумана // float fogDistanceFactor = exp(-fogDensity * v_distance);
             "}";
 
     private final String fragmentShader =
@@ -83,10 +83,15 @@ public class FogFreeShader extends SpotLightFreeShader {
             "varying float fogDistanceFactor;\n" +
             "void main(void)\n" +
             "{\n" +
-            "   \n" +
+            /*"   vec4 c = texture2D(u_texture, v_texCoords);\n" +
+            "   float heightFactor = max(0.0, position.y);\n" +
+            "   float wave = sin(position.x + position.z + u_time) * 0.3;\n" +
+            "   float fogFactor = clamp((fogDistanceFactor + heightFactor + wave) * 1.0, 0.0, 0.5);\n" +
+            "   if (v_distance < 1) fogFactor += pow(1 - v_distance, 0.6);\n" +
+            "   gl_FragColor = mix(mix(c, spotColor, 0.5), fogColor, fogFactor);\n" + // Интерполяция между цветом текстуры и цветом тумана*/
             "   vec4 c = texture2D(u_texture, v_texCoords);\n" +
             "   float heightFactor = max(0.0, position.y);\n" + // Чем ниже фрагмент, тем больше плотность, y = 0 в центре камеры, положительные значения ниже
-            "   float longWave = clamp(sin(position_a.x + position_a.z + u_time) * pow(max(-0.2, position.y) + 0.2, 0.5) * 0.4, 0.0, 1.0);\n" + // Создание эффекта волн
+            "   float longWave = clamp(sin(position_a.x + position_a.z + u_time) * (max(-0.5, position.y) + 0.5) * 0.4, 0.0, 1.0);\n" + // Создание эффекта волн
             //"   float smallWave = sin((position_a.x * position_a.y * position_a.z) / 10 + u_time * 5) * heightFactor;\n" + // Создание эффекта волн
             "   float fogFactor = clamp((fogDistanceFactor + heightFactor + longWave), 0.0, 0.7);\n" +
             "   if (v_distance < 1) fogFactor += pow(1 - v_distance, 0.6);\n" +
