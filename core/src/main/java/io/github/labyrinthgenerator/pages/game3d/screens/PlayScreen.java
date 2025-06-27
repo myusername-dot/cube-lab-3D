@@ -203,8 +203,10 @@ public class PlayScreen extends GameScreen {
 
         guiFont01_32.draw(game.getBatch(), "fps: " + Gdx.graphics.getFramesPerSecond(), viewport.getWorldWidth() / 8f, viewport.getWorldHeight() - 16);
 
+        guiFont01_32.draw(game.getBatch(), "velocity: " + player.getVelocity(), viewport.getWorldWidth() / 8f, viewport.getWorldHeight() - 32);
+
         if (showExitDistance && !showGuiMenu) {
-            guiFont01_32.draw(game.getBatch(), "Exit distance: " + player.getExitDistance(), viewport.getWorldWidth() / 8f, viewport.getWorldHeight() - 32);
+            guiFont01_32.draw(game.getBatch(), "Exit distance: " + player.getExitDistance(), viewport.getWorldWidth() / 8f, viewport.getWorldHeight() - 48);
         }
 
 //		gui menu

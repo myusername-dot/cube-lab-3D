@@ -187,6 +187,7 @@ public class Player extends Entity {
 
         // Ограничиваем скорость
         if (velocity.len() > playerMoveSpeed) {
+            // получаем единичный скаляр по отношению к длине и умножаем на макс скорость
             velocity.nor().scl(playerMoveSpeed);
         }
 
@@ -232,8 +233,12 @@ public class Player extends Entity {
         }
 
         // Обновляем позицию игрока
-        Vector2 newPositionXZ = rect.rectangle.getPosition(new Vector2()).cpy().add(velocity.x * delta, velocity.z * delta);
+        Vector2 newPositionXZ = rect.rectangle.getPosition(new Vector2()).add(velocity.x * delta, velocity.z * delta);
         rect.newPosition.set(newPositionXZ.x, rect.getY(), newPositionXZ.y);
+    }
+
+    public Vector3 getDirection() {
+        return playerCam.direction.cpy();
     }
 
     public Vector3 getVelocity() {
