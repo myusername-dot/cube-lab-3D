@@ -31,7 +31,9 @@ public class Player extends Entity {
     private final float playerMoveSpeed = 4f;
     private final float acceleration = 10f; // Ускорение
     private final float deceleration = 10f; // Замедление
-    private Vector3 velocity = new Vector3(); // Текущая скорость игрока
+
+    private final Vector3 velocity = new Vector3(); // Текущая скорость игрока
+    private final Vector3 forwardVelocity = new Vector3(); // Текущая скорость игрока
 
     private final int maxHP = 100;
     private int currentHP = 100;
@@ -178,18 +180,19 @@ public class Player extends Entity {
             velocity.scl(1 - deceleration * delta);
         }
 
-        if (!horizontalMovement) {
-            // Ограничиваем скорость только в направлении камеры, чтобы игрока не заносило на поворотах
-            Vector3 cameraForward = playerCam.direction.cpy().nor();
-            float forwardVelocity = velocity.dot(cameraForward); // Получаем скорость в направлении камеры
-            velocity.set(cameraForward.scl(forwardVelocity)); // Устанавливаем скорость только в направлении
-        }
-
         // Ограничиваем скорость
         if (velocity.len() > playerMoveSpeed) {
             // получаем единичный скаляр по отношению к длине и умножаем на макс скорость
             velocity.nor().scl(playerMoveSpeed);
         }
+
+        // Ограничиваем скорость только в направлении камеры, чтобы игрока не заносило на поворотах
+        Vector3 cameraForward = playerCam.direction.cpy().nor();
+        float forwardVelocityScl = velocity.dot(cameraForward); // Получаем скорость в направлении камеры
+        forwardVelocity.set(cameraForward.scl(forwardVelocityScl)); // Устанавливаем скорость только в направлении
+
+        Vector3 velocity = this.velocity;
+        if (!horizontalMovement) velocity = this.forwardVelocity;
 
 		/*if (Gdx.input.isKeyJustPressed(Input.Keys.E)) {
 			useUsableInterface(currentUsableInterface);
@@ -243,6 +246,10 @@ public class Player extends Entity {
 
     public Vector3 getVelocity() {
         return velocity.cpy();
+    }
+
+    public Vector3 getForwardVelocity() {
+        return forwardVelocity.cpy();
     }
 
     @Override

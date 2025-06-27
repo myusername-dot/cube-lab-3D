@@ -136,7 +136,7 @@ public class FogFreeShader extends SpotLightFreeShader {
         Vector2 playerVelocity = new Vector2(0, 0);
         if (game.getScreen() instanceof PlayScreen) {
             Player player = ((PlayScreen) game.getScreen()).getPlayer();
-            Vector3 playerVelocity3 = player.getVelocity();
+            Vector3 playerVelocity3 = player.getForwardVelocity();
             Vector3 playerDir = player.getDirection();
             playerVelocity.set(playerVelocity3.x * sign(playerDir.x), playerVelocity3.z * sign(playerDir.z));
         }
