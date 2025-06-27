@@ -37,7 +37,7 @@ public class FogFreeShader extends SpotLightFreeShader {
             "varying vec4 position_a;\n" +
             "varying vec2 v_texCoords;\n" +
             "varying vec4 spotColor;\n" +
-            //"varying float v_distance;\n" + // Расстояние до камеры
+            "varying float v_distance;\n" + // Расстояние до камеры
             "varying float fogDistanceFactor;\n" +
             "void main(void)\n" +
             "{\n" +
@@ -60,7 +60,7 @@ public class FogFreeShader extends SpotLightFreeShader {
             "    else\n" +
             "       spotColor = vec4(0.1,0.1,0.1,1); // unlit(black);\n" +
             "\n" +
-            //"    v_distance = length(vec3(position.x, min(0.0, position.y * 4.0), position.z));\n" + // Вычисляем расстояние // Чем ниже фрагмент, тем больше плотность, y = 0 в центре камеры, положительные значения ниже
+            "    v_distance = length(vec3(position.x, min(0.0, position.y * 4.0), position.z));\n" + // Вычисляем расстояние // Чем ниже фрагмент, тем больше плотность, y = 0 в центре камеры, положительные значения ниже
             "    fogDistanceFactor = (fogDensity * length(position) / 20);\n" + // Вычисляем фактор тумана // float fogDistanceFactor = exp(-fogDensity * v_distance);
             "}";
 
@@ -79,7 +79,7 @@ public class FogFreeShader extends SpotLightFreeShader {
             "varying vec4 position;\n" + // Передаем gl_Position
             "varying vec4 position_a;\n" +
             "varying vec4 spotColor;\n" +
-            //"varying float v_distance;\n" +
+            "varying float v_distance;\n" +
             "varying float fogDistanceFactor;\n" +
             "void main(void)\n" +
             "{\n" +
@@ -90,23 +90,19 @@ public class FogFreeShader extends SpotLightFreeShader {
             "   \n" +
             "   float fogFactor = clamp((fogDistanceFactor + heightFactor + longWave), 0.0, 0.7);\n" +
             "   \n" +
-            //"   float fogDensityXPlus = u_fogVelocity.x / 4.0;\n" + // 4.0 - players max move speed
-            //"   float fogDensityXMinus = -sign(fogDensityXPlus) * (1.0 - abs(fogDensityXPlus));\n" +
-            //"   float fogDensityZPlus  = u_fogVelocity.y / 4.0;\n" +
-            //"   float fogDensityZMinus  = -sign(fogDensityZPlus) * (1.0 - abs(fogDensityZPlus));\n" +
-            "   float distance = length(position.xz);\n" +
             "   float radius = length(u_fogVelocity / 2.0);\n" + // 4.0 - players max move speed, max radius = 2
+            //"   float radius = abs(u_fogVelocity.y / 2.0);\n" + // 4.0 - players max move speed, max radius = 2
             "   float shiftedRadius = 0;\n" +
             "   if (radius > 0) {\n" +
             "       if (sign(u_fogVelocity.y) > 0) shiftedRadius = 1.0;\n" +
-            "       else shiftedRadius = 0.2;\n" +
-            "       shiftedRadius -= sign(u_fogVelocity.y) * radius / (shiftedRadius / 0.1);\n" +
+            "       else shiftedRadius = 0.3;\n" +
+            "       shiftedRadius -= sign(u_fogVelocity.y) * radius / (shiftedRadius / 0.15);\n" +
             "   }\n" +
-            "   if (distance < shiftedRadius)\n" +
+            "   if (v_distance / 1.5 < shiftedRadius)\n" +
             "   {\n" +
             "       fogFactor += clamp(" +
             "           sign(u_fogVelocity.y)\n" +
-            "               * pow(shiftedRadius - distance, (1.0 - sign(u_fogVelocity.y) * (radius / 2.0 - 0.5)))\n" +
+            "               * pow(shiftedRadius - v_distance / 1.5, (1.0 - sign(u_fogVelocity.y) * (radius / 2.0 - 0.5)))\n" +
             "               * heightFactor,\n" +
             "           -0.3, 0.3);\n" +
             "       fogFactor = clamp(fogFactor, 0.0, 1.0);\n" +
