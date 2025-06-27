@@ -36,8 +36,8 @@ public class FogFreeShader extends SpotLightFreeShader {
             "varying vec4 position_a;\n" +
             "varying vec2 v_texCoords;\n" +
             "varying vec4 spotColor;\n" +
-            "varying float wrong2Distance;\n" + // Расстояние до камеры
-            "varying float fogWrongDistanceFactor;\n" +
+            "varying float clip2Distance;\n" + // Расстояние до камеры
+            "varying float fogClipDistanceFactor;\n" +
             "void main(void)\n" +
             "{\n" +
             "    gl_Position = u_projTrans * u_worldTrans * a_position;\n" +
@@ -59,8 +59,8 @@ public class FogFreeShader extends SpotLightFreeShader {
             "    else\n" +
             "       spotColor = vec4(0.1,0.1,0.1,1); // unlit(black);\n" +
             "\n" +
-            "    wrong2Distance = length(vec3(position.x, min(0.0, position.y * 4.0), position.z));\n" + // Вычисляем расстояние // Чем ниже фрагмент, тем больше плотность, y = 0 в центре камеры, положительные значения ниже
-            "    fogWrongDistanceFactor = (fogDensity * length(position) / 20);\n" + // Вычисляем фактор тумана // float fogWrongDistanceFactor = exp(-fogDensity * v_distance);
+            "    clip2Distance = length(vec3(position.x, min(0.0, position.y * 4.0), position.z));\n" + // Вычисляем расстояние // Чем ниже фрагмент, тем больше плотность, y = 0 в центре камеры, положительные значения ниже
+            "    fogClipDistanceFactor = (fogDensity * length(position) / 20);\n" + // Вычисляем фактор тумана // float fogClipDistanceFactor = exp(-fogDensity * v_distance);
             "}";
 
     private final String fragmentShader =
@@ -78,9 +78,32 @@ public class FogFreeShader extends SpotLightFreeShader {
             "varying vec4 position;\n" + // Передаем gl_Position
             "varying vec4 position_a;\n" +
             "varying vec4 spotColor;\n" +
-            "varying float wrong2Distance;\n" +
-            "varying float fogWrongDistanceFactor;\n" +
+            "varying float clip2Distance;\n" +
+            "varying float fogClipDistanceFactor;\n" +
             "uniform vec3 u_normalTexture;\n" +
+            "\n" +
+            "vec3 minCamIntersection(vec3 worldCameraPos, vec3 worldObjectPos, vec4 clipFragCoord, mat4 u_ProjTrans, mat4 u_viewTrans) {\n" +
+            "\n" + // Преобразуем в координаты clip space
+            "    vec4 clipSpacePos = vec4(clipFragCoord.xy * 2.0 - 1.0, gl_FragCoord.z, 1.0);\n" +
+            "\n" + // Преобразуем в мировые координаты
+            "    vec4 worldPos = inverse(u_ProjTrans * u_viewTrans) * clipSpacePos;" +
+            "\n" + // Вычисляем направление от камеры к фрагменту
+            "    vec3 fragPos = worldPos.xyz;\n" + // = vec3(clipFragCoord.xy, 0.0) Предполагаем, что z = 0, нужно будет скорректировать
+            "\n" +
+            "    vec3 directionToFragment = normalize(fragPos - worldCameraPos.xyz);\n" +
+            "\n" +
+            "\n" + // Вычисляем вектор от объекта к камере todo?
+            "    vec3 objectToCamera = worldCameraPos - worldObjectPos;\n" +
+            "\n" +
+            "\n" + // Нормализуем вектор от объекта к камере
+            "    vec3 normalizedObjectToCamera = normalize(objectToCamera);\n" +
+            "\n" +
+            "\n" + // Проекция вектора от объекта на направление к фрагменту
+            "    float projectionLength = dot(normalizedObjectToCamera, directionToFragment);\n" +
+            "    vec3 minIntersection = worldObjectPos + normalizedObjectToCamera * projectionLength;\n" +
+            "\n" +
+            "    return minIntersection;\n" +
+            "}\n" +
             "void main(void)\n" +
             "{\n" +
             "   vec4 c = texture2D(u_texture, v_texCoords);\n" +
@@ -88,7 +111,7 @@ public class FogFreeShader extends SpotLightFreeShader {
             "   float longWave = clamp(sin(position_a.x + position_a.z + u_time) * (max(-0.5, position.y) + 0.5) * 0.4, 0.0, 1.0);\n" + // Создание эффекта волн
             //"   float smallWave = sin((position_a.x * position_a.y * position_a.z) / 10 + u_time * 5) * heightFactor;\n" + // Создание эффекта волн
             "   \n" +
-            "   float fogFactor = clamp((fogWrongDistanceFactor + heightFactor + longWave), 0.0, 0.8);\n" +
+            "   float fogFactor = clamp((fogClipDistanceFactor + heightFactor + longWave), 0.0, 0.8);\n" +
             "   \n" +
             "   float radius = length(u_fogVelocity / 2.0);\n" + // 4.0 - players max move speed, max radius = 2
             //"   float radius = abs(u_fogVelocity.y / 2.0);\n" + // 4.0 - players max move speed, max radius = 2
@@ -98,11 +121,11 @@ public class FogFreeShader extends SpotLightFreeShader {
             "       else shiftedRadius = 0.3;\n" +
             "       shiftedRadius -= sign(u_fogVelocity.y) * radius / (shiftedRadius / 0.15);\n" +
             "   }\n" +
-            "   if (wrong2Distance / 1.5 < shiftedRadius)\n" +
+            "   if (clip2Distance / 1.5 < shiftedRadius)\n" +
             "   {\n" +
             "       fogFactor += clamp(" +
             "           sign(u_fogVelocity.y)\n" +
-            "               * pow(shiftedRadius - wrong2Distance / 1.5, (1.0 - sign(u_fogVelocity.y) * (radius / 2.0 - 0.5)))\n" +
+            "               * pow(shiftedRadius - clip2Distance / 1.5, (1.0 - sign(u_fogVelocity.y) * (radius / 2.0 - 0.5)))\n" +
             "               * heightFactor,\n" +
             "           -0.3, 0.3);\n" +
             "       fogFactor = clamp(fogFactor, 0.0, 1.0);\n" +
