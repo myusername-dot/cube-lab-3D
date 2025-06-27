@@ -37,7 +37,7 @@ public class FogFreeShader extends SpotLightFreeShader {
             "varying vec4 position_a;\n" +
             "varying vec2 v_texCoords;\n" +
             "varying vec4 spotColor;\n" +
-            "varying float v_distance;\n" + // Расстояние до камеры
+            //"varying float v_distance;\n" + // Расстояние до камеры
             "varying float fogDistanceFactor;\n" +
             "void main(void)\n" +
             "{\n" +
@@ -60,8 +60,8 @@ public class FogFreeShader extends SpotLightFreeShader {
             "    else\n" +
             "       spotColor = vec4(0.1,0.1,0.1,1); // unlit(black);\n" +
             "\n" +
-            "    v_distance = length(vec3(gl_Position.x, min(0.0, gl_Position.y * 4.0), gl_Position.z));\n" + // Вычисляем расстояние // Чем ниже фрагмент, тем больше плотность, y = 0 в центре камеры, положительные значения ниже
-            "    fogDistanceFactor = (fogDensity * v_distance / 20);\n" + // Вычисляем фактор тумана // float fogDistanceFactor = exp(-fogDensity * v_distance);
+            //"    v_distance = length(vec3(position.x, min(0.0, position.y * 4.0), position.z));\n" + // Вычисляем расстояние // Чем ниже фрагмент, тем больше плотность, y = 0 в центре камеры, положительные значения ниже
+            "    fogDistanceFactor = (fogDensity * length(position) / 20);\n" + // Вычисляем фактор тумана // float fogDistanceFactor = exp(-fogDensity * v_distance);
             "}";
 
     private final String fragmentShader =
@@ -75,26 +75,42 @@ public class FogFreeShader extends SpotLightFreeShader {
             "uniform sampler2D u_texture;\n" +
             "uniform vec4 fogColor;\n" + // Цвет тумана
             "uniform float u_time;\n" +
-            //"uniform vec3 u_fogVelocity;\n" + // Скорость тумана
+            "uniform vec2 u_fogVelocity;\n" + // Скорость тумана
             "varying vec4 position;\n" + // Передаем gl_Position
             "varying vec4 position_a;\n" +
             "varying vec4 spotColor;\n" +
-            "varying float v_distance;\n" +
+            //"varying float v_distance;\n" +
             "varying float fogDistanceFactor;\n" +
             "void main(void)\n" +
             "{\n" +
-            /*"   vec4 c = texture2D(u_texture, v_texCoords);\n" +
-            "   float heightFactor = max(0.0, position.y);\n" +
-            "   float wave = sin(position.x + position.z + u_time) * 0.3;\n" +
-            "   float fogFactor = clamp((fogDistanceFactor + heightFactor + wave) * 1.0, 0.0, 0.5);\n" +
-            "   if (v_distance < 1) fogFactor += pow(1 - v_distance, 0.6);\n" +
-            "   gl_FragColor = mix(mix(c, spotColor, 0.5), fogColor, fogFactor);\n" + // Интерполяция между цветом текстуры и цветом тумана*/
             "   vec4 c = texture2D(u_texture, v_texCoords);\n" +
             "   float heightFactor = max(0.0, position.y);\n" + // Чем ниже фрагмент, тем больше плотность, y = 0 в центре камеры, положительные значения ниже
             "   float longWave = clamp(sin(position_a.x + position_a.z + u_time) * (max(-0.5, position.y) + 0.5) * 0.4, 0.0, 1.0);\n" + // Создание эффекта волн
             //"   float smallWave = sin((position_a.x * position_a.y * position_a.z) / 10 + u_time * 5) * heightFactor;\n" + // Создание эффекта волн
+            "   \n" +
             "   float fogFactor = clamp((fogDistanceFactor + heightFactor + longWave), 0.0, 0.7);\n" +
-            "   if (v_distance < 1) fogFactor += pow(1 - v_distance, 0.6);\n" +
+            "   \n" +
+            //"   float fogDensityXPlus = u_fogVelocity.x / 4.0;\n" + // 4.0 - players max move speed
+            //"   float fogDensityXMinus = -sign(fogDensityXPlus) * (1.0 - abs(fogDensityXPlus));\n" +
+            //"   float fogDensityZPlus  = u_fogVelocity.y / 4.0;\n" +
+            //"   float fogDensityZMinus  = -sign(fogDensityZPlus) * (1.0 - abs(fogDensityZPlus));\n" +
+            "   float distance = length(position.xz);\n" +
+            "   float radius = length(u_fogVelocity / 2.0);\n" + // 4.0 - players max move speed, max radius = 2
+            "   float shiftedRadius = 0;\n" +
+            "   if (radius > 0) {\n" +
+            "       if (sign(u_fogVelocity.y) > 0) shiftedRadius = 1.0;\n" +
+            "       else shiftedRadius = 0.2;\n" +
+            "       shiftedRadius -= sign(u_fogVelocity.y) * radius / (shiftedRadius / 0.1);\n" +
+            "   }\n" +
+            "   if (distance < shiftedRadius)\n" +
+            "   {\n" +
+            "       fogFactor += clamp(" +
+            "           sign(u_fogVelocity.y)\n" +
+            "               * pow(shiftedRadius - distance, (1.0 - sign(u_fogVelocity.y) * (radius / 2.0 - 0.5)))\n" +
+            "               * heightFactor,\n" +
+            "           -0.3, 0.3);\n" +
+            "       fogFactor = clamp(fogFactor, 0.0, 1.0);\n" +
+            "   }\n" +
             "   gl_FragColor = mix(mix(c, spotColor, 0.5), fogColor, fogFactor);\n" + // Интерполяция между цветом текстуры и цветом тумана
             "}";
 
@@ -112,6 +128,11 @@ public class FogFreeShader extends SpotLightFreeShader {
         timer += delta;
     }
 
+    private int sign(float v) {
+        if (v >= 0) return 1;
+        else return -1;
+    }
+
     @Override
     public void begin(Camera camera, RenderContext context) {
         this.context = context;
@@ -120,7 +141,8 @@ public class FogFreeShader extends SpotLightFreeShader {
         if (game.getScreen() instanceof PlayScreen) {
             Player player = ((PlayScreen) game.getScreen()).getPlayer();
             Vector3 playerVelocity3 = player.getVelocity();
-            playerVelocity = new Vector2(playerVelocity3.x, playerVelocity3.z);
+            Vector3 playerDir = player.getDirection();
+            playerVelocity.set(playerVelocity3.x * sign(playerDir.x), playerVelocity3.z * sign(playerDir.z));
         }
 
         program.bind();
@@ -133,7 +155,7 @@ public class FogFreeShader extends SpotLightFreeShader {
         program.setUniformf("fogDensity", fogBaseDensity); // Плотность тумана (можно настроить)
 
         float[] fogVelocity = new float[]{playerVelocity.x, playerVelocity.y};
-        //program.setUniform2fv("u_fogVelocity", fogVelocity, 0, 2);
+        program.setUniform2fv("u_fogVelocity", fogVelocity, 0, 2);
         program.setUniformf("u_time", timer);
 
         context.begin();
