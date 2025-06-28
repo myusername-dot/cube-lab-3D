@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.ArrayList;
 import java.util.List;
 
+import static io.github.labyrinthgenerator.pages.game3d.constants.Constants.HALF_UNIT;
 import static io.github.labyrinthgenerator.pages.game3d.shaders.MyShaderProvider.MAX_LIGHT_RENDERING_DISTANCE;
 
 @Slf4j
@@ -33,8 +34,7 @@ public class FogFreeShader extends SpotLightFreeShader {
 
 
     private final String vertexShader =
-        "#define NUM_LIGHTS = " + MyShaderProvider.MAX_NUM_LIGHTS + "\n" +
-            "attribute vec4 a_position;\n" +
+        "attribute vec4 a_position;\n" +
             "attribute vec2 a_texCoord0;\n" +
             "uniform mat4 u_worldTrans;\n" +
             "uniform mat4 u_projTrans;\n" +
@@ -42,6 +42,7 @@ public class FogFreeShader extends SpotLightFreeShader {
             "uniform float fogDensity;\n" + // Плотность тумана
             "varying vec4 position;\n" +
             "varying vec4 position_a;\n" +
+            "varying vec3 v_position;\n" +
             "varying vec2 v_texCoords;\n" +
             "varying vec4 spotColor;\n" +
             "varying float clip2Distance;\n" + // Расстояние до камеры
@@ -51,6 +52,7 @@ public class FogFreeShader extends SpotLightFreeShader {
             "    gl_Position = u_projTrans * u_worldTrans * a_position;\n" +
             "    position = gl_Position;\n" +
             "    position_a = a_position;\n" +
+            "    v_position = (u_worldTrans * a_position).xyz;" +
             "\n" +
             "    vec3 lightPosition  = (gl_Position).xyz;\n" +
             "    vec3 spotDirection  = normalize(lightPosition.xyz + vec3(0,0,1));\n" +
@@ -72,7 +74,8 @@ public class FogFreeShader extends SpotLightFreeShader {
             "}";
 
     private final String fragmentShader =
-        "#ifdef GL_ES \n" +
+        "#define NUM_LIGHTS = " + MyShaderProvider.MAX_NUM_LIGHTS + "\n" +
+            "#ifdef GL_ES \n" +
             "#define LOWP lowp\n" +
             "precision mediump float;\n" +
             "#else\n" +
@@ -85,10 +88,14 @@ public class FogFreeShader extends SpotLightFreeShader {
             "uniform vec2 u_fogVelocity;\n" +
             "varying vec4 position;\n" + // Передаем gl_Position
             "varying vec4 position_a;\n" +
+            "varying vec3 v_position;\n" +
             "varying vec4 spotColor;\n" +
             "varying float clip2Distance;\n" +
             "varying float fogClipDistanceFactor;\n" +
             "uniform vec3 u_normalTexture;\n" +
+            "uniform vec3 u_pointLights[10];\n" + // Массив для хранения позиций источников света
+            "uniform vec4 u_pointLightColors[10];\n" + // Массив для хранения позиций источников света
+            "uniform int pointLightsSize;\n" +
             "\n" +
             "vec3 minCamIntersection(vec3 worldCameraPos, vec3 worldObjectPos, vec4 clipFragCoord, mat4 u_ProjTrans, mat4 u_viewTrans) {\n" +
             "\n" + // Преобразуем в координаты clip space
@@ -145,7 +152,26 @@ public class FogFreeShader extends SpotLightFreeShader {
             "           -0.3, 0.3);\n" +
             "       fogFactor = clamp(fogFactor, 0.0, 1.0);\n" +
             "   }\n" +
+            "   \n" +
             "   gl_FragColor = mix(mix(mix(c, spotColor, 0.3), fogColor, fogFactor), spotColor, 0.1);\n" + // Интерполяция между цветом текстуры и цветом тумана
+            "   \n" +
+            "   \n" + // Point Lights
+            "   if (pointLightsSize > 0)\n" +
+            "   {\n" +
+            "       vec3 glowingColor = vec3(0.0);\n" +
+            "       for (int i = 0; i < pointLightsSize; i++) {\n" +
+            "           vec3 lightPos = u_pointLights[i];\n" +
+            "           vec4 lightColor = u_pointLightColors[i];\n" +
+            "           float intensity = 0.005;\n" +
+            "       \n" + // Расчет расстояния до источника света
+            "           float distance = length(lightPos - v_position);\n" +
+            "       \n" + // Расчет освещения (интенсивность уменьшается с увеличением расстояния)
+            "           float attenuation = intensity / (distance * distance + 0.0001);\n" + // Добавляем небольшую константу для предотвращения деления на ноль
+            "       \n" + // Добавляем освещение к финальному цвету
+            "           glowingColor += lightColor.rgb * attenuation;\n" +
+            "       }\n" +
+            "       gl_FragColor.rgb += glowingColor;\n" +
+            "   }\n" +
             "   \n" +
             "   vec3 color = gl_FragColor.rgb;\n" +
             "   float saturation = 1.3;\n" + //  - heightFactor Устанавливаем желаемую насыщенность (1.0 - без изменений, больше 1 - увеличение, меньше 1 - уменьшение)
@@ -203,8 +229,7 @@ public class FogFreeShader extends SpotLightFreeShader {
         context.setCullFace(GL20.GL_BACK);
     }
 
-    @Override
-    public void render(Renderable renderable) {
+    public void setPointLightsUniforms(Renderable renderable) {
         List<PointLight> pointLightsByPlayerDistAndCamAngle = new ArrayList<>();
         Player player = myShaderProvider.getPlayer();
         if (player != null) {
@@ -217,13 +242,32 @@ public class FogFreeShader extends SpotLightFreeShader {
                 if (distance < MAX_LIGHT_RENDERING_DISTANCE) {
                     float angle = myShaderProvider.getViewAngle(player.playerCam, rendPos3);
                     pointLightsByPlayerDistAndCamAngle = myShaderProvider.getPointLightsByPlayerDistAndCamAngle(distance, angle);
-                    log.info("pointLightsByPlayerDistAndCamAngle.size: " + pointLightsByPlayerDistAndCamAngle.size());
+                    //log.info("pointLightsByPlayerDistAndCamAngle.size: " + pointLightsByPlayerDistAndCamAngle.size());
                 }
             }
         }
 
+        if (pointLightsByPlayerDistAndCamAngle.isEmpty()) {
+            program.setUniform3fv("u_pointLights[" + 0 + "]", new float[]{0, 0, 0}, 0, 3);
+            program.setUniform4fv("u_pointLightColors[" + 0 + "]", new float[]{0, 0, 0, 0}, 0, 4);
+        }
+        for (int i = 0; i < pointLightsByPlayerDistAndCamAngle.size(); i++) {
+            PointLight light = pointLightsByPlayerDistAndCamAngle.get(i);
+            program.setUniform3fv("u_pointLights[" + i + "]",
+                new float[]{light.position.x, light.position.y + HALF_UNIT, light.position.z}, 0, 3);
+            program.setUniform4fv("u_pointLightColors[" + i + "]",
+                new float[]{light.color.r, light.color.g, light.color.b, light.color.a}, 0, 4);
+            //program.setUniformf("u_pointLights[" + i + "].intensity", light.intensity);
+        }
+
+        program.setUniformi("pointLightsSize", pointLightsByPlayerDistAndCamAngle.size());
+    }
+
+    @Override
+    public void render(Renderable renderable) {
         program.setUniformMatrix(u_worldTrans, renderable.worldTransform);
         bindTexture(renderable);
+        setPointLightsUniforms(renderable);
 
         renderable.meshPart.render(program);
     }
