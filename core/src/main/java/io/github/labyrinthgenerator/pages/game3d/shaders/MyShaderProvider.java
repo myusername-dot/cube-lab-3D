@@ -21,6 +21,8 @@ import io.github.labyrinthgenerator.pages.game3d.screens.PlayScreen;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static io.github.labyrinthgenerator.pages.game3d.constants.Constants.HALF_UNIT;
+
 public class MyShaderProvider extends Tickable implements ShaderProvider {
 
     public static final int MAX_NUM_LIGHTS = 10;
@@ -101,9 +103,9 @@ public class MyShaderProvider extends Tickable implements ShaderProvider {
 
     public List<PointLight> getPointLightsByPlayerDistAndCamAngle(final float distance, final float angle) {
 
-        return pointLightsByPlayerDistAndCamAngle.subMap(0f, distance).values()
+        return pointLightsByPlayerDistAndCamAngle.subMap(distance - HALF_UNIT * 3, distance + HALF_UNIT * 3).values()
             .stream()
-            .filter(p -> Math.abs(angle - p.snd) < 0.1)
+            .filter(p -> Math.abs(angle - p.snd) < 0.2)
             .sorted((e1, e2) -> Float.compare(Math.abs(angle - e1.snd), Math.abs(angle - e2.snd)))
             .limit(MAX_NUM_LIGHTS)
             .map(p -> p.fst)
