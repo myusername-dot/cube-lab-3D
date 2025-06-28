@@ -17,6 +17,7 @@ import io.github.labyrinthgenerator.pages.game3d.rect.RectanglePlus;
 import io.github.labyrinthgenerator.pages.game3d.rect.filters.RectanglePlusFilter;
 import io.github.labyrinthgenerator.pages.game3d.screens.GameScreen;
 import io.github.labyrinthgenerator.pages.game3d.tickable.Wave;
+import io.github.labyrinthgenerator.pages.light.PointLightPlus;
 
 import static io.github.labyrinthgenerator.pages.game3d.constants.Constants.TEXTURE_SIZE;
 
@@ -52,7 +53,7 @@ public class Firefly extends Enemy {
         mdlInst.materials.get(0).set(new BlendingAttribute(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA));
         mdlInst.materials.get(0).set(new FloatAttribute(FloatAttribute.AlphaTest));
 
-        pointLight = new PointLight();
+        pointLight = new PointLightPlus();
         pointLight.set(com.badlogic.gdx.graphics.Color.YELLOW, position.x, position.y, position.z, 1);
         //screen.game.getShaderProvider().pointLights.put(this, pointLight);
         /*if (screen instanceof PlayScreen) {

@@ -4,13 +4,13 @@ import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g3d.Renderable;
-import com.badlogic.gdx.graphics.g3d.environment.PointLight;
 import com.badlogic.gdx.graphics.g3d.utils.RenderContext;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 import io.github.labyrinthgenerator.pages.game3d.entities.player.Player;
+import io.github.labyrinthgenerator.pages.light.PointLightPlus;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
@@ -52,7 +52,7 @@ public class FogFreeShader extends SpotLightFreeShader {
             "    gl_Position = u_projTrans * u_worldTrans * a_position;\n" +
             "    position = gl_Position;\n" +
             "    position_a = a_position;\n" +
-            "    v_position = (u_worldTrans * a_position).xyz;" +
+            "    v_position = (u_worldTrans * a_position).xyz;\n" +
             "\n" +
             "    vec3 lightPosition  = (gl_Position).xyz;\n" +
             "    vec3 spotDirection  = normalize(lightPosition.xyz + vec3(0,0,1));\n" +
@@ -74,7 +74,7 @@ public class FogFreeShader extends SpotLightFreeShader {
             "}";
 
     private final String fragmentShader =
-        "#define NUM_LIGHTS = " + MyShaderProvider.MAX_NUM_LIGHTS + "\n" +
+        "#define NUM_LIGHTS " + MyShaderProvider.MAX_NUM_LIGHTS + "\n" +
             "#ifdef GL_ES \n" +
             "#define LOWP lowp\n" +
             "precision mediump float;\n" +
@@ -93,39 +93,11 @@ public class FogFreeShader extends SpotLightFreeShader {
             "varying float clip2Distance;\n" +
             "varying float fogClipDistanceFactor;\n" +
             "uniform vec3 u_normalTexture;\n" +
-            "uniform vec3 u_pointLights[10];\n" + // Массив для хранения позиций источников света
-            "uniform vec4 u_pointLightColors[10];\n" + // Массив для хранения позиций источников света
+            "uniform vec3 u_pointLights[NUM_LIGHTS];\n" + // Массив для хранения позиций источников света
+            "uniform vec3 u_pointLightsScreen[NUM_LIGHTS];\n" + // Массив для хранения позиций источников света на экране
+            "uniform vec4 u_pointLightColors[NUM_LIGHTS];\n" + // Массив для хранения позиций источников света
             "uniform int pointLightsSize;\n" +
             "\n" +
-            "vec3 minCamIntersection(vec3 worldCameraPos, vec3 worldObjectPos, vec4 clipFragCoord, mat4 u_ProjTrans, mat4 u_viewTrans) {\n" +
-            "\n" + // Преобразуем в координаты clip space
-            "    vec4 clipSpacePos = vec4(clipFragCoord.xy * 2.0 - 1.0, gl_FragCoord.z, 1.0);\n" +
-            "\n" + // Преобразуем в мировые координаты
-            "    vec4 worldPos = inverse(u_ProjTrans * u_viewTrans) * clipSpacePos;" +
-            "\n" + // Вычисляем направление от камеры к фрагменту
-            "    vec3 fragPos = worldPos.xyz;\n" + // = vec3(clipFragCoord.xy, 0.0) Предполагаем, что z = 0, нужно будет скорректировать
-            "\n" +
-            "    vec3 directionToFragment = normalize(fragPos - worldCameraPos.xyz);\n" +
-            "\n" +
-            "\n" + // Вычисляем вектор от объекта к камере todo?
-            "    vec3 objectToCamera = worldCameraPos - worldObjectPos;\n" +
-            "\n" +
-            "\n" + // Нормализуем вектор от объекта к камере
-            "    vec3 normalizedObjectToCamera = normalize(objectToCamera);\n" +
-            "\n" +
-            "\n" + // Проекция вектора от объекта на направление к фрагменту
-            "    float projectionLength = dot(normalizedObjectToCamera, directionToFragment);\n" +
-            "    vec3 minIntersection = worldObjectPos + normalizedObjectToCamera * projectionLength;\n" +
-            "\n" +
-            "    return minIntersection;\n" +
-            /*"\n" + // Проверяем, если точка пересечения находится между камерой и фрагментом
-            "    if (length(minIntersection - cameraPos) < length(fragPos - cameraPos)) {\n" +
-            "\n" + // Здесь можно применить дополнительные эффекты, например, изменить цвет
-            "        gl_FragColor = vec4(texColor.rgb * 0.5, texColor.a); // Пример изменения цвета\n" +
-            "    } else {\n" +
-            "        gl_FragColor = texColor; // Оставляем оригинальный цвет\n" +
-            "    }" +*/
-            "}\n" +
             "void main(void)\n" +
             "{\n" +
             "   vec4 c = texture2D(u_texture, v_texCoords);\n" +
@@ -163,12 +135,23 @@ public class FogFreeShader extends SpotLightFreeShader {
             "           vec3 lightPos = u_pointLights[i];\n" +
             "           vec4 lightColor = u_pointLightColors[i];\n" +
             "           float intensity = 0.003;\n" +
-            "       \n" + // Расчет расстояния до источника света
+            "           \n" + // Расчет расстояния до источника света
             "           float distance = length(lightPos - v_position);\n" +
-            "       \n" + // Расчет освещения (интенсивность уменьшается с увеличением расстояния)
+            "           \n" + // Расчет освещения (интенсивность уменьшается с увеличением расстояния)
             "           float attenuation = intensity / (distance * distance + 0.0001);\n" + // Добавляем небольшую константу для предотвращения деления на ноль
-            "       \n" + // Добавляем освещение к финальному цвету
+            "           \n" + // Добавляем освещение к финальному цвету
             "           glowingColor += lightColor.rgb * attenuation;\n" +
+            "       }\n" +
+            "       for (int i = 0; i < pointLightsSize; i++) {\n" +
+            "           vec3 lightPos = u_pointLightsScreen[i];\n" +
+            /*"           vec4 lightColor = u_pointLightColors[i];\n" +
+            "           float intensity = 50;\n" +
+            "           \n" + // Расчет расстояния до источника света
+            "           float distance = length(lightPos.xy - gl_FragCoord.xy);\n" +
+            "           \n" + // Расчет освещения (интенсивность уменьшается с увеличением расстояния)
+            "           float attenuation = intensity / (distance * distance + 0.0001);\n" + // Добавляем небольшую константу для предотвращения деления на ноль
+            "           \n" + // Добавляем освещение к финальному цвету
+            "           glowingColor += lightColor.rgb * attenuation;\n" +*/
             "       }\n" +
             "       gl_FragColor.rgb += glowingColor;\n" +
             "   }\n" +
@@ -230,7 +213,7 @@ public class FogFreeShader extends SpotLightFreeShader {
     }
 
     public void setPointLightsUniforms(Renderable renderable) {
-        List<PointLight> pointLightsByPlayerDistAndCamAngle = new ArrayList<>();
+        List<PointLightPlus> pointLightsByPlayerDistAndCamAngle = new ArrayList<>();
         Player player = myShaderProvider.getPlayer();
         if (player != null) {
             Object userData = renderable.userData;
@@ -249,12 +232,15 @@ public class FogFreeShader extends SpotLightFreeShader {
 
         if (pointLightsByPlayerDistAndCamAngle.isEmpty()) {
             program.setUniform3fv("u_pointLights[" + 0 + "]", new float[]{0, 0, 0}, 0, 3);
+            program.setUniform3fv("u_pointLightsScreen[" + 0 + "]", new float[]{0, 0, 0}, 0, 3);
             program.setUniform4fv("u_pointLightColors[" + 0 + "]", new float[]{0, 0, 0, 0}, 0, 4);
         }
         for (int i = 0; i < pointLightsByPlayerDistAndCamAngle.size(); i++) {
-            PointLight light = pointLightsByPlayerDistAndCamAngle.get(i);
+            PointLightPlus light = pointLightsByPlayerDistAndCamAngle.get(i);
             program.setUniform3fv("u_pointLights[" + i + "]",
                 new float[]{light.position.x, light.position.y + HALF_UNIT, light.position.z}, 0, 3);
+            program.setUniform3fv("u_pointLightsScreen[" + i + "]",
+                new float[]{light.screenPosition.x, light.screenPosition.y, light.screenPosition.z}, 0, 3);
             program.setUniform4fv("u_pointLightColors[" + i + "]",
                 new float[]{light.color.r, light.color.g, light.color.b, light.color.a}, 0, 4);
             //program.setUniformf("u_pointLights[" + i + "].intensity", light.intensity);

@@ -12,20 +12,22 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import io.github.labyrinthgenerator.labyrinth.Pair;
 import io.github.labyrinthgenerator.pages.game3d.CubeLab3D;
-import io.github.labyrinthgenerator.pages.game3d.chunks.Chunk;
 import io.github.labyrinthgenerator.pages.game3d.entities.Entity;
 import io.github.labyrinthgenerator.pages.game3d.entities.player.Player;
-import io.github.labyrinthgenerator.pages.game3d.tickable.Tickable;
 import io.github.labyrinthgenerator.pages.game3d.screens.PlayScreen;
+import io.github.labyrinthgenerator.pages.game3d.tickable.Tickable;
+import io.github.labyrinthgenerator.pages.light.PointLightPlus;
 
-import java.util.*;
+import java.util.List;
+import java.util.Objects;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 import static io.github.labyrinthgenerator.pages.game3d.constants.Constants.HALF_UNIT;
 
 public class MyShaderProvider extends Tickable implements ShaderProvider {
 
-    public static final int MAX_NUM_LIGHTS = 10;
+    public static final int MAX_NUM_LIGHTS = 20;
     public static final float MAX_LIGHT_RENDERING_DISTANCE = 10f;
 
     public SpotLightShader spotLightShader;
@@ -33,7 +35,7 @@ public class MyShaderProvider extends Tickable implements ShaderProvider {
     public FogFreeShader fogFreeShader;
     public DefaultShaderProvider defaultShaderProvider;
 
-    private final TreeMap<Float, Pair<PointLight, Float>> pointLightsByPlayerDistAndCamAngle = new TreeMap<>();
+    private final TreeMap<Float, Pair<PointLightPlus, Float>> pointLightsByPlayerDistAndCamAngle = new TreeMap<>();
 
     public MyShaderProvider(CubeLab3D game, boolean defaultSpotLightEnabled) {
         super(game);
@@ -75,14 +77,15 @@ public class MyShaderProvider extends Tickable implements ShaderProvider {
 
     public void setNearestPointLights(final Player player) {
         pointLightsByPlayerDistAndCamAngle.clear();
+        player.playerCam.update();
 
         Vector3 playerPos3 = player.getPositionImmutable();
         List<Entity> nearestEntities = game.getEntMan().getNearestEntities(playerPos3.x, playerPos3.z);
-        List<PointLight> pointLights = nearestEntities.stream()
+        List<PointLightPlus> pointLights = nearestEntities.stream()
             .map(Entity::getPointLight)
             .filter(Objects::nonNull)
             .collect(Collectors.toList());
-        for (PointLight pointLight : pointLights) {
+        for (PointLightPlus pointLight : pointLights) {
             Vector2 pointLightPos2 = new Vector2(pointLight.position.x, pointLight.position.z);
             float distance = pointLightPos2.dst(playerPos3.x, playerPos3.z);
             if (distance < MAX_LIGHT_RENDERING_DISTANCE) {
@@ -95,13 +98,14 @@ public class MyShaderProvider extends Tickable implements ShaderProvider {
 
                 // Проверяем, находится ли точка в пределах угла обзора
                 if (angle > cosFov) {
+                    pointLight.calculateScreenTransforms(player.playerCam);
                     pointLightsByPlayerDistAndCamAngle.put(distance, new Pair<>(pointLight, angle));
                 }
             }
         }
     }
 
-    public List<PointLight> getPointLightsByPlayerDistAndCamAngle(final float distance, final float angle) {
+    public List<PointLightPlus> getPointLightsByPlayerDistAndCamAngle(final float distance, final float angle) {
 
         return pointLightsByPlayerDistAndCamAngle.subMap(distance - HALF_UNIT * 3, distance + HALF_UNIT * 3).values()
             .stream()
