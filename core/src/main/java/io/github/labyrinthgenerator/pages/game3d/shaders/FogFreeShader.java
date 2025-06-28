@@ -217,7 +217,7 @@ public class FogFreeShader extends SpotLightFreeShader {
         program.setUniformi("u_texture", 0);
 
         // Устанавливаем цвет тумана и его плотность
-        program.setUniformf("fogColor", new Color(0.9f, 0.9f, 0.9f, 0.9f)); // Цвет тумана (например, серый)
+        program.setUniformf("fogColor", new Color(0.5f, 0.5f, 0.5f, 0.9f)); // Цвет тумана (например, серый)
         program.setUniformf("fogDensity", fogBaseDensity); // Плотность тумана (можно настроить)
 
         float[] fogVelocity = new float[]{playerVelocity.x, playerVelocity.y};

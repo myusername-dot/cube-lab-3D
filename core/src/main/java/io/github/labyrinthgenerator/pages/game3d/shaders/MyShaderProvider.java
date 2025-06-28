@@ -26,7 +26,7 @@ import static io.github.labyrinthgenerator.pages.game3d.constants.Constants.HALF
 public class MyShaderProvider extends Tickable implements ShaderProvider {
 
     public static final int MAX_NUM_LIGHTS = 10;
-    public static final float MAX_LIGHT_RENDERING_DISTANCE = 5f;
+    public static final float MAX_LIGHT_RENDERING_DISTANCE = 10f;
 
     public SpotLightShader spotLightShader;
     public SpotLightFreeShader spotLightFreeShader;
