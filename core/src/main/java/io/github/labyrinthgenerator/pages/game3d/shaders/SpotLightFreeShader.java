@@ -93,11 +93,7 @@ public class SpotLightFreeShader implements Shader {
         context.setCullFace(GL20.GL_BACK);
     }
 
-    @Override
-    public void render(Renderable renderable) {
-        program.setUniformMatrix(u_worldTrans, renderable.worldTransform);
-
-        // bind texture
+    public void bindTexture(Renderable renderable) {
         boolean bind = false;
         Iterator<Attribute> matIter = renderable.material.iterator();
         if (matIter.hasNext() && !bind) {
@@ -109,6 +105,12 @@ public class SpotLightFreeShader implements Shader {
                 bind = true;
             }
         }
+    }
+
+    @Override
+    public void render(Renderable renderable) {
+        program.setUniformMatrix(u_worldTrans, renderable.worldTransform);
+        bindTexture(renderable);
 
         renderable.meshPart.render(program);
     }

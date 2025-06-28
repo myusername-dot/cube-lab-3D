@@ -11,7 +11,6 @@ import com.badlogic.gdx.math.Vector3;
 import io.github.labyrinthgenerator.pages.game3d.entities.Entity;
 import io.github.labyrinthgenerator.pages.game3d.models.ModelInstanceBB;
 import io.github.labyrinthgenerator.pages.game3d.screens.GameScreen;
-import io.github.labyrinthgenerator.pages.game3d.shaders.MyShaderProvider;
 
 import static io.github.labyrinthgenerator.pages.game3d.constants.Constants.HALF_UNIT;
 
@@ -37,8 +36,8 @@ public class Cell3D extends Entity {
         super(position.add(0, HALF_UNIT, 0), screen);
     }
 
-    private ModelInstanceBB createModelInstanceBB(Model model, Texture texture) {
-        ModelInstanceBB modelInstanceBB = new ModelInstanceBB(model);
+    private ModelInstanceBB createModelInstanceBB(Model model, Texture texture, Vector3 positionImmutable) {
+        ModelInstanceBB modelInstanceBB = new ModelInstanceBB(model, positionImmutable);
         if (texture != null) {
             final TextureAttribute ta = (TextureAttribute) modelInstanceBB.materials.get(0)
                 .get(TextureAttribute.Diffuse);
@@ -50,28 +49,34 @@ public class Cell3D extends Entity {
     public void buildCell() {
         // TODO one model with multiple textures
         if (hasWallNorth) {
-            mdlInstWallNorth = createModelInstanceBB(screen.game.getCellBuilder().mdlWallNorth, texRegNorth);
-            mdlInstWallNorth.transform.setToTranslation(getPositionImmutable().add(new Vector3(0, 0, -HALF_UNIT)));
+            Vector3 position = getPositionImmutable().add(new Vector3(0, 0, -HALF_UNIT));
+            mdlInstWallNorth = createModelInstanceBB(screen.game.getCellBuilder().mdlWallNorth, texRegNorth, position);
+            mdlInstWallNorth.transform.setToTranslation(position);
         }
         if (hasWallSouth) {
-            mdlInstWallSouth = createModelInstanceBB(screen.game.getCellBuilder().mdlWallSouth, texRegSouth);
-            mdlInstWallSouth.transform.setToTranslation(getPositionImmutable().add(new Vector3(0, 0, HALF_UNIT)));
+            Vector3 position = getPositionImmutable().add(new Vector3(0, 0, HALF_UNIT));
+            mdlInstWallSouth = createModelInstanceBB(screen.game.getCellBuilder().mdlWallSouth, texRegSouth, position);
+            mdlInstWallSouth.transform.setToTranslation(position);
         }
         if (hasWallWest) {
-            mdlInstWallWest = createModelInstanceBB(screen.game.getCellBuilder().mdlWallWest, texRegWest);
-            mdlInstWallWest.transform.setToTranslation(getPositionImmutable().add(new Vector3(HALF_UNIT, 0, 0)));
+            Vector3 position = getPositionImmutable().add(new Vector3(HALF_UNIT, 0, 0));
+            mdlInstWallWest = createModelInstanceBB(screen.game.getCellBuilder().mdlWallWest, texRegWest, position);
+            mdlInstWallWest.transform.setToTranslation(position);
         }
         if (hasWallEast) {
-            mdlInstWallEast = createModelInstanceBB(screen.game.getCellBuilder().mdlWallEast, texRegEast);
-            mdlInstWallEast.transform.setToTranslation(getPositionImmutable().add(new Vector3(-HALF_UNIT, 0, 0)));
+            Vector3 position = getPositionImmutable().add(new Vector3(-HALF_UNIT, 0, 0));
+            mdlInstWallEast = createModelInstanceBB(screen.game.getCellBuilder().mdlWallEast, texRegEast, position);
+            mdlInstWallEast.transform.setToTranslation(position);
         }
         if (hasFloor) {
-            mdlInstFloor = createModelInstanceBB(screen.game.getCellBuilder().mdlFloor, texRegFloor);
-            mdlInstFloor.transform.setToTranslation(getPositionImmutable().add(new Vector3(0, HALF_UNIT, 0)));
+            Vector3 position = getPositionImmutable().add(new Vector3(0, HALF_UNIT, 0));
+            mdlInstFloor = createModelInstanceBB(screen.game.getCellBuilder().mdlFloor, texRegFloor, position);
+            mdlInstFloor.transform.setToTranslation(position);
         }
         if (hasCeiling) {
-            mdlInstCeiling = createModelInstanceBB(screen.game.getCellBuilder().mdlCeiling, texRegCeiling);
-            mdlInstCeiling.transform.setToTranslation(getPositionImmutable().add(new Vector3(0, -HALF_UNIT, 0)));
+            Vector3 position = getPositionImmutable().add(new Vector3(0, -HALF_UNIT, 0));
+            mdlInstCeiling = createModelInstanceBB(screen.game.getCellBuilder().mdlCeiling, texRegCeiling, position);
+            mdlInstCeiling.transform.setToTranslation(position);
         }
     }
 

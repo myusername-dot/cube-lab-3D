@@ -2,6 +2,7 @@ package io.github.labyrinthgenerator.pages.game3d.entities;
 
 import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
+import com.badlogic.gdx.graphics.g3d.environment.PointLight;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import io.github.labyrinthgenerator.pages.game3d.chunks.Chunk;
@@ -33,6 +34,8 @@ public abstract class Entity {
     protected volatile boolean isDestroyed = false;
 
     protected Entity collidedEntity = null;
+
+    protected PointLight pointLight = null;
 
     public Entity(Vector3 position, final GameScreen screen) {
         this.position = position.cpy();
@@ -92,6 +95,10 @@ public abstract class Entity {
         return position.cpy();
     }
 
+    protected Vector3 doNotTouchPosition() {
+        return position;
+    }
+
     public float getPositionX() {
         return position.x;
     }
@@ -104,8 +111,16 @@ public abstract class Entity {
         return position.z;
     }
 
+    public Chunk getChunk() {
+        return chunk;
+    }
+
     public int getId() {
         return id;
+    }
+
+    public PointLight getPointLight() {
+        return pointLight;
     }
 
     public void onCollision(final RectanglePlus otherRect) {
