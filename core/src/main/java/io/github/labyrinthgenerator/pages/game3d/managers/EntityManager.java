@@ -68,6 +68,20 @@ public class EntityManager {
         }
     }
 
+    public List<Entity> getNearestEntities(float playerX, float playerZ) {
+        List<Chunk> nearestChunks = chunkMan.getNearestChunks(playerX, playerZ);
+        if (nearestChunks == null || nearestChunks.isEmpty()) {
+            throw new NullPointerException("nearestChunks == null || nearestChunks.isEmpty() at position " + playerX + ", " + playerZ + ".");
+        }
+
+        List<Entity> nearestEntities = new ArrayList<>();
+        for (Chunk chunk : nearestChunks) {
+            nearestEntities.addAll(entitiesByChunks.get(chunk).keySet());
+        }
+
+        return nearestEntities;
+    }
+
     public int assignId() {
         return nextId.getAndIncrement();
     }

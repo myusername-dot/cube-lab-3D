@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.attributes.BlendingAttribute;
 import com.badlogic.gdx.graphics.g3d.attributes.FloatAttribute;
 import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
+import com.badlogic.gdx.graphics.g3d.environment.PointLight;
 import com.badlogic.gdx.math.Vector3;
 import io.github.labyrinthgenerator.pages.game3d.entities.enemies.Enemy;
 import io.github.labyrinthgenerator.pages.game3d.entities.enemies.ai.FireflyAI;
@@ -15,7 +16,7 @@ import io.github.labyrinthgenerator.pages.game3d.models.ModelInstanceBB;
 import io.github.labyrinthgenerator.pages.game3d.rect.RectanglePlus;
 import io.github.labyrinthgenerator.pages.game3d.rect.filters.RectanglePlusFilter;
 import io.github.labyrinthgenerator.pages.game3d.screens.GameScreen;
-import io.github.labyrinthgenerator.pages.game3d.nonpositional.Wave;
+import io.github.labyrinthgenerator.pages.game3d.tickable.Wave;
 
 import static io.github.labyrinthgenerator.pages.game3d.constants.Constants.TEXTURE_SIZE;
 
@@ -32,13 +33,12 @@ public class Firefly extends Enemy {
     private Color color;
     private final Wave wave;
     private boolean isOnWave = false;
-    //private PointLight pointLight;
 
     public Firefly(final Vector3 position, final GameScreen screen, final Wave wave) {
         super(position, screen);
         this.wave = wave;
 
-        mdlInst = new ModelInstanceBB(screen.game.getCellBuilder().mdlPoint);
+        mdlInst = new ModelInstanceBB(screen.game.getCellBuilder().mdlPoint, null);
 
         yellowTexReg = new TextureRegion((Texture) screen.game.getAssMan().get(screen.game.getAssMan().entities),
             0, 0,
@@ -52,9 +52,10 @@ public class Firefly extends Enemy {
         mdlInst.materials.get(0).set(new BlendingAttribute(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA));
         mdlInst.materials.get(0).set(new FloatAttribute(FloatAttribute.AlphaTest));
 
-        /*pointLight = new PointLight();
-        pointLight.set(Color.YELLOW, position.x, position.y, position.z, 50);
-        if (screen instanceof PlayScreen) {
+        pointLight = new PointLight();
+        pointLight.set(com.badlogic.gdx.graphics.Color.YELLOW, position.x, position.y, position.z, 1);
+        //screen.game.getShaderProvider().pointLights.put(this, pointLight);
+        /*if (screen instanceof PlayScreen) {
             ((PlayScreen) screen).getEnv().add(pointLight);
         }*/
 
@@ -79,7 +80,7 @@ public class Firefly extends Enemy {
     @Override
     public void render3D(final ModelBatch mdlBatch, final Environment env, final float delta) {
         mdlInst.transform.setToLookAt(screen.getCurrentCam().direction.cpy().rotate(Vector3.Z, 180f), Vector3.Y);
-        mdlInst.transform.setTranslation(getPositionImmutable().add(0, 0.5f, 0));
+        mdlInst.transform.setTranslation(getPositionImmutable().add(0, 0.5f, 0)); // FIXME
 
         super.render3D(mdlBatch, env, delta);
     }
@@ -96,7 +97,7 @@ public class Firefly extends Enemy {
             rect.getZ() + rect.getDepth() / 2f
         );
 
-        //pointLight.setPosition(position);
+        pointLight.setPosition(getPositionImmutable());
 
         rect.oldPosition.set(rect.getPosition());
 
@@ -123,9 +124,11 @@ public class Firefly extends Enemy {
         switch (color) {
             case GREEN:
                 mdlInst.materials.get(0).set(TextureAttribute.createDiffuse(greenTexReg));
+                pointLight.setColor(com.badlogic.gdx.graphics.Color.GREEN);
                 break;
             case YELLOW:
                 mdlInst.materials.get(0).set(TextureAttribute.createDiffuse(yellowTexReg));
+                pointLight.setColor(com.badlogic.gdx.graphics.Color.YELLOW);
                 break;
         }
     }

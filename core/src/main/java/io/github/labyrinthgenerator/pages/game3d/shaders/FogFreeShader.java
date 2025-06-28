@@ -3,30 +3,38 @@ package io.github.labyrinthgenerator.pages.game3d.shaders;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.g3d.Renderable;
+import com.badlogic.gdx.graphics.g3d.environment.PointLight;
 import com.badlogic.gdx.graphics.g3d.utils.RenderContext;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.GdxRuntimeException;
-import io.github.labyrinthgenerator.pages.game3d.CubeLab3D;
 import io.github.labyrinthgenerator.pages.game3d.entities.player.Player;
-import io.github.labyrinthgenerator.pages.game3d.screens.PlayScreen;
+import lombok.extern.slf4j.Slf4j;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import static io.github.labyrinthgenerator.pages.game3d.shaders.MyShaderProvider.MAX_LIGHT_RENDERING_DISTANCE;
+
+@Slf4j
 public class FogFreeShader extends SpotLightFreeShader {
 
     public float fogBaseDensity = 1.0f; // Задайте базовую плотность тумана
     public float fogDistance = 1.0f; // Задайте дистанцию для изменения плотности
     private float timer;
 
-    protected final CubeLab3D game;
+    protected final MyShaderProvider myShaderProvider;
 
-    public FogFreeShader(CubeLab3D game) {
-        this.game = game;
+    public FogFreeShader(MyShaderProvider myShaderProvider) {
+        this.myShaderProvider = myShaderProvider;
     }
 
 
     private final String vertexShader =
-        "attribute vec4 a_position;\n" +
+        "#define NUM_LIGHTS = " + MyShaderProvider.MAX_NUM_LIGHTS + "\n" +
+            "attribute vec4 a_position;\n" +
             "attribute vec2 a_texCoord0;\n" +
             "uniform mat4 u_worldTrans;\n" +
             "uniform mat4 u_projTrans;\n" +
@@ -103,6 +111,13 @@ public class FogFreeShader extends SpotLightFreeShader {
             "    vec3 minIntersection = worldObjectPos + normalizedObjectToCamera * projectionLength;\n" +
             "\n" +
             "    return minIntersection;\n" +
+            /*"\n" + // Проверяем, если точка пересечения находится между камерой и фрагментом
+            "    if (length(minIntersection - cameraPos) < length(fragPos - cameraPos)) {\n" +
+            "\n" + // Здесь можно применить дополнительные эффекты, например, изменить цвет
+            "        gl_FragColor = vec4(texColor.rgb * 0.5, texColor.a); // Пример изменения цвета\n" +
+            "    } else {\n" +
+            "        gl_FragColor = texColor; // Оставляем оригинальный цвет\n" +
+            "    }" +*/
             "}\n" +
             "void main(void)\n" +
             "{\n" +
@@ -163,8 +178,8 @@ public class FogFreeShader extends SpotLightFreeShader {
         this.context = context;
 
         Vector2 playerVelocity = new Vector2(0, 0);
-        if (game.getScreen() instanceof PlayScreen) {
-            Player player = ((PlayScreen) game.getScreen()).getPlayer();
+        Player player = myShaderProvider.getPlayer();
+        if (player != null) {
             Vector3 playerVelocity3 = player.getForwardVelocity();
             Vector3 playerDir = player.getDirection();
             playerVelocity.set(playerVelocity3.x * sign(playerDir.x), playerVelocity3.z * sign(playerDir.z));
@@ -186,6 +201,31 @@ public class FogFreeShader extends SpotLightFreeShader {
         context.begin();
         context.setDepthTest(GL20.GL_LEQUAL);
         context.setCullFace(GL20.GL_BACK);
+    }
+
+    @Override
+    public void render(Renderable renderable) {
+        List<PointLight> pointLightsByPlayerDistAndCamAngle = new ArrayList<>();
+        Player player = myShaderProvider.getPlayer();
+        if (player != null) {
+            Object userData = renderable.userData;
+            if (userData instanceof Vector3) {
+                Vector3 rendPos3 = (Vector3) userData;
+                Vector2 rendPos2 = new Vector2(rendPos3.x, rendPos3.z);
+                Vector3 playerPos3 = player.getPositionImmutable();
+                float distance = rendPos2.dst(playerPos3.x, playerPos3.z);
+                if (distance < MAX_LIGHT_RENDERING_DISTANCE) {
+                    float angle = myShaderProvider.getViewAngle(player.playerCam, rendPos3);
+                    pointLightsByPlayerDistAndCamAngle = myShaderProvider.getPointLightsByPlayerDistAndCamAngle(distance, angle);
+                    log.info("pointLightsByPlayerDistAndCamAngle.size: " + pointLightsByPlayerDistAndCamAngle.size());
+                }
+            }
+        }
+
+        program.setUniformMatrix(u_worldTrans, renderable.worldTransform);
+        bindTexture(renderable);
+
+        renderable.meshPart.render(program);
     }
 }
 

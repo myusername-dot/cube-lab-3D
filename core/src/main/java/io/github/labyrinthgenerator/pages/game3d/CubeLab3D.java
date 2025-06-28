@@ -8,7 +8,6 @@ import com.badlogic.gdx.graphics.Pixmap.Format;
 import com.badlogic.gdx.graphics.Texture.TextureFilter;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
-import com.badlogic.gdx.graphics.g3d.utils.ShaderProvider;
 import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 import io.github.labyrinthgenerator.pages.Page;
 import io.github.labyrinthgenerator.pages.game3d.constants.Constants;
@@ -28,7 +27,7 @@ public class CubeLab3D extends Game implements Page {
     private ChunkManager chunkMan;
 	private EntityManager entMan;
 	private RectManager rectMan;
-    private NonPosManager nonPosMan;
+    private TickManager nonPosMan;
 	private ModelMaker cellBuilder;
 	private OverlapFilterManager overlapFilterMan;
 	private LMapBuilder mapBuilder;
@@ -62,7 +61,9 @@ public class CubeLab3D extends Game implements Page {
 
 		entMan = new EntityManager();
 		rectMan = new RectManager(this);
-        nonPosMan = new NonPosManager();
+        nonPosMan = new TickManager();
+
+        shaderProvider = new MyShaderProvider(this, false);
 
 		mapBuilder = new LMapBuilder(this);
 
@@ -71,7 +72,6 @@ public class CubeLab3D extends Game implements Page {
 		setScreen(new MainMenuScreen(this));
 
         batch = new SpriteBatch();
-        shaderProvider = new MyShaderProvider(this, false);
         mdlBatch = new ModelBatch(shaderProvider);
 	}
 
@@ -168,7 +168,7 @@ public class CubeLab3D extends Game implements Page {
 		return rectMan;
 	}
 
-    public NonPosManager getNonPosMan() {
+    public TickManager getTickMan() {
         return nonPosMan;
     }
 

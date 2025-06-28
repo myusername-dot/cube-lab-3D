@@ -10,9 +10,9 @@ import io.github.labyrinthgenerator.pages.game3d.cell.Cell3D;
 import io.github.labyrinthgenerator.pages.game3d.entities.Firefly;
 import io.github.labyrinthgenerator.pages.game3d.managers.ChunkManager;
 import io.github.labyrinthgenerator.pages.game3d.models.ModelMaker;
+import io.github.labyrinthgenerator.pages.game3d.tickable.Wave;
 import io.github.labyrinthgenerator.pages.game3d.rect.RectanglePlus;
 import io.github.labyrinthgenerator.pages.game3d.rect.filters.RectanglePlusFilter;
-import io.github.labyrinthgenerator.pages.game3d.nonpositional.Wave;
 import io.github.labyrinthgenerator.pages.game3d.vectors.Vector2i;
 import lombok.extern.slf4j.Slf4j;
 
@@ -148,7 +148,7 @@ public class LMapBuilder {
         }
 
         // NONPOS
-        Wave wave = new Wave(game.getEntMan().getScreen());
+        Wave wave = new Wave(game);
 
         // ENTITIES
         for (Cell3D cell3D : cell3DList) {

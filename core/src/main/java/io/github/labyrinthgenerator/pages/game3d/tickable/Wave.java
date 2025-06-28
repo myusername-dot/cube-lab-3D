@@ -1,11 +1,11 @@
-package io.github.labyrinthgenerator.pages.game3d.nonpositional;
+package io.github.labyrinthgenerator.pages.game3d.tickable;
 
 import com.badlogic.gdx.math.Vector2;
-import io.github.labyrinthgenerator.pages.game3d.screens.GameScreen;
+import io.github.labyrinthgenerator.pages.game3d.CubeLab3D;
 
 import static io.github.labyrinthgenerator.pages.game3d.constants.Constants.HALF_UNIT;
 
-public class Wave extends NonPosEntity {
+public class Wave extends Tickable {
 
     private final float size = 5f;
     private final float speed = 20f;
@@ -15,9 +15,9 @@ public class Wave extends NonPosEntity {
     private final float endX;
     private final float[] waveX;
 
-    public Wave(GameScreen screen) {
-        super(screen);
-        Vector2 worldSize = screen.game.getChunkMan().getWorldSize();
+    public Wave(CubeLab3D game) {
+        super(game);
+        Vector2 worldSize = game.getChunkMan().getWorldSize();
         startX = -HALF_UNIT - size - Math.max(worldSize.x, worldSize.y);
         endX = -HALF_UNIT + size + worldSize.x;
         waveX = new float[count];
