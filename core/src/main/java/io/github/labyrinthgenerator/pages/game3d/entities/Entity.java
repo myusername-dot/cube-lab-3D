@@ -2,7 +2,6 @@ package io.github.labyrinthgenerator.pages.game3d.entities;
 
 import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
-import com.badlogic.gdx.graphics.g3d.environment.PointLight;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import io.github.labyrinthgenerator.pages.game3d.chunks.Chunk;
@@ -10,6 +9,7 @@ import io.github.labyrinthgenerator.pages.game3d.managers.ChunkManager;
 import io.github.labyrinthgenerator.pages.game3d.managers.EntityManager;
 import io.github.labyrinthgenerator.pages.game3d.rect.RectanglePlus;
 import io.github.labyrinthgenerator.pages.game3d.screens.GameScreen;
+import io.github.labyrinthgenerator.pages.light.PointLightPlus;
 import lombok.extern.slf4j.Slf4j;
 
 import java.nio.channels.AlreadyConnectedException;
@@ -35,7 +35,7 @@ public abstract class Entity {
 
     protected Entity collidedEntity = null;
 
-    protected PointLight pointLight = null;
+    protected PointLightPlus pointLight = null;
 
     public Entity(Vector3 position, final GameScreen screen) {
         this.position = position.cpy();
@@ -119,7 +119,7 @@ public abstract class Entity {
         return id;
     }
 
-    public PointLight getPointLight() {
+    public PointLightPlus getPointLight() {
         return pointLight;
     }
 
