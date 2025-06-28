@@ -162,7 +162,7 @@ public class FogFreeShader extends SpotLightFreeShader {
             "       for (int i = 0; i < pointLightsSize; i++) {\n" +
             "           vec3 lightPos = u_pointLights[i];\n" +
             "           vec4 lightColor = u_pointLightColors[i];\n" +
-            "           float intensity = 0.005;\n" +
+            "           float intensity = 0.003;\n" +
             "       \n" + // Расчет расстояния до источника света
             "           float distance = length(lightPos - v_position);\n" +
             "       \n" + // Расчет освещения (интенсивность уменьшается с увеличением расстояния)
