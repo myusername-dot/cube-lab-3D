@@ -1,22 +1,19 @@
 package io.github.labyrinthgenerator.pages.game3d.models;
 
-import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.Texture.TextureFilter;
 import com.badlogic.gdx.graphics.TextureData;
 import com.badlogic.gdx.graphics.VertexAttributes.Usage;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
-import com.badlogic.gdx.graphics.g3d.model.Node;
-import com.badlogic.gdx.graphics.g3d.utils.MeshPartBuilder;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.math.Vector3;
 import io.github.labyrinthgenerator.pages.game3d.CubeLab3D;
 
-import static io.github.labyrinthgenerator.pages.game3d.constants.Constants.*;
+import static io.github.labyrinthgenerator.pages.game3d.constants.Constants.HALF_UNIT;
+import static io.github.labyrinthgenerator.pages.game3d.constants.Constants.TEXTURE_SIZE;
 
 public class ModelMaker {
 
@@ -32,8 +29,6 @@ public class ModelMaker {
     public Model mdlWallEast = new Model();
     public Model mdlFloor = new Model();
     public Model mdlCeiling = new Model();
-
-    public Model mdlDoor = new Model();
 
     public Model mdlEnemy = new Model();
     public Model mdlPoint = new Model();
@@ -183,67 +178,6 @@ public class ModelMaker {
         mdlCeiling.nodes.get(0).rotation.set(Vector3.X, -90f); // not totally correct. Should flip Y. Maybe not needed.
 
 //		mdlInstCeiling = new ModelInstance(mdlCeiling);
-
-//	DOOR
-        final TextureRegion texRegDoorNorth = new TextureRegion(
-            (Texture) game.getAssMan().get(game.getAssMan().atlas01), TEXTURE_SIZE * 5, TEXTURE_SIZE * 3, -TEXTURE_SIZE, TEXTURE_SIZE);
-        final TextureRegion texRegDoorSouth = new TextureRegion(
-            (Texture) game.getAssMan().get(game.getAssMan().atlas01), TEXTURE_SIZE * 4, TEXTURE_SIZE * 3, TEXTURE_SIZE, TEXTURE_SIZE);
-        final TextureRegion texRegDoorMiddle = new TextureRegion(
-            (Texture) game.getAssMan().get(game.getAssMan().atlas01), (int) (TEXTURE_SIZE * 6.25f), TEXTURE_SIZE * 3, -TEXTURE_SIZE / 4f, TEXTURE_SIZE);
-
-        final TextureAttribute taDoorNorth = new TextureAttribute(TextureAttribute.Diffuse, texRegDoorNorth);
-        taDoorNorth.textureDescription.minFilter = TextureFilter.Nearest;
-        taDoorNorth.textureDescription.magFilter = TextureFilter.Nearest;
-
-        final TextureAttribute taDoorSouth = new TextureAttribute(TextureAttribute.Diffuse, texRegDoorSouth);
-        taDoorSouth.textureDescription.minFilter = TextureFilter.Nearest;
-        taDoorSouth.textureDescription.magFilter = TextureFilter.Nearest;
-
-        final TextureAttribute taDoorMiddle = new TextureAttribute(TextureAttribute.Diffuse, texRegDoorMiddle);
-        taDoorMiddle.textureDescription.minFilter = TextureFilter.Nearest;
-        taDoorMiddle.textureDescription.magFilter = TextureFilter.Nearest;
-
-        final Material matDoorNorth = new Material();
-        matDoorNorth.set(taDoorNorth);
-        final Material matDoorSouth = new Material();
-        matDoorSouth.set(taDoorSouth);
-        final Material matDoorMiddle = new Material();
-        matDoorMiddle.set(taDoorMiddle);
-
-        mdlBuilder.begin();
-        MeshPartBuilder meshBuilder;
-        final Node node0 = mdlBuilder.node();
-        meshBuilder = mdlBuilder.part("northSide", GL20.GL_TRIANGLES,
-            Usage.Position | Usage.Normal | Usage.TextureCoordinates, matDoorNorth);
-        meshBuilder.rect(new Vector3(HALF_UNIT, HALF_UNIT, 0),
-            new Vector3(-HALF_UNIT, HALF_UNIT, 0),
-            new Vector3(-HALF_UNIT, -HALF_UNIT, 0),
-            new Vector3(HALF_UNIT, -HALF_UNIT, 0), new Vector3(0, 0, -HALF_UNIT * 2));
-        node0.translation.set(0, 0, PPU * 2);
-
-        final Node node1 = mdlBuilder.node();
-        meshBuilder = mdlBuilder.part("southSide", GL20.GL_TRIANGLES,
-            Usage.Position | Usage.Normal | Usage.TextureCoordinates, matDoorSouth);
-        meshBuilder.rect(new Vector3(HALF_UNIT, HALF_UNIT, 0),
-            new Vector3(-HALF_UNIT, HALF_UNIT, 0),
-            new Vector3(-HALF_UNIT, -HALF_UNIT, 0),
-            new Vector3(HALF_UNIT, -HALF_UNIT, 0), new Vector3(0, 0, HALF_UNIT * 2));
-
-        node1.rotation.set(Vector3.Y, 180f);
-        node1.translation.set(0, 0, PPU * -2);
-
-        final Node node2 = mdlBuilder.node();
-        meshBuilder = mdlBuilder.part("middleSide", GL20.GL_TRIANGLES,
-            Usage.Position | Usage.Normal | Usage.TextureCoordinates, matDoorMiddle);
-        meshBuilder.rect(new Vector3(PPU * 2, HALF_UNIT, 0),
-            new Vector3(-PPU * 2, HALF_UNIT, 0),
-            new Vector3(-PPU * 2, -HALF_UNIT, 0),
-            new Vector3(PPU * 2, -HALF_UNIT, 0), new Vector3(0, 0, -HALF_UNIT * 2));
-
-        node2.rotation.set(Vector3.Y, -90f);
-        node2.translation.set(-HALF_UNIT, 0, 0);
-        mdlDoor = mdlBuilder.end();
     }
 
     public static Texture textureRegionToTexture(Texture textureRegion, int x, int y, int width, int height) {
