@@ -10,6 +10,7 @@ import io.github.labyrinthgenerator.pages.game3d.cell.Cell3D;
 import io.github.labyrinthgenerator.pages.game3d.entities.Firefly;
 import io.github.labyrinthgenerator.pages.game3d.managers.ChunkManager;
 import io.github.labyrinthgenerator.pages.game3d.models.ModelMaker;
+import io.github.labyrinthgenerator.pages.game3d.screens.GameScreen;
 import io.github.labyrinthgenerator.pages.game3d.tickable.Wave;
 import io.github.labyrinthgenerator.pages.game3d.rect.RectanglePlus;
 import io.github.labyrinthgenerator.pages.game3d.rect.filters.RectanglePlusFilter;
@@ -94,7 +95,7 @@ public class LMapBuilder {
                 int id = Integer.parseInt(line.substring(i, i + 1));
                 Labyrinth.LEntity entity = Labyrinth.LEntity.values()[id];
 
-                Cell3D currentCell3D = new Cell3D(new Vector3(i, 0, j), game.getEntMan().getScreen());
+                Cell3D currentCell3D = new Cell3D(new Vector3(i, 0, j), (GameScreen) game.getScreen());
 
                 currentCell3D.hasFloor = true;
                 currentCell3D.texRegFloor = texFloor;
@@ -166,7 +167,7 @@ public class LMapBuilder {
                         cell3D.getPositionX() - HALF_UNIT,
                         MathUtils.random(0f, 0.4f),
                         cell3D.getPositionZ() - HALF_UNIT),
-                    game.getEntMan().getScreen(),
+                    (GameScreen) game.getScreen(),
                     wave);
             }
         }

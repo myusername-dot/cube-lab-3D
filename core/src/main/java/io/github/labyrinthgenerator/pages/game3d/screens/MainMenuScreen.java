@@ -70,6 +70,7 @@ public class MainMenuScreen extends GameScreen {
         sfxChoice = game.getAssMan().get(game.getAssMan().sfxItem);
         sfxAmbientId = playAmbientSound(game);
 
+        game.setScreen(this);
         game.getMapBuilder().buildMap(Labyrinth2D.txtFilename);
         setupCamera(game);
 
