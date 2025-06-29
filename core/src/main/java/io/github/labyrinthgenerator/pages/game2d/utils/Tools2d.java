@@ -22,8 +22,6 @@ import java.io.IOException;
 import java.util.UUID;
 import java.util.zip.Deflater;
 
-import static io.github.labyrinthgenerator.MyApplication.*;
-
 @Slf4j
 public class Tools2d implements Page {
 
@@ -31,12 +29,9 @@ public class Tools2d implements Page {
     private SpriteBatch spriteBatch;
     private Viewport viewport;
     private OrthographicCamera camera;
-
     private BitmapFont font;
-    private Texture backgroundTexture;
     private Texture verticalWallTexture;
     private Texture horizontalWallTexture;
-
     private Texture entryTexture;
     private Texture escapeTexture;
 
@@ -44,42 +39,32 @@ public class Tools2d implements Page {
     private int lW, lH;
     private int screenX, screenY;
 
-    private int frame;
-
     @Override
     public void create() {
         application = MyApplication.getApplicationInstance();
+        setupViewportAndCamera();
+        initializeTextures();
+        createFonts("fonts/clacon2.ttf");
+        initializeLabyrinthDimensions();
+        labyrinth = new Labyrinth2(0, 0, lW, lH);
+        labyrinth.create();
+        calculateScreenCoordinates();
+    }
+
+    private void setupViewportAndCamera() {
         viewport = application.getViewport();
         camera = new OrthographicCamera(viewport.getWorldWidth(), viewport.getWorldHeight());
         viewport.setCamera(camera);
         viewport.update(viewport.getScreenWidth(), viewport.getScreenHeight(), true);
-
-        // if you change the window size, then when you go to a new page the screen shifts to the left or to the down
-        float blackScreenWidth = Gdx.graphics.getBackBufferWidth();
-        float blackScreenHeight = Gdx.graphics.getBackBufferHeight();
-        application.resize((int) blackScreenWidth, (int) blackScreenHeight);
-
+        application.resize(Gdx.graphics.getBackBufferWidth(), Gdx.graphics.getBackBufferHeight());
         spriteBatch = new SpriteBatch();
+    }
 
-        //backgroundTexture = new Texture("backgrounds/notebook-paper-background.jpg");
+    private void initializeTextures() {
         verticalWallTexture = new Texture("labyrinth2d/wall1.png");
         horizontalWallTexture = new Texture("labyrinth2d/wall2.png");
         entryTexture = new Texture("labyrinth2d/entry.png");
         escapeTexture = new Texture("labyrinth2d/escape.png");
-
-        createFonts("fonts/clacon2.ttf");
-
-        // create labyrinth
-        // leave space for outer walls, otherwise the sprites will go beyond the screen boundaries
-        lW = (int) ((windowW - lDivider * 0.75) / lDivider);
-        lH = (int) ((windowH - lDivider * 0.75) / lDivider);
-        // in order for the labyrinth to have all outer walls, the width and height must be odd
-        lW += lW % 2 == 0 ? 1 : 0;
-        lH += lH % 2 == 0 ? 1 : 0;
-        labyrinth = new Labyrinth2(0, 0, lW, lH);
-        labyrinth.create();
-        screenX = (int) (windowW - lDivider * lW);
-        screenY = (int) (windowH - lDivider * lH);
     }
 
     protected void createFonts(String fontName) {
@@ -90,12 +75,26 @@ public class Tools2d implements Page {
         font = generator.generateFont(parameter);
     }
 
+    private void initializeLabyrinthDimensions() {
+        lW = (int) ((MyApplication.windowW - MyApplication.lDivider * 0.75) / MyApplication.lDivider);
+        lH = (int) ((MyApplication.windowH - MyApplication.lDivider * 0.75) / MyApplication.lDivider);
+        lW += lW % 2 == 0 ? 1 : 0;
+        lH += lH % 2 == 0 ? 1 : 0;
+    }
+
+    private void calculateScreenCoordinates() {
+        screenX = (int) (MyApplication.windowW - MyApplication.lDivider * lW);
+        screenY = (int) (MyApplication.windowH - MyApplication.lDivider * lH);
+    }
+
     @Override
     public void input() {
+        // Input handling can be implemented here if needed
     }
 
     @Override
     public void logic() {
+        // Logic implementation can be added here if needed
     }
 
     @Override
@@ -106,49 +105,60 @@ public class Tools2d implements Page {
     }
 
     public void drawLabyrinth() {
-        int[][] labyrinth = this.labyrinth.get2D();
-        for (int j = 0; j < lH; j++)
+        int[][] labyrinthArray = labyrinth.get2D();
+        for (int j = 0; j < lH; j++) {
             for (int i = 0; i < lW; i++) {
-                Labyrinth.LEntity lEntity = Labyrinth.LEntity.values()[(labyrinth[i][j])];
-                switch (lEntity) {
-                    case EMPTY:
-                        continue;
+                Labyrinth.LEntity entity = Labyrinth.LEntity.values()[labyrinthArray[i][j]];
+                switch (entity) {
                     case VERTICAL_WALL:
-                        // since the horizontal walls are lower than the cell height,
-                        // the vertical walls should be 2 times higher
-                        spriteBatch.draw(
-                            verticalWallTexture,
-                            screenX + i * lDivider, screenY + j * lDivider - lDivider,
-                            lDivider / 4f, lDivider * 2
-                        );
+                        drawVerticalWall(i, j);
                         break;
                     case HORIZONTAL_WALL:
                     case LU_CORNER:
                     case RU_CORNER:
                     case LD_CORNER:
                     case RD_CORNER:
-                        // since after removing a horizontal wall there remains an unsightly protrusion
-                        // of the wall to the left, it is necessary not to show such walls during rendering
-                        if (i < lW - 1 &&
-                            (Labyrinth.LEntity.values()[(labyrinth[i + 1][j])] != Labyrinth.LEntity.EMPTY ||
-                                i > 0 && j > 1 && j < lH - 1 &&
-                                    Labyrinth.LEntity.values()[(labyrinth[i - 1][j])] == Labyrinth.LEntity.EMPTY &&
-                                    Labyrinth.LEntity.values()[(labyrinth[i + 1][j])] == Labyrinth.LEntity.EMPTY &&
-                                    (Labyrinth.LEntity.values()[(labyrinth[i][j - 1])] == Labyrinth.LEntity.EMPTY &&
-                                        Labyrinth.LEntity.values()[(labyrinth[i][j + 1])] == Labyrinth.LEntity.EMPTY)
-                            )
-                        ) {
-                            spriteBatch.draw(
-                                horizontalWallTexture,
-                                screenX + i * lDivider, screenY + j * lDivider,
-                                lDivider, lDivider / 4f
-                            );
-                        }
+                        drawHorizontalWall(i, j, labyrinthArray);
+                        break;
+                    default:
                         break;
                 }
             }
-        spriteBatch.draw(escapeTexture, screenX + (lW - 2) * lDivider, screenY + (lH - 2) * lDivider, lDivider, lDivider);
-        spriteBatch.draw(entryTexture, screenX + 1 * lDivider, screenY + 1 * lDivider, lDivider, lDivider);
+        }
+        drawEntryAndEscape();
+    }
+
+    private void drawVerticalWall(int i, int j) {
+        spriteBatch.draw(
+            verticalWallTexture,
+            screenX + i * MyApplication.lDivider, screenY + j * MyApplication.lDivider - MyApplication.lDivider,
+            MyApplication.lDivider / 4f, MyApplication.lDivider * 2
+        );
+    }
+
+    private void drawHorizontalWall(int i, int j, int[][] labyrinthArray) {
+        if (shouldDrawHorizontalWall(i, j, labyrinthArray)) {
+            spriteBatch.draw(
+                horizontalWallTexture,
+                screenX + i * MyApplication.lDivider, screenY + j * MyApplication.lDivider,
+                MyApplication.lDivider, MyApplication.lDivider / 4f
+            );
+        }
+    }
+
+    private boolean shouldDrawHorizontalWall(int i, int j, int[][] labyrinthArray) {
+        return i < lW - 1 &&
+            (Labyrinth.LEntity.values()[labyrinthArray[i + 1][j]] != Labyrinth.LEntity.EMPTY ||
+                (i > 0 && j > 1 && j < lH - 1 &&
+                    Labyrinth.LEntity.values()[labyrinthArray[i - 1][j]] == Labyrinth.LEntity.EMPTY &&
+                    Labyrinth.LEntity.values()[labyrinthArray[i + 1][j]] == Labyrinth.LEntity.EMPTY &&
+                    Labyrinth.LEntity.values()[labyrinthArray[i][j - 1]] == Labyrinth.LEntity.EMPTY &&
+                    Labyrinth.LEntity.values()[labyrinthArray[i][j + 1]] == Labyrinth.LEntity.EMPTY));
+    }
+
+    private void drawEntryAndEscape() {
+        spriteBatch.draw(escapeTexture, screenX + (lW - 2) * MyApplication.lDivider, screenY + (lH - 2) * MyApplication.lDivider, MyApplication.lDivider, MyApplication.lDivider);
+        spriteBatch.draw(entryTexture, screenX + 1 * MyApplication.lDivider, screenY + 1 * MyApplication.lDivider, MyApplication.lDivider, MyApplication.lDivider);
     }
 
     public void prepareDraw() {
@@ -157,7 +167,6 @@ public class Tools2d implements Page {
         spriteBatch.setProjectionMatrix(viewport.getCamera().combined);
         spriteBatch.begin();
     }
-
 
     public void endDraw() {
         spriteBatch.end();
@@ -179,21 +188,25 @@ public class Tools2d implements Page {
         File txtFile = new File(dir, filename);
         try {
             txtFile.createNewFile();
+            writeLabyrinthToFile(txtFile);
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error("Error creating file: " + e.getMessage());
         }
-        int[][] labyrinth = this.labyrinth.get3D();
+        return txtFile.getAbsolutePath();
+    }
+
+    private void writeLabyrinthToFile(File txtFile) {
+        int[][] labyrinthArray = labyrinth.get3D();
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(txtFile))) {
             for (int j = lH - 1; j >= 0; j--) {
                 for (int i = 0; i < lW; i++) {
-                    writer.write(Integer.toString(labyrinth[i][j]));
+                    writer.write(Integer.toString(labyrinthArray[i][j]));
                 }
                 writer.newLine();
             }
         } catch (IOException e) {
             log.error("Error writing to file: " + e.getMessage());
         }
-        return txtFile.getAbsolutePath();
     }
 
     public SpriteBatch getSpriteBatch() {
@@ -205,7 +218,7 @@ public class Tools2d implements Page {
     }
 
     public float getScale() {
-        return lDivider;
+        return MyApplication.lDivider;
     }
 
     public int getScreenX() {
