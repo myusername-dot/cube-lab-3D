@@ -57,6 +57,8 @@ public class PlayScreen extends GameScreen {
         createGlyphLayouts(); // Инициализация GlyphLayout
 
         sfxItem = game.getAssMan().get(game.getAssMan().sfxItem);
+
+        game.setScreen(this);
         game.getMapBuilder().buildMap(Labyrinth2D.txtFilename);
 
         Vector3 playerSpawnPosition = getPlayerSpawnPosition(game);

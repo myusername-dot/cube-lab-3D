@@ -16,7 +16,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Slf4j
 public class RectManager {
 
-    // ConcurrentHashMap, ConcurrentSkipListSet/ConcurrentHashMap<Object,null>
     private final ConcurrentHashMap<Chunk, ConcurrentHashMap<RectanglePlusFilter, ConcurrentHashMap<RectanglePlus, Object>>> rects = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<Integer, RectanglePlus> rectsByConnectedEntityId = new ConcurrentHashMap<>();
     private final Object justObject = new Object();
@@ -25,7 +24,6 @@ public class RectManager {
     private volatile long transactionId = -1;
 
     private final CubeLab3D game;
-
     private ChunkManager chunkMan;
 
     public RectManager(final CubeLab3D game) {
@@ -38,10 +36,10 @@ public class RectManager {
 
     public void addRect(final RectanglePlus rect) {
         Chunk chunk = chunkMan.get(rect.getX() + rect.getWidth() / 2f, rect.getZ() + rect.getDepth() / 2f);
+        rects.computeIfAbsent(chunk, k -> new ConcurrentHashMap<>())
+            .computeIfAbsent(rect.filter, k -> new ConcurrentHashMap<>())
+            .put(rect, justObject);
 
-        rects.computeIfAbsent(chunk, k -> new ConcurrentHashMap<>());
-        rects.get(chunk).computeIfAbsent(rect.filter, k -> new ConcurrentHashMap<>());
-        rects.get(chunk).get(rect.filter).put(rect, justObject);
         if (rect.getConnectedEntityId() >= 0) {
             rectsByConnectedEntityId.put(rect.getConnectedEntityId(), rect);
         }
@@ -49,39 +47,46 @@ public class RectManager {
 
     public void updateEntityChunkIfExistsRect(final Chunk oldChunk, final Chunk newChunk, final Entity ent) {
         Player player = ((GameScreen) game.getScreen()).getPlayer();
-        if (player != null && player.getId() == ent.getId()) {
-            log.debug("Try to move the Player's rectangle to the other chunk.");
-        }
+        log.debug(player != null && player.getId() == ent.getId() ?
+            "Try to move the Player's rectangle to the other chunk." :
+            "Entity id: " + ent.getId() + " is trying to move.");
 
         RectanglePlus rect = rectsByConnectedEntityId.get(ent.getId());
         if (rect == null) {
-            // must be removed
-            if (this.rectsByConnectedEntityId.get(ent.getId()) != null) {
-                throw new RuntimeException("Entity id: " + ent.getId() + " rect == null && this.rectsByConnectedEntIdDoNotTouch.get(ent.getId()) != null");
-            }
+            handleEntityNotFound(ent);
             return;
         }
+
+        validateOldChunkContainsRect(oldChunk, newChunk, rect, ent);
+
+        rects.get(oldChunk).get(rect.filter).remove(rect);
+        rects.computeIfAbsent(newChunk, k -> new ConcurrentHashMap<>())
+            .computeIfAbsent(rect.filter, k -> new ConcurrentHashMap<>())
+            .put(rect, justObject);
+
+        log.debug(player != null && player.getId() == ent.getId() ?
+            "The Player's rectangle has been moved to the other chunk!" :
+            "Entity id: " + ent.getId() + " rectangle has been moved to the other chunk!");
+    }
+
+    private void handleEntityNotFound(Entity ent) {
+        if (this.rectsByConnectedEntityId.get(ent.getId()) != null) {
+            throw new RuntimeException("Entity id: " + ent.getId() + " rect == null && this.rectsByConnectedEntIdDoNotTouch.get(ent.getId()) != null");
+        }
+    }
+
+    private void validateOldChunkContainsRect(Chunk oldChunk, Chunk newChunk, RectanglePlus rect, Entity ent) {
         if (!rects.get(oldChunk).containsKey(rect.filter)) {
             throw new RuntimeException("Entity id: " + ent.getId() + " !rects.get(oldChunk).containsKey(rect.filter)");
         }
         if (!rects.get(oldChunk).get(rect.filter).containsKey(rect)) {
             throwWhyChunkDoesNotContainRect(ent.getId(), oldChunk, newChunk, rect);
         }
-
-        rects.get(oldChunk).get(rect.filter).remove(rect);
-        rects.get(newChunk).computeIfAbsent(rect.filter, k -> new ConcurrentHashMap<>());
-        rects.get(newChunk).get(rect.filter).put(rect, justObject);
-
-        if (player != null && player.getId() == ent.getId()) {
-            log.debug("The Player's rectangle has been moved to the other chunk!");
-        } else {
-            log.debug("Entity id: " + ent.getId() + " rectangle has been moved to the other chunk!");
-        }
     }
 
     public List<RectanglePlus> getNearestRectsByFilters(float playerX, float playerZ, final RectanglePlus rect) {
         List<RectanglePlusFilter> filters = game.getOverlapFilterMan().getFiltersOverlap(rect.filter);
-        if (filters.isEmpty()) return new ArrayList<>();
+        if (filters.isEmpty()) return Collections.emptyList();
 
         List<Chunk> nearestChunks = chunkMan.getNearestChunks(playerX, playerZ);
         if (nearestChunks == null || nearestChunks.isEmpty()) {
@@ -105,38 +110,34 @@ public class RectManager {
 
     private boolean overlapsPlusDistance(RectanglePlus r1, RectanglePlus r2) {
         float distance = 0.1f;
-        return
-            r1.getX() < r2.getX() + r2.getWidth() + distance && r1.getX() + r1.getWidth() + distance > r2.getX()
-                && r1.getY() < r2.getY() + r2.getHeight() + distance && r1.getY() + r1.getHeight() + distance > r2.getY()
-                && r1.getZ() < r2.getZ() + r2.getDepth() + distance && r1.getZ() + r1.getDepth() + distance > r2.getZ();
-        /*return x < r.x + r.width && x + width > r.x
-                && y < r.y + r.height && y + height > r.y
-                && z < r.z + r.depth && z + depth > r.z;*/
+        return r1.getX() < r2.getX() + r2.getWidth() + distance &&
+            r1.getX() + r1.getWidth() + distance > r2.getX() &&
+            r1.getY() < r2.getY() + r2.getHeight() + distance &&
+            r1.getY() + r1.getHeight() + distance > r2.getY() &&
+            r1.getZ() < r2.getZ() + r2.getDepth() + distance &&
+            r1.getZ() + r1.getDepth() + distance > r2.getZ();
     }
 
     public boolean checkCollisions(final RectanglePlus rect, final List<RectanglePlus> nearestRects) {
-        for (final RectanglePlus otherRect : nearestRects) {
-            if (checkCollision(rect, otherRect)) return true;
+        return nearestRects.stream().anyMatch(otherRect -> checkCollision(rect, otherRect));
+    }
+
+    private boolean checkCollision(final RectanglePlus rect, final RectanglePlus otherRect) {
+        if (otherRect != rect && rect.overlaps(otherRect)) {
+            handleCollision(rect, otherRect);
+            return true;
         }
         return false;
     }
 
-    private boolean checkCollision(final RectanglePlus rect, final RectanglePlus otherRect) {
-        if (otherRect != rect) { // if not itself...
-            if (rect.overlaps(otherRect)) {
-                if (game.getEntMan().getEntityById(rect.getConnectedEntityId()) != null) {
-//							log.debug("id1: " + rect.getConnectedEntityId());
-                    game.getEntMan().getEntityById(rect.getConnectedEntityId()).onCollision(otherRect);
-                }
-
-                if (game.getEntMan().getEntityById(otherRect.getConnectedEntityId()) != null) {
-//							log.debug("id2: " + otherRect.getConnectedEntityId());
-                    game.getEntMan().getEntityById(otherRect.getConnectedEntityId()).onCollision(rect);
-                }
-                return true;
-            }
+    private void handleCollision(final RectanglePlus rect, final RectanglePlus otherRect) {
+        if (game.getEntMan().getEntityById(rect.getConnectedEntityId()) != null) {
+            game.getEntMan().getEntityById(rect.getConnectedEntityId()).onCollision(otherRect);
         }
-        return false;
+
+        if (game.getEntMan().getEntityById(otherRect.getConnectedEntityId()) != null) {
+            game.getEntMan().getEntityById(otherRect.getConnectedEntityId()).onCollision(rect);
+        }
     }
 
     public void removeRect(final RectanglePlus rect) {
@@ -147,13 +148,14 @@ public class RectManager {
     public int rectsCountAndCheck() {
         AtomicInteger rectsCount = new AtomicInteger();
         rects.forEach((c, m) -> m.forEach((f, s) -> rectsCount.addAndGet(s.size())));
-        if (rectsCount.get() != rectsByConnectedEntityId.size()) {
-            if (rectsCount.get() > rectsByConnectedEntityId.size())
-                throw new RuntimeException("rectsCount.get() > rectsByConnectedEntityId.size(): " + rectsCount.get() + ", " + rectsByConnectedEntityId.size());
-            else
-                throw new RuntimeException("rectsCount.get() < rectsByConnectedEntityId.size(): " + rectsCount.get() + ", " + rectsByConnectedEntityId.size());
-        }
+        checkRectCountConsistency(rectsCount);
         return rectsCount.get();
+    }
+
+    private void checkRectCountConsistency(AtomicInteger rectsCount) {
+        if (rectsCount.get() != rectsByConnectedEntityId.size()) {
+            throw new RuntimeException("Rect count inconsistency: " + rectsCount.get() + ", " + rectsByConnectedEntityId.size());
+        }
     }
 
     public void clear() {
@@ -183,10 +185,7 @@ public class RectManager {
         isTransaction = false;
     }
 
-    private void throwWhyChunkDoesNotContainRect(
-        int entId,
-        Chunk oldChunk, Chunk newChunk,
-        RectanglePlus rect) {
+    private void throwWhyChunkDoesNotContainRect(int entId, Chunk oldChunk, Chunk newChunk, RectanglePlus rect) {
         Optional<Chunk> chunk = this.rects.entrySet()
             .stream()
             .filter(e -> e.getValue().values().stream().anyMatch(s -> s.keySet().stream().anyMatch(r -> r.equals(rect))))
