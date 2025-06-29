@@ -14,10 +14,9 @@ import io.github.labyrinthgenerator.labyrinth.Labyrinth;
 import io.github.labyrinthgenerator.labyrinth.Labyrinth2;
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.*;
 import java.util.UUID;
 import java.util.zip.Deflater;
 
@@ -40,9 +39,14 @@ public class Tools2d {
 
     public void create() {
         application = MyApplication.getApplicationInstance();
-        setupViewportAndCamera();
         initializeTextures();
         createFonts("fonts/clacon2.ttf");
+        //refresh();
+    }
+
+    public void refresh() {
+        if (spriteBatch != null) spriteBatch.dispose();
+        setupViewportAndCamera(); // FIXME
         initializeLabyrinthDimensions();
         labyrinth = new Labyrinth2(0, 0, lW, lH);
         labyrinth.create();
@@ -195,6 +199,39 @@ public class Tools2d {
             log.error("Error writing to file: " + e.getMessage());
         }
     }
+
+    public static BufferedImage pixmapToBufferedImage(Pixmap pixmap) throws IOException {
+        try(ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+
+            PixmapIO.PNG writer = new PixmapIO.PNG(pixmap.getWidth() * pixmap.getHeight() * 4);
+            try {
+                writer.setFlipY(false);
+                writer.setCompression(Deflater.NO_COMPRESSION);
+                writer.write(baos, pixmap);
+            } finally {
+                writer.dispose();
+            }
+
+            return ImageIO.read(new ByteArrayInputStream(baos.toByteArray()));
+        }
+    }
+
+    public static Pixmap bufferedImageToPixmap(BufferedImage image, int maskARGB) throws IOException {
+        Pixmap pixmap = new Pixmap(image.getWidth(), image.getHeight(), Pixmap.Format.RGBA8888);
+        for (int i = 0; i < image.getWidth(); i++) {
+            for (int j = 0; j < image.getHeight(); j++) {
+                int rgb = image.getRGB(i, j);
+                int a = (rgb >> 24) & (0xff & maskARGB >> 24); // Alpha
+                int r = (rgb >> 16) & (0xff & maskARGB >> 16); // Red
+                int g = (rgb >> 8)  & (0xff & maskARGB >> 8);  // Green
+                int b = rgb         &  0xff & maskARGB;        // Blue
+                pixmap.drawPixel(i, j, (r << 24) | (g << 16) | (b << 8) | a);
+            }
+        }
+
+        return pixmap;
+    }
+
 
     public SpriteBatch getSpriteBatch() {
         return spriteBatch;
