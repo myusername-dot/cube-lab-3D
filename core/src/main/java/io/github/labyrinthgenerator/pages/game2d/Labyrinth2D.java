@@ -23,114 +23,109 @@ public class Labyrinth2D implements Page {
     private Tools2d toolsPage;
 
     private int frame;
-    private int framerate = 60;
+    private static final int FRAMERATE = 60;
 
     private boolean escape;
-    private boolean puffPuffins;
-    private boolean newLab;
+    private boolean puffPuffins = true;
     private boolean isFinished;
     private boolean screenshot;
     private boolean txtFile;
 
     private Lab lab;
-
     private Set<Vector2i> prevPoses;
     private Set<Vector2i> puffins;
 
     @Override
     public void create() {
+        loadTextures();
+        createToolsPage();
+        lab = toolsPage.getLabyrinth();
+        prevPoses = lab.getPrevPosses();
+        puffins = lab.getPuffins();
+    }
+
+    private void loadTextures() {
         prefPoseTexture = new Texture("labyrinth2d/pref.png");
         prefPoseAcceptEscapeTexture = new Texture("labyrinth2d/pref_a.png");
         puffinTexture = new Texture("labyrinth2d/puff.png");
-
-        createToolsPage();
-        lab = toolsPage.getLabyrinth();
-
-        prevPoses = lab.getPrevPosses();
-        puffins = lab.getPuffins();
-
-        puffPuffins = true;
     }
 
-    void createToolsPage() {
+    private void createToolsPage() {
         toolsPage = new Tools2d();
         toolsPage.create();
     }
 
     @Override
     public void input() {
+        // Input handling can be implemented here if needed
     }
 
     @Override
     public void logic() {
         frame++;
-        screenshot = false;
-        txtFile = false;
+        resetFlags();
 
         if (!isLogicFrame()) return;
 
-        /*if (newLab) {
-            toolsPage.dispose();
-            createToolsPage();
-            lab = toolsPage.getLabyrinth();
-            prevPoses = lab.getPrevPosses();
-            puffins = lab.getPuffins();
-            newLab = false;
-            puffPuffins = true;
-        } else */
         if (puffPuffins) {
-            escape = lab.passage();
-            puffPuffins = !lab.isFin();
+            handlePuffPuffinsLogic();
         } else {
-            // rest assured that the exit is open
-            lab.convertTo3dGame();
-            escape = true;
-            isFinished = true;
-            screenshot = MyApplication.saveAsImage;
-            txtFile = MyApplication.saveAsTxt;
+            finalizeLabyrinth();
         }
+    }
 
+    private void resetFlags() {
+        screenshot = false;
+        txtFile = false;
+    }
+
+    private void handlePuffPuffinsLogic() {
+        escape = lab.passage();
+        puffPuffins = !lab.isFin();
+    }
+
+    private void finalizeLabyrinth() {
+        lab.convertTo3dGame();
+        escape = true;
+        isFinished = true;
+        screenshot = MyApplication.saveAsImage;
+        txtFile = MyApplication.saveAsTxt;
     }
 
     private boolean isLogicFrame() {
-        return frame % (60 / framerate) == 0;
+        return frame % (60 / FRAMERATE) == 0;
     }
 
     @Override
     public void draw() {
         toolsPage.prepareDraw();
         SpriteBatch spriteBatch = toolsPage.getSpriteBatch();
-
         float scale = toolsPage.getScale();
         int screenX = toolsPage.getScreenX();
         int screenY = toolsPage.getScreenY();
 
-        for (Vector2i prevPose : prevPoses) {
-            if (escape) {
-                spriteBatch.draw(
-                    prefPoseAcceptEscapeTexture,
-                    screenX + prevPose.x * scale, screenY + prevPose.y * scale,
-                    scale, scale
-                );
-            } else {
-                spriteBatch.draw(
-                    prefPoseTexture,
-                    screenX + prevPose.x * scale, screenY + prevPose.y * scale,
-                    scale, scale
-                );
-            }
-        }
-        for (Vector2i puffin : puffins) {
-            spriteBatch.draw(
-                puffinTexture,
-                screenX + puffin.x * scale, screenY + puffin.y * scale,
-                scale, scale
-            );
-        }
+        drawPreviousPoses(spriteBatch, scale, screenX, screenY);
+        drawPuffins(spriteBatch, scale, screenX, screenY);
         toolsPage.drawLabyrinth();
-
         toolsPage.endDraw();
 
+        handleSaving();
+    }
+
+    private void drawPreviousPoses(SpriteBatch spriteBatch, float scale, int screenX, int screenY) {
+        for (Vector2i prevPose : prevPoses) {
+            Texture textureToDraw = escape ? prefPoseAcceptEscapeTexture : prefPoseTexture;
+            spriteBatch.draw(textureToDraw, screenX + prevPose.x * scale, screenY + prevPose.y * scale, scale, scale);
+        }
+    }
+
+    private void drawPuffins(SpriteBatch spriteBatch, float scale, int screenX, int screenY) {
+        for (Vector2i puffin : puffins) {
+            spriteBatch.draw(puffinTexture, screenX + puffin.x * scale, screenY + puffin.y * scale, scale, scale);
+        }
+    }
+
+    private void handleSaving() {
         UUID uuid = null;
         if (screenshot) uuid = toolsPage.saveAsImage();
         if (txtFile) txtFilename = toolsPage.saveAsTxt(uuid);
