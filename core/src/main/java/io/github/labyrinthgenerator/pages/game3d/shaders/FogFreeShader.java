@@ -167,8 +167,9 @@ public class FogFreeShader extends SpotLightFreeShader {
     @Override
     public void init() {
         program = new ShaderProgram(vertexShader, fragmentShader);
-        if (!program.isCompiled())
+        if (!program.isCompiled()) {
             throw new GdxRuntimeException(program.getLog());
+        }
         u_projTrans = program.getUniformLocation("u_projTrans");
         u_worldTrans = program.getUniformLocation("u_worldTrans");
     }
@@ -178,14 +179,25 @@ public class FogFreeShader extends SpotLightFreeShader {
     }
 
     private int sign(float v) {
-        if (v >= 0) return 1;
-        else return -1;
+        return (v >= 0) ? 1 : -1;
     }
 
     @Override
     public void begin(Camera camera, RenderContext context) {
         this.context = context;
 
+        Vector2 playerVelocity = getPlayerVelocity();
+        program.bind();
+        program.setUniformMatrix(u_projTrans, camera.combined);
+        program.setUniformf("spotCutoff", cutoffAngle);
+        program.setUniformi("u_texture", 0);
+        setFogUniforms(playerVelocity);
+        context.begin();
+        context.setDepthTest(GL20.GL_LEQUAL);
+        context.setCullFace(GL20.GL_BACK);
+    }
+
+    private Vector2 getPlayerVelocity() {
         Vector2 playerVelocity = new Vector2(0, 0);
         Player player = myShaderProvider.getPlayer();
         if (player != null) {
@@ -193,12 +205,10 @@ public class FogFreeShader extends SpotLightFreeShader {
             Vector3 playerDir = player.getDirection();
             playerVelocity.set(playerVelocity3.x * sign(playerDir.x), playerVelocity3.z * sign(playerDir.z));
         }
+        return playerVelocity;
+    }
 
-        program.bind();
-        program.setUniformMatrix(u_projTrans, camera.combined);
-        program.setUniformf("spotCutoff", cutoffAngle);
-        program.setUniformi("u_texture", 0);
-
+    private void setFogUniforms(Vector2 playerVelocity) {
         // Устанавливаем цвет тумана и его плотность
         program.setUniformf("fogColor", new Color(0.5f, 0.5f, 0.5f, 0.9f)); // Цвет тумана (например, серый)
         program.setUniformf("fogDensity", fogBaseDensity); // Плотность тумана (можно настроить)
@@ -206,13 +216,19 @@ public class FogFreeShader extends SpotLightFreeShader {
         float[] fogVelocity = new float[]{playerVelocity.x, playerVelocity.y};
         program.setUniform2fv("u_fogVelocity", fogVelocity, 0, 2);
         program.setUniformf("u_time", timer);
-
-        context.begin();
-        context.setDepthTest(GL20.GL_LEQUAL);
-        context.setCullFace(GL20.GL_BACK);
     }
 
     public void setPointLightsUniforms(Renderable renderable) {
+        List<PointLightPlus> pointLightsByPlayerDistAndCamAngle = getPointLights(renderable);
+
+        if (pointLightsByPlayerDistAndCamAngle.isEmpty()) {
+            setDefaultLightUniforms();
+        } else {
+            setLightUniforms(pointLightsByPlayerDistAndCamAngle);
+        }
+    }
+
+    private List<PointLightPlus> getPointLights(Renderable renderable) {
         List<PointLightPlus> pointLightsByPlayerDistAndCamAngle = new ArrayList<>();
         Player player = myShaderProvider.getPlayer();
         if (player != null) {
@@ -225,28 +241,29 @@ public class FogFreeShader extends SpotLightFreeShader {
                 if (distance < MAX_LIGHT_RENDERING_DISTANCE) {
                     float angle = myShaderProvider.getViewAngle(player.playerCam, rendPos3);
                     pointLightsByPlayerDistAndCamAngle = myShaderProvider.getPointLightsByPlayerDistAndCamAngle(distance, angle);
-                    //log.info("pointLightsByPlayerDistAndCamAngle.size: " + pointLightsByPlayerDistAndCamAngle.size());
                 }
             }
         }
+        return pointLightsByPlayerDistAndCamAngle;
+    }
 
-        if (pointLightsByPlayerDistAndCamAngle.isEmpty()) {
-            program.setUniform3fv("u_pointLights[" + 0 + "]", new float[]{0, 0, 0}, 0, 3);
-            program.setUniform3fv("u_pointLightsScreen[" + 0 + "]", new float[]{0, 0, 0}, 0, 3);
-            program.setUniform4fv("u_pointLightColors[" + 0 + "]", new float[]{0, 0, 0, 0}, 0, 4);
-        }
-        for (int i = 0; i < pointLightsByPlayerDistAndCamAngle.size(); i++) {
-            PointLightPlus light = pointLightsByPlayerDistAndCamAngle.get(i);
+    private void setDefaultLightUniforms() {
+        program.setUniform3fv("u_pointLights[0]", new float[]{0, 0, 0}, 0, 3);
+        program.setUniform3fv("u_pointLightsScreen[0]", new float[]{0, 0, 0}, 0, 3);
+        program.setUniform4fv("u_pointLightColors[0]", new float[]{0, 0, 0, 0}, 0, 4);
+    }
+
+    private void setLightUniforms(List<PointLightPlus> pointLights) {
+        for (int i = 0; i < pointLights.size(); i++) {
+            PointLightPlus light = pointLights.get(i);
             program.setUniform3fv("u_pointLights[" + i + "]",
                 new float[]{light.position.x, light.position.y + HALF_UNIT, light.position.z}, 0, 3);
             program.setUniform3fv("u_pointLightsScreen[" + i + "]",
                 new float[]{light.screenPosition.x, light.screenPosition.y, light.screenPosition.z}, 0, 3);
             program.setUniform4fv("u_pointLightColors[" + i + "]",
                 new float[]{light.color.r, light.color.g, light.color.b, light.color.a}, 0, 4);
-            //program.setUniformf("u_pointLights[" + i + "].intensity", light.intensity);
         }
-
-        program.setUniformi("pointLightsSize", pointLightsByPlayerDistAndCamAngle.size());
+        program.setUniformi("pointLightsSize", pointLights.size());
     }
 
     @Override
@@ -254,134 +271,6 @@ public class FogFreeShader extends SpotLightFreeShader {
         program.setUniformMatrix(u_worldTrans, renderable.worldTransform);
         bindTexture(renderable);
         setPointLightsUniforms(renderable);
-
         renderable.meshPart.render(program);
     }
 }
-
-/*
-
-        // Установите текстуру снега
-        //program.setUniformi("u_snowTexture", 1);
-        //snowTexture.bind(1); // Привязываем текстуру снега
-
-String fragmentShader =
-        "#ifdef GL_ES \n" +
-            "#define LOWP lowp\n" +
-            "precision mediump float;\n" +
-            "#else\n" +
-            "#define LOWP \n" +
-            "#endif\n" +
-            "varying LOWP vec2 v_texCoords;\n" +
-            "uniform sampler2D u_texture;\n" +
-            //"uniform sampler2D u_snowTexture;\n" + // Текстура снега
-            "varying float v_distance;\n" +
-            "uniform vec4 fogColor;\n" + // Цвет тумана
-            "uniform float fogDensity;\n" +
-            //"uniform float snowIntensity;\n" + // Интенсивность снега
-            //"uniform float time;\n" +  // Добавляем uniform для времени
-            "void main(void)\n" +
-            "{\n" +
-            "   vec4 c = texture2D(u_texture, v_texCoords);\n" +
-            "   float fogFactor = exp(-fogDensity * v_distance);\n" +
-            "   fogFactor = clamp(fogFactor, 0.0, 1.0);\n" +
-            "   gl_FragColor = mix(c, fogColor, 1.0 - fogFactor);\n" +
-
-            // Добавление снега
-            "   vec2 snowCoords = vec2(mod(gl_FragCoord.x, 1.0), mod(gl_FragCoord.y - time * 0.1, 1.0));\n" + // Падающий снег
-            "   vec4 snow = texture2D(u_snowTexture, snowCoords);\n" +
-            "   if (snow.a > 0.0) {\n" + // Если есть снег
-            "       gl_FragColor = mix(gl_FragColor, snow * snowIntensity, snow.a);\n" + // Смешиваем снег с цветом
-            "   }\n" +
-            "}";*/
-
-/*
-import com.badlogic.gdx.graphics.g3d.Model;
-import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
-import com.badlogic.gdx.graphics.g3d.Material;
-import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
-import com.badlogic.gdx.graphics.Texture;
-
-public class SnowflakeModel {
-    public static Model createSnowflakeModel(Texture snowTexture) {
-        ModelBuilder modelBuilder = new ModelBuilder();
-        modelBuilder.begin();
-
-        // Задаем материал с текстурой снега
-        Material material = new Material(TextureAttribute.createDiffuse(snowTexture));
-
-        // Создаем квадрат (плоскость) для снежинки
-        modelBuilder.part("snowflake",
-                          com.badlogic.gdx.graphics.g3d.utils.MeshPartBuilder.VertexInfo(),
-                          com.badlogic.gdx.graphics.g3d.utils.MeshPartBuilder.PrimitiveType.TriangleFan,
-                          material)
-                     .rect(-0.1f, 0, -0.1f, 0, 1, 0, 0, 0, 1, // левая вершина
-                           0.1f, 0, -0.1f, 0, 1, 0, 1, 0, 1, // правая вершина
-                           0.1f, 0, 0.1f, 0, 1, 0, 1, 1, 1, // верхняя вершина
-                           -0.1f, 0, 0.1f, 0, 1, 0, 0, 1, 1); // нижняя вершина
-
-        return modelBuilder.end();
-    }
-}
-
-import com.badlogic.gdx.graphics.g3d.ModelInstance;
-import com.badlogic.gdx.math.Vector3;
-import java.util.ArrayList;
-import java.util.List;
-
-public class SnowflakeManager {
-    private List<ModelInstance> snowflakes;
-    private Model snowflakeModel;
-
-    public SnowflakeManager(Model snowflakeModel) {
-        this.snowflakeModel = snowflakeModel;
-        this.snowflakes = new ArrayList<>();
-        createSnowflakes(100); // Создаем 100 снежинок
-    }
-
-    private void createSnowflakes(int count) {
-        for (int i = 0; i < count; i++) {
-            // Создаем новую снежинку
-            ModelInstance snowflakeInstance = new ModelInstance(snowflakeModel);
-            // Размещаем снежинку в случайной позиции
-            snowflakeInstance.transform.setTranslation(
-                (float) Math.random() * 10 - 5, // X
-                (float) Math.random() * 10 + 5, // Y (выше камеры)
-                (float) Math.random() * 10 - 5  // Z
-            );
-            snowflakes.add(snowflakeInstance);
-        }
-    }
-
-    public void update(float deltaTime) {
-        for (ModelInstance snowflake : snowflakes) {
-            // Падаем вниз
-            Vector3 position = new Vector3();
-            snowflake.transform.getTranslation(position);
-            position.y -= deltaTime; // Скорость падения
-            // Если снежинка вышла за пределы, перемещаем её обратно
-            if (position.y < 0) {
-                position.y = 10; // Возвращаем на высоту
-            }
-            snowflake.transform.setTranslation(position);
-        }
-    }
-
-    public void render(ModelBatch modelBatch, Environment environment) {
-        for (ModelInstance snowflake : snowflakes) {
-            modelBatch.render(snowflake, environment);
-        }
-    }
-}
-
-// В Вашем классе Game
-SnowflakeManager snowflakeManager;
-
-// В методе create()
-snowflakeManager = new SnowflakeManager(SnowflakeModel.createSnowflakeModel(snowTexture));
-
-// В методе render()
-snowflakeManager.update(deltaTime);
-snowflakeManager.render(modelBatch, environment);
-
-* */
