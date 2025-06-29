@@ -35,6 +35,8 @@ public class Player extends Entity {
     private final Vector3 velocity = new Vector3(); // Текущая скорость игрока
     private final Vector3 forwardVelocity = new Vector3(); // Текущая скорость игрока
 
+    private boolean cheats = false;
+
     private final int maxHP = 100;
     private int currentHP = 100;
     public boolean isDead = false;
@@ -227,6 +229,10 @@ public class Player extends Entity {
             verticalCameraMovement = !verticalCameraMovement;
         }
 
+        if (Gdx.input.isKeyJustPressed(Input.Keys.L)) {
+            cheats = !cheats;
+        }
+
         if (headbob) {
             camY = HALF_UNIT;
             final float sinOffset = (float) (Math.sin(screen.game.getTimeSinceLaunch() * playerMoveSpeed * 4f)
@@ -302,10 +308,13 @@ public class Player extends Entity {
 //			log.info("Player is dead.");
         }
 
-        screen.checkOverlaps(rect, delta);
-        /*rect.setX(rect.newPosition.x);
-        rect.setY(rect.newPosition.y);
-        rect.setZ(rect.newPosition.z);*/
+        if (!cheats) {
+            screen.checkOverlaps(rect, delta);
+        } else {
+            rect.setX(rect.newPosition.x);
+            rect.setY(rect.newPosition.y);
+            rect.setZ(rect.newPosition.z);
+        }
 
         setPosition(rect.getX() + rect.getWidth() / 2f, 0f, rect.getZ() + rect.getDepth() / 2f);
         setCamPosition();
