@@ -1,8 +1,7 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <configuration>
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>logs/MyApplication.log</file>  <!-- Путь к файлу -->
-        <append>false</append>>
+        <file>logs/MyApplication.log</file>
+        <append>false</append>
         <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
             <fileNamePattern>logs/MyApplication.%i.log.zip</fileNamePattern>
             <minIndex>1</minIndex>
@@ -15,6 +14,7 @@
             <pattern>[%d{HH:mm:ss.SSS}] %-5level [%-20(%replace(%file){'\..*',''}):%-4line] [%thread] - %m%n</pattern>
         </encoder>
     </appender>
+
     <!--appender name="CONSOLE_DEBUG" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>[%d{HH:mm:ss.SSS}] %green(%-5level) [%-20(%replace(%file){'\..*',''}):%-4line] [%thread] - %m%n</pattern>
@@ -25,9 +25,15 @@
             <onMismatch>DENY</onMismatch>
         </filter>
     </appender-->
-    <appender name="CONSOLE_INFO" class="ch.qos.logback.core.ConsoleAppender">
+
+    <appender name="CONSOLE_INFO" class="ch.qos.logback.classic.AsyncAppender">
+        <appender-ref ref="CONSOLE_INFO_IMPL"/>
+    </appender>
+
+    <appender name="CONSOLE_INFO_IMPL" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>[%d{HH:mm:ss.SSS}] %green(%-5level) [%-20(%replace(%file){'\..*',''}):%-4line] [%thread] - %m%n</pattern>
+            <pattern>[%d{HH:mm:ss.SSS}] %green(%-5level) [%-20(%replace(%file){'\..*',''}):%-4line] [%thread] - %m%n
+            </pattern>
         </encoder>
         <filter class="ch.qos.logback.classic.filter.LevelFilter">
             <level>INFO</level>
@@ -35,9 +41,16 @@
             <onMismatch>DENY</onMismatch>
         </filter>
     </appender>
-    <appender name="CONSOLE_WARN" class="ch.qos.logback.core.ConsoleAppender">
+
+    <appender name="CONSOLE_WARN" class="ch.qos.logback.classic.AsyncAppender">
+        <appender-ref ref="CONSOLE_WARN_IMPL"/>
+    </appender>
+
+    <appender name="CONSOLE_WARN_IMPL" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>[%d{HH:mm:ss.SSS}] %yellow(%-5level) [%-20(%replace(%file){'\..*',''}):%-4line] [%thread] - %yellow(%m%n)</pattern>
+            <pattern>[%d{HH:mm:ss.SSS}] %yellow(%-5level) [%-20(%replace(%file){'\..*',''}):%-4line] [%thread] -
+                %yellow(%m%n)
+            </pattern>
         </encoder>
         <filter class="ch.qos.logback.classic.filter.LevelFilter">
             <level>WARN</level>
@@ -45,9 +58,16 @@
             <onMismatch>DENY</onMismatch>
         </filter>
     </appender>
-    <appender name="CONSOLE_ERROR" class="ch.qos.logback.core.ConsoleAppender">
+
+    <appender name="CONSOLE_ERROR" class="ch.qos.logback.classic.AsyncAppender">
+        <appender-ref ref="CONSOLE_ERROR_IMPL"/>
+    </appender>
+
+    <appender name="CONSOLE_ERROR_IMPL" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>[%d{HH:mm:ss.SSS}] %red(%-5level) [%-20(%replace(%file){'\..*',''}):%-4line] [%thread] - %red(%m%n)</pattern>
+            <pattern>[%d{HH:mm:ss.SSS}] %red(%-5level) [%-20(%replace(%file){'\..*',''}):%-4line] [%thread] -
+                %red(%m%n)
+            </pattern>
         </encoder>
         <filter class="ch.qos.logback.classic.filter.LevelFilter">
             <level>ERROR</level>
@@ -57,11 +77,14 @@
     </appender>
 
     <logger name="io.github.labyrinthgenerator" level="DEBUG" additivity="false">
-        <appender-ref ref="FILE" />
+        <appender-ref ref="FILE"/>
         <!--appender-ref ref="CONSOLE_DEBUG" /-->
-        <appender-ref ref="CONSOLE_INFO" />
-        <appender-ref ref="CONSOLE_WARN" />
-        <appender-ref ref="CONSOLE_ERROR" />
+        <appender-ref ref="CONSOLE_INFO"/>
+        <appender-ref ref="CONSOLE_WARN"/>
+        <appender-ref ref="CONSOLE_ERROR"/>
     </logger>
 
+    <!--root level="DEBUG">
+        <appender-ref ref="DEFAULT-ASYNC" />
+    </root-->
 </configuration>
