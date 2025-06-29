@@ -12,7 +12,6 @@ import io.github.labyrinthgenerator.interfaces.ApplicationFacade;
 import io.github.labyrinthgenerator.labyrinth.Lab;
 import io.github.labyrinthgenerator.labyrinth.Labyrinth;
 import io.github.labyrinthgenerator.labyrinth.Labyrinth2;
-import io.github.labyrinthgenerator.pages.Page;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.BufferedWriter;
@@ -23,7 +22,7 @@ import java.util.UUID;
 import java.util.zip.Deflater;
 
 @Slf4j
-public class Tools2d implements Page {
+public class Tools2d {
 
     private ApplicationFacade application;
     private SpriteBatch spriteBatch;
@@ -39,7 +38,6 @@ public class Tools2d implements Page {
     private int lW, lH;
     private int screenX, screenY;
 
-    @Override
     public void create() {
         application = MyApplication.getApplicationInstance();
         setupViewportAndCamera();
@@ -87,17 +85,6 @@ public class Tools2d implements Page {
         screenY = (int) (MyApplication.windowH - MyApplication.lDivider * lH);
     }
 
-    @Override
-    public void input() {
-        // Input handling can be implemented here if needed
-    }
-
-    @Override
-    public void logic() {
-        // Logic implementation can be added here if needed
-    }
-
-    @Override
     public void draw() {
         prepareDraw();
         drawLabyrinth();
@@ -229,22 +216,10 @@ public class Tools2d implements Page {
         return screenY;
     }
 
-    @Override
     public OrthographicCamera getCamera() {
         return camera;
     }
 
-    @Override
-    public boolean isFinished() {
-        return false;
-    }
-
-    @Override
-    public Page getNextPage() {
-        return null;
-    }
-
-    @Override
     public void dispose() {
         spriteBatch.dispose();
     }
