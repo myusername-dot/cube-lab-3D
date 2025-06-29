@@ -10,13 +10,12 @@ public class FireflyAI extends EnemyAI {
     private final Vector3 currentPos = new Vector3();
 
     public boolean targetPosSet = false;
-    private float distanceFromTargetPos;
     public boolean targetPosReached = false;
 
     private final float moveSpeed = 0.1f;
     private final float targetPosXZRandomMaxMin = 1f;
     private final float targetPosYRandomMaxMin = 0.3f;
-    private final float inRangeDistance = 0.1f;
+    private final float inRangeDistanceSquared = 0.01f; // Квадрат расстояния для проверки
 
     private boolean timerSet = false;
     private long timerStart;
@@ -54,13 +53,11 @@ public class FireflyAI extends EnemyAI {
     private void handleMovingState(final float delta) {
         if (!targetPosSet) {
             setNewTargetPosition();
-        } else {
-            if (timerSet) {
-                if (isTimerExpired()) {
-                    resetTargetPosition();
-                } else {
-                    moveTowardsTarget(delta);
-                }
+        } else if (timerSet) {
+            if (isTimerExpired()) {
+                resetTargetPosition();
+            } else {
+                moveTowardsTarget(delta);
             }
         }
     }
@@ -89,9 +86,9 @@ public class FireflyAI extends EnemyAI {
 
     private void moveTowardsTarget(final float delta) {
         direction.set(targetPos).sub(currentPos).nor().scl(moveSpeed * delta);
-        distanceFromTargetPos = currentPos.dst(targetPos);
+        float distanceSquared = currentPos.dst2(targetPos); // Используем квадрат расстояния
 
-        if (distanceFromTargetPos < inRangeDistance) {
+        if (distanceSquared < inRangeDistanceSquared) {
             resetTargetPosition();
         } else {
             parent.getRect().newPosition.add(direction);
