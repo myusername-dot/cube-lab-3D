@@ -147,15 +147,6 @@ public class Labyrinth2 implements Lab {
             }
             System.out.print("\n");
         }
-
-       /* convert();
-
-        for (int y = 0; y < heightFin; y++) {
-            for (int x = 0; x < widthFin; x++) {
-                System.out.print(gridFin[x][y]);
-            }
-            System.out.println();
-        }*/
     }
 
     private void convert() {
