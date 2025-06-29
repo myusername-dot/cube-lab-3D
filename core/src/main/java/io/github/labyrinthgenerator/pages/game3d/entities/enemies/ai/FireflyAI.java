@@ -29,57 +29,17 @@ public class FireflyAI extends EnemyAI {
 
     @Override
     public void tick(final float delta) {
-        currentPos.set(parent.getPositionX(), parent.getPositionY(), parent.getPositionZ());
+        updateCurrentPosition();
 
         switch (aiState) {
             case IDLE:
                 aiState = AiState.MOVING;
                 break;
             case MOVING:
-                if (!targetPosSet) {
-                    targetPos.set(
-                        currentPos.x + MathUtils.random(-targetPosXZRandomMaxMin, targetPosXZRandomMaxMin),
-                        currentPos.y + MathUtils.random(-targetPosYRandomMaxMin, targetPosYRandomMaxMin),
-                        currentPos.z + MathUtils.random(-targetPosXZRandomMaxMin, targetPosXZRandomMaxMin)
-                    );
-
-                    timerStart = System.currentTimeMillis();
-                    timerEnd = timerStart + timerTime;
-                    timerSet = true;
-
-                    targetPosSet = true;
-                } else {
-                    if (timerSet) {
-                        if (System.currentTimeMillis() >= timerEnd) {
-//						System.out.println("time!");
-                            timerSet = false;
-                            targetPosSet = false;
-                            break;
-                        } else {
-                            direction.x = targetPos.x - currentPos.x;
-                            direction.y = targetPos.y - currentPos.y;
-                            direction.z = targetPos.z - currentPos.z;
-
-                            direction.nor().scl(moveSpeed * delta);
-
-                            distanceFromTargetPos = Vector3.dst(
-                                currentPos.x, currentPos.y, currentPos.z,
-                                targetPos.x, targetPos.y, targetPos.z
-                            );
-
-                            if (distanceFromTargetPos < inRangeDistance) {
-//							System.out.println("close enough!");
-                                timerSet = false;
-                                targetPosSet = false;
-                                break;
-                            } else {
-                                parent.getRect().newPosition.add(direction.x, direction.y, direction.z);
-                            }
-                        }
-                    }
-                }
+                handleMovingState(delta);
                 break;
             case ATTACKING:
+                // Handle attacking state if needed
                 break;
             default:
                 aiState = AiState.IDLE;
@@ -87,4 +47,54 @@ public class FireflyAI extends EnemyAI {
         }
     }
 
+    private void updateCurrentPosition() {
+        currentPos.set(parent.getPositionX(), parent.getPositionY(), parent.getPositionZ());
+    }
+
+    private void handleMovingState(final float delta) {
+        if (!targetPosSet) {
+            setNewTargetPosition();
+        } else {
+            if (timerSet) {
+                if (isTimerExpired()) {
+                    resetTargetPosition();
+                } else {
+                    moveTowardsTarget(delta);
+                }
+            }
+        }
+    }
+
+    private void setNewTargetPosition() {
+        targetPos.set(
+            currentPos.x + MathUtils.random(-targetPosXZRandomMaxMin, targetPosXZRandomMaxMin),
+            currentPos.y + MathUtils.random(-targetPosYRandomMaxMin, targetPosYRandomMaxMin),
+            currentPos.z + MathUtils.random(-targetPosXZRandomMaxMin, targetPosXZRandomMaxMin)
+        );
+
+        timerStart = System.currentTimeMillis();
+        timerEnd = timerStart + timerTime;
+        timerSet = true;
+        targetPosSet = true;
+    }
+
+    private boolean isTimerExpired() {
+        return System.currentTimeMillis() >= timerEnd;
+    }
+
+    private void resetTargetPosition() {
+        timerSet = false;
+        targetPosSet = false;
+    }
+
+    private void moveTowardsTarget(final float delta) {
+        direction.set(targetPos).sub(currentPos).nor().scl(moveSpeed * delta);
+        distanceFromTargetPos = currentPos.dst(targetPos);
+
+        if (distanceFromTargetPos < inRangeDistance) {
+            resetTargetPosition();
+        } else {
+            parent.getRect().newPosition.add(direction);
+        }
+    }
 }
