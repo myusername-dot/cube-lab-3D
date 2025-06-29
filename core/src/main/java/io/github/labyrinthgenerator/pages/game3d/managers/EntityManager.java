@@ -25,9 +25,11 @@ public class EntityManager {
 
     private GameScreen screen;
     private ChunkManager chunkMan;
+    private RectManager rectMan;
 
     public void setScreen(final GameScreen screen) {
         this.screen = screen;
+        rectMan = screen.game.getRectMan();
     }
 
     public void setChunkMan(final ChunkManager chunkMan) {
@@ -174,7 +176,8 @@ public class EntityManager {
         if (entitiesSize.get() != entitiesById.size()) {
             throw new RuntimeException("Entity count mismatch: " + entitiesSize.get() + " vs " + entitiesById.size());
         }
+        int rectsCount = rectMan.rectsCountAndCheck();
         tickTime = System.currentTimeMillis() - tickTime;
-        log.info("Tick complete. Entity count: " + entitiesSize.get() + ". Time spent seconds: " + tickTime / 1000d + ".");
+        log.info("Tick complete. Entity count: " + entitiesSize.get() + ", rectangle count: " + rectsCount + ". Time spent seconds: " + tickTime / 1000d + ".");
     }
 }
