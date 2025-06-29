@@ -14,7 +14,7 @@ import io.github.labyrinthgenerator.pages.game3d.rect.filters.RectanglePlusFilte
 import io.github.labyrinthgenerator.pages.game3d.screens.GameScreen;
 import lombok.extern.slf4j.Slf4j;
 
-import static io.github.labyrinthgenerator.pages.game3d.constants.Constants.HALF_UNIT;
+import static io.github.labyrinthgenerator.pages.game3d.constants.Constants.*;
 
 @Slf4j
 public class Player extends Entity {
@@ -54,7 +54,7 @@ public class Player extends Entity {
                 position.y,
                 position.z + rectDepth / 2f),
             screen);
-        playerCam = new PerspectiveCamera(70, 640, 480);
+        playerCam = new PerspectiveCamera(70, WINDOW_WIDTH, WINDOW_HEIGHT);
         playerCam.position.set(new Vector3(0, HALF_UNIT, 0));
         playerCam.lookAt(new Vector3(0, camY, HALF_UNIT * 2));
         playerCam.near = 0.01f;
