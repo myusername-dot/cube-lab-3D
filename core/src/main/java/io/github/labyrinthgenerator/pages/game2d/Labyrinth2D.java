@@ -25,9 +25,6 @@ import java.io.IOException;
 import java.util.Set;
 import java.util.UUID;
 
-import static io.github.labyrinthgenerator.MyApplication.windowH;
-import static io.github.labyrinthgenerator.MyApplication.windowW;
-
 @Slf4j
 public class Labyrinth2D implements Page {
 
@@ -172,22 +169,51 @@ public class Labyrinth2D implements Page {
             Pixmap pixmap = Pixmap.createFromFrameBuffer(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
             BufferedImage originalImage = Tools2d.pixmapToBufferedImage(pixmap);
 
-            // Define the Gaussian blur kernel
-            float[] matrix = {
-                1/16f, 2/16f, 1/16f,
-                2/16f, 4/16f, 2/16f,
-                1/16f, 2/16f, 1/16f
-            };
-            Kernel kernel = new Kernel(3, 3, matrix);
+
+            // Размытие по Гауссу
+            float sigma = 1.0f;
+            int kernelRadius = 10;
+            int size = kernelRadius * 2 + 1;
+            float[] data = new float[size * size];
+            float sigma22 = 2 * sigma * sigma;
+            float normalization = 1.0f / (float) (Math.PI * sigma22);
+
+            // Создание ядра Gaussian
+            float sum = 0.0f;
+            for (int i = -kernelRadius; i <= kernelRadius; i++) {
+                for (int j = -kernelRadius; j <= kernelRadius; j++) {
+                    float x = (float) i;
+                    float y = (float) j;
+                    int i1 = (i + kernelRadius) * size + (j + kernelRadius);
+                    data[i1] = (float) (normalization * Math.exp(-(x * x + y * y) / sigma22));
+                    sum += data[i1];
+                }
+            }
+
+            // Нормализация
+            if (sum != 0) {
+                for (int i = 0; i < data.length; i++) {
+                    data[i] /= sum;
+                }
+            } else {
+                throw new IllegalStateException("Normalization sum is zero");
+            }
+
+            Kernel kernel = new Kernel(size, size, data);
+
 
             // Create a ConvolveOp with the kernel
             ConvolveOp op = new ConvolveOp(kernel, ConvolveOp.EDGE_NO_OP, null);
 
+            //ImageIO.write(originalImage, "png", new File("original_output.png"));
+            BufferedImage blurredImage = new BufferedImage(originalImage.getWidth(), originalImage.getHeight(), originalImage.getType());
             // Apply the blur
-            BufferedImage blurredImage = op.filter(originalImage, null);
+            op.filter(originalImage, blurredImage);
+            //ImageIO.write(blurredImage, "png", new File("blurred_output.png"));
 
+            // Leave only blue color
             int a = 0xff, r = 0, g = 0, b = 0xff;
-            int mascARGB = (a << 24) | (r << 16) | (g << 8) | b; // leave only blue color
+            int mascARGB = (a << 24) | (r << 16) | (g << 8) | b;
             Pixmap blurredImagePixmap = Tools2d.bufferedImageToPixmap(blurredImage, mascARGB);
             blurredBackground = new Texture(blurredImagePixmap);
 
@@ -215,7 +241,7 @@ public class Labyrinth2D implements Page {
             } else {
                 toolsPage.drawLabyrinth();
                 handleSaving(); // финальный скриншот
-                createBlurredBackground(); // Создаем размытие заднего фона
+                createBlurredBackground(); // Создаем размытие заднего фона для меню
             }
             drawMenuOptions(spriteBatch);
         } else {
