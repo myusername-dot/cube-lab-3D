@@ -37,7 +37,7 @@ public class LMapBuilder {
         this.game = game;
     }
 
-    public void buildMap(String fileName) {
+    private List<String> readFile(String fileName) {
         if (fileName == null) {
             fileName = System.getProperty("user.home") + "/labyrinth-generations/text-files/" + "5afc3411-4f30-4c7a-ba26-948cfbd4edb1.txt";
         }
@@ -59,6 +59,11 @@ public class LMapBuilder {
         assert lines.size() != 0;
         assert lines.get(lines.size() - 1).length() != 0;
 
+        return lines;
+    }
+
+    public void buildMap(String fileName) {
+        List<String> lines = readFile(fileName);
 
         // CHUNKS
         int width = lines.get(lines.size() - 1).length(), height = lines.size();
