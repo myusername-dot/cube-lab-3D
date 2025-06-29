@@ -154,7 +154,7 @@ public class RectManager {
 
     private void checkRectCountConsistency(AtomicInteger rectsCount) {
         if (rectsCount.get() != rectsByConnectedEntityId.size()) {
-            throw new RuntimeException("Rect count inconsistency: " + rectsCount.get() + ", " + rectsByConnectedEntityId.size());
+            throw new RuntimeException("Rect count mismatch: " + rectsCount.get() + " vs " + rectsByConnectedEntityId.size());
         }
     }
 
