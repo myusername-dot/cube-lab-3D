@@ -12,23 +12,26 @@ import static io.github.labyrinthgenerator.pages.game3d.constants.Constants.*;
 public class ChunkManager {
 
     private final Vector2i size;
-
     private final Chunk[][] chunks;
 
     public ChunkManager(Vector2i size) {
         this.size = size;
-        chunks = new Chunk[size.x][size.y];
+        this.chunks = new Chunk[size.x][size.y];
     }
 
     public Chunk add(float x, float z) {
         Vector2i position = getChunkPosition(x, z);
         if (chunks[position.x][position.y] == null) {
-            Chunk chunk = new Chunk(position.x * CHUNK_SIZE - HALF_UNIT, position.y * CHUNK_SIZE - HALF_UNIT);
+            Chunk chunk = createChunk(position);
             chunks[position.x][position.y] = chunk;
+            return chunk;
         } else {
             throw new RuntimeException("Chunk at position: " + position + " already exists.");
         }
-        return chunks[position.x][position.y];
+    }
+
+    private Chunk createChunk(Vector2i position) {
+        return new Chunk(position.x * CHUNK_SIZE - HALF_UNIT, position.y * CHUNK_SIZE - HALF_UNIT);
     }
 
     public Chunk get(float x, float z) {
@@ -47,16 +50,13 @@ public class ChunkManager {
     public List<Chunk> getNearestChunksInBox(float playerX, float playerZ, int offsetChunks) {
         List<Chunk> nearestChunks = new ArrayList<>();
         Vector2i position = getChunkPosition(playerX, playerZ);
-        int x1Position = position.x - CHUNKS_RANGE_AROUND_CAM_CHUNK - offsetChunks;
-        int y1Position = position.y - CHUNKS_RANGE_AROUND_CAM_CHUNK - offsetChunks;
-        int x2Position = position.x + CHUNKS_RANGE_AROUND_CAM_CHUNK + offsetChunks;
-        int y2Position = position.y + CHUNKS_RANGE_AROUND_CAM_CHUNK + offsetChunks;
-        if (x1Position < 0) x1Position = 0;
-        if (y1Position < 0) y1Position = 0;
-        if (x2Position > size.x - 1) x2Position = size.x - 1;
-        if (y2Position > size.y - 1) y2Position = size.y - 1;
-        for (int i = x1Position; i <= x2Position; i++) {
-            for (int j = y1Position; j <= y2Position; j++) {
+        int x1 = Math.max(0, position.x - CHUNKS_RANGE_AROUND_CAM_CHUNK - offsetChunks);
+        int y1 = Math.max(0, position.y - CHUNKS_RANGE_AROUND_CAM_CHUNK - offsetChunks);
+        int x2 = Math.min(size.x - 1, position.x + CHUNKS_RANGE_AROUND_CAM_CHUNK + offsetChunks);
+        int y2 = Math.min(size.y - 1, position.y + CHUNKS_RANGE_AROUND_CAM_CHUNK + offsetChunks);
+
+        for (int i = x1; i <= x2; i++) {
+            for (int j = y1; j <= y2; j++) {
                 nearestChunks.add(chunks[i][j]);
             }
         }
