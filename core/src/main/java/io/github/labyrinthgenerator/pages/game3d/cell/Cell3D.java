@@ -41,43 +41,48 @@ public class Cell3D extends Entity {
         if (texture != null) {
             final TextureAttribute ta = (TextureAttribute) modelInstanceBB.materials.get(0)
                 .get(TextureAttribute.Diffuse);
-            ta.set(new TextureRegion(texRegNorth));
+            ta.set(new TextureRegion(texture));
         }
         return modelInstanceBB;
     }
 
     public void buildCell() {
-        // TODO one model with multiple textures
         if (hasWallNorth) {
-            Vector3 position = getPositionImmutable().add(new Vector3(0, 0, -HALF_UNIT));
-            mdlInstWallNorth = createModelInstanceBB(screen.game.getCellBuilder().mdlWallNorth, texRegNorth, position);
-            mdlInstWallNorth.transform.setToTranslation(position);
+            mdlInstWallNorth = createWallInstance(screen.game.getCellBuilder().mdlWallNorth, texRegNorth,
+                getPositionImmutable().add(0, 0, -HALF_UNIT));
         }
         if (hasWallSouth) {
-            Vector3 position = getPositionImmutable().add(new Vector3(0, 0, HALF_UNIT));
-            mdlInstWallSouth = createModelInstanceBB(screen.game.getCellBuilder().mdlWallSouth, texRegSouth, position);
-            mdlInstWallSouth.transform.setToTranslation(position);
+            mdlInstWallSouth = createWallInstance(screen.game.getCellBuilder().mdlWallSouth, texRegSouth,
+                getPositionImmutable().add(0, 0, HALF_UNIT));
         }
         if (hasWallWest) {
-            Vector3 position = getPositionImmutable().add(new Vector3(HALF_UNIT, 0, 0));
-            mdlInstWallWest = createModelInstanceBB(screen.game.getCellBuilder().mdlWallWest, texRegWest, position);
-            mdlInstWallWest.transform.setToTranslation(position);
+            mdlInstWallWest = createWallInstance(screen.game.getCellBuilder().mdlWallWest, texRegWest,
+                getPositionImmutable().add(HALF_UNIT, 0, 0));
         }
         if (hasWallEast) {
-            Vector3 position = getPositionImmutable().add(new Vector3(-HALF_UNIT, 0, 0));
-            mdlInstWallEast = createModelInstanceBB(screen.game.getCellBuilder().mdlWallEast, texRegEast, position);
-            mdlInstWallEast.transform.setToTranslation(position);
+            mdlInstWallEast = createWallInstance(screen.game.getCellBuilder().mdlWallEast, texRegEast,
+                getPositionImmutable().add(-HALF_UNIT, 0, 0));
         }
         if (hasFloor) {
-            Vector3 position = getPositionImmutable().add(new Vector3(0, HALF_UNIT, 0));
-            mdlInstFloor = createModelInstanceBB(screen.game.getCellBuilder().mdlFloor, texRegFloor, position);
-            mdlInstFloor.transform.setToTranslation(position);
+            mdlInstFloor = createFloorOrCeilingInstance(screen.game.getCellBuilder().mdlFloor, texRegFloor,
+                getPositionImmutable().add(0, HALF_UNIT, 0));
         }
         if (hasCeiling) {
-            Vector3 position = getPositionImmutable().add(new Vector3(0, -HALF_UNIT, 0));
-            mdlInstCeiling = createModelInstanceBB(screen.game.getCellBuilder().mdlCeiling, texRegCeiling, position);
-            mdlInstCeiling.transform.setToTranslation(position);
+            mdlInstCeiling = createFloorOrCeilingInstance(screen.game.getCellBuilder().mdlCeiling, texRegCeiling,
+                getPositionImmutable().add(0, -HALF_UNIT, 0));
         }
+    }
+
+    private ModelInstanceBB createWallInstance(Model model, Texture texture, Vector3 position) {
+        ModelInstanceBB instance = createModelInstanceBB(model, texture, position);
+        instance.transform.setToTranslation(position);
+        return instance;
+    }
+
+    private ModelInstanceBB createFloorOrCeilingInstance(Model model, Texture texture, Vector3 position) {
+        ModelInstanceBB instance = createModelInstanceBB(model, texture, position);
+        instance.transform.setToTranslation(position);
+        return instance;
     }
 
     private void setInFrustum(final ModelInstanceBB model, final ModelBatch mdlBatch, final Environment env, final Shader shader) {
@@ -110,5 +115,4 @@ public class Cell3D extends Entity {
             setInFrustum(mdlInstCeiling, mdlBatch, env, shader);
         }
     }
-
 }
