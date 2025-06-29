@@ -22,24 +22,19 @@ import static io.github.labyrinthgenerator.pages.game3d.shaders.MyShaderProvider
 @Slf4j
 public class FogFreeShader extends SpotLightFreeShader {
 
-    public float fogBaseDensity = 1.0f; // Задайте базовую плотность тумана
-    public float fogDistance = 1.0f; // Задайте дистанцию для изменения плотности
+    public float fogBaseDensity = 1.0f;
+    public float fogDistance = 1.0f;
     private float timer;
 
     protected final MyShaderProvider myShaderProvider;
 
-    public FogFreeShader(MyShaderProvider myShaderProvider) {
-        this.myShaderProvider = myShaderProvider;
-    }
-
-
-    private final String vertexShader =
+    private static final String VERTEX_SHADER =
         "attribute vec4 a_position;\n" +
             "attribute vec2 a_texCoord0;\n" +
             "uniform mat4 u_worldTrans;\n" +
             "uniform mat4 u_projTrans;\n" +
             "uniform float spotCutoff;\n" +
-            "uniform float fogDensity;\n" + // Плотность тумана
+            "uniform float fogDensity;\n" +
             "varying vec4 position;\n" +
             "varying vec4 position_a;\n" +
             "varying vec3 v_position;\n" +
@@ -56,24 +51,20 @@ public class FogFreeShader extends SpotLightFreeShader {
             "\n" +
             "    vec3 lightPosition  = (gl_Position).xyz;\n" +
             "    vec3 spotDirection  = normalize(lightPosition.xyz + vec3(0,0,1));\n" +
-            "\n" +
             "    vec4 vertex = gl_ModelViewMatrix * gl_Vertex;\n" +
             "    vec3 lightDirection = normalize(vertex.xyz - lightPosition.xyz);\n" +
             "\n" +
             "    float angle = dot(spotDirection, -lightDirection);\n" +
-            "    if (angle < 0) angle = 0;\n" +
+            "    angle = max(angle, 0.0);\n" +
             "\n" +
             "    v_texCoords = a_texCoord0;\n" +
-            "    if (acos(angle) < radians(spotCutoff))\n" +
-            "       spotColor = vec4(1,1,0.1,1); // lit (yellow)\n" +
-            "    else\n" +
-            "       spotColor = vec4(0.1,0.1,0.1,1); // unlit(black);\n" +
+            "    spotColor = (acos(angle) < radians(spotCutoff)) ? vec4(1,1,0.1,1) : vec4(0.1,0.1,0.1,1);\n" +
             "\n" +
-            "    clip2Distance = length(vec3(position.x, min(0.0, position.y * 4.0), position.z));\n" + // Вычисляем расстояние // Чем ниже фрагмент, тем больше плотность, y = 0 в центре камеры, положительные значения ниже
-            "    fogClipDistanceFactor = (fogDensity * length(position) / 20);\n" + // Вычисляем фактор тумана // float fogClipDistanceFactor = exp(-fogDensity * v_distance);
+            "    clip2Distance = length(vec3(position.x, min(0.0, position.y * 4.0), position.z));\n" +
+            "    fogClipDistanceFactor = (fogDensity * length(position) / 20);\n" +
             "}";
 
-    private final String fragmentShader =
+    private static final String FRAGMENT_SHADER =
         "#define NUM_LIGHTS " + MyShaderProvider.MAX_NUM_LIGHTS + "\n" +
             "#ifdef GL_ES \n" +
             "#define LOWP lowp\n" +
@@ -93,80 +84,68 @@ public class FogFreeShader extends SpotLightFreeShader {
             "varying float clip2Distance;\n" +
             "varying float fogClipDistanceFactor;\n" +
             "uniform vec3 u_normalTexture;\n" +
-            "uniform vec3 u_pointLights[NUM_LIGHTS];\n" + // Массив для хранения позиций источников света
-            "uniform vec3 u_pointLightsScreen[NUM_LIGHTS];\n" + // Массив для хранения позиций источников света на экране
-            "uniform vec4 u_pointLightColors[NUM_LIGHTS];\n" + // Массив для хранения позиций источников света
+            "uniform vec3 u_pointLights[NUM_LIGHTS];\n" +
+            "uniform vec3 u_pointLightsScreen[NUM_LIGHTS];\n" +
+            "uniform vec4 u_pointLightColors[NUM_LIGHTS];\n" +
             "uniform int pointLightsSize;\n" +
             "\n" +
             "void main(void)\n" +
             "{\n" +
             "   vec4 c = texture2D(u_texture, v_texCoords);\n" +
-            "   float heightFactor = max(0.0, position.y);\n" + // Чем ниже фрагмент, тем больше плотность, y = 0 в центре камеры, положительные значения ниже
-            "   float longWave = clamp(sin(position_a.x + position_a.z + u_time) * (max(-0.5, position.y) + 0.5) * 0.4, 0.0, 1.0);\n" + // Создание эффекта волн
-            //"   float smallWave = sin((position_a.x * position_a.y * position_a.z) / 10 + u_time * 5) * heightFactor;\n" + // Создание эффекта волн
-            "   \n" +
+            "   float heightFactor = max(0.0, position.y);\n" +
+            "   float longWave = clamp(\n" +
+            "       sin(position_a.x + position_a.z + u_time) * (max(-0.5, position.y) + 0.5) * 0.4, " +
+            "   0.0, 1.0);\n" +
+            "\n" +
             "   float fogFactor = clamp((fogClipDistanceFactor + heightFactor + longWave), 0.0, 0.8);\n" +
-            "   \n" +
-            "   float radius = length(u_fogVelocity / 2.0);\n" + // 4.0 - players max move speed, max radius = 2
-            //"   float radius = abs(u_fogVelocity.y / 2.0);\n" + // 4.0 - players max move speed, max radius = 2
-            "   float shiftedRadius = 0;\n" +
+            "\n" +
+            "   float radius = length(u_fogVelocity / 2.0);\n" +
+            "   float shiftedRadius = (radius > 0) ? (sign(u_fogVelocity.y) > 0 ? 1.0 : 0.3) : 0;\n" +
             "   if (radius > 0) {\n" +
-            "       if (sign(u_fogVelocity.y) > 0) shiftedRadius = 1.0;\n" +
-            "       else shiftedRadius = 0.3;\n" +
             "       shiftedRadius -= sign(u_fogVelocity.y) * radius / (shiftedRadius / 0.15);\n" +
             "   }\n" +
-            "   if (clip2Distance / 1.5 < shiftedRadius)\n" +
-            "   {\n" +
-            "       fogFactor += clamp(" +
+            "   if (clip2Distance / 1.5 < shiftedRadius) {\n" +
+            "       fogFactor += clamp(\n" +
             "           sign(u_fogVelocity.y)\n" +
-            "               * pow(shiftedRadius - clip2Distance / 1.5, (1.0 - sign(u_fogVelocity.y) * (radius / 2.0 - 0.5)))\n" +
-            "               * heightFactor,\n" +
-            "           -0.3, 0.3);\n" +
+            "           * pow(\n" +
+            "               shiftedRadius - clip2Distance / 1.5,\n" +
+            "               (1.0 - sign(u_fogVelocity.y) * (radius / 2.0 - 0.5))\n" +
+            "           )\n" +
+            "           * heightFactor,\n" +
+            "       -0.3, 0.3);\n" +
             "       fogFactor = clamp(fogFactor, 0.0, 1.0);\n" +
             "   }\n" +
-            "   \n" +
-            "   gl_FragColor = mix(mix(mix(c, spotColor, 0.3), fogColor, fogFactor), spotColor, 0.1);\n" + // Интерполяция между цветом текстуры и цветом тумана
-            "   \n" +
-            "   \n" + // Point Lights
-            "   if (pointLightsSize > 0)\n" +
-            "   {\n" +
+            "\n" +
+            "   gl_FragColor = mix(mix(mix(c, spotColor, 0.3), fogColor, fogFactor), spotColor, 0.1);\n" +
+            "\n" +
+            "   if (pointLightsSize > 0) {\n" +
             "       vec3 glowingColor = vec3(0.0);\n" +
             "       for (int i = 0; i < pointLightsSize; i++) {\n" +
             "           vec3 lightPos = u_pointLights[i];\n" +
             "           vec4 lightColor = u_pointLightColors[i];\n" +
             "           float intensity = 0.003;\n" +
-            "           \n" + // Расчет расстояния до источника света
             "           float distance = length(lightPos - v_position);\n" +
-            "           \n" + // Расчет освещения (интенсивность уменьшается с увеличением расстояния)
-            "           float attenuation = intensity / (distance * distance + 0.0001);\n" + // Добавляем небольшую константу для предотвращения деления на ноль
-            "           \n" + // Добавляем освещение к финальному цвету
+            "           float attenuation = intensity / (distance * distance + 0.0001);\n" +
             "           glowingColor += lightColor.rgb * attenuation;\n" +
-            "       }\n" +
-            "       for (int i = 0; i < pointLightsSize; i++) {\n" +
-            "           vec3 lightPos = u_pointLightsScreen[i];\n" +
-            /*"           vec4 lightColor = u_pointLightColors[i];\n" +
-            "           float intensity = 50;\n" +
-            "           \n" + // Расчет расстояния до источника света
-            "           float distance = length(lightPos.xy - gl_FragCoord.xy);\n" +
-            "           \n" + // Расчет освещения (интенсивность уменьшается с увеличением расстояния)
-            "           float attenuation = intensity / (distance * distance + 0.0001);\n" + // Добавляем небольшую константу для предотвращения деления на ноль
-            "           \n" + // Добавляем освещение к финальному цвету
-            "           glowingColor += lightColor.rgb * attenuation;\n" +*/
+            "           vec3 lightScreenPos = u_pointLightsScreen[i];\n" +
             "       }\n" +
             "       gl_FragColor.rgb += glowingColor;\n" +
             "   }\n" +
-            "   \n" +
+            "\n" +
             "   vec3 color = gl_FragColor.rgb;\n" +
             "   float saturation = 1.3;\n" + //  - heightFactor Устанавливаем желаемую насыщенность (1.0 - без изменений, больше 1 - увеличение, меньше 1 - уменьшение)
             "   vec3 gray = vec3(dot(color, vec3(0.299, 0.587, 0.114)));\n" + // Преобразуем в градацию серого (универсальный метод)
             "   color = mix(gray, color, saturation);\n" + // Интерполируем между серым и исходным цветом
-            "   gl_FragColor = vec4(color, 1.0);" + // Выводим цвет
+            "   gl_FragColor = vec4(color, 1.0);\n" +
             "}";
 
+    public FogFreeShader(MyShaderProvider myShaderProvider) {
+        this.myShaderProvider = myShaderProvider;
+    }
 
     @Override
     public void init() {
-        program = new ShaderProgram(vertexShader, fragmentShader);
+        program = new ShaderProgram(VERTEX_SHADER, FRAGMENT_SHADER);
         if (!program.isCompiled()) {
             throw new GdxRuntimeException(program.getLog());
         }
@@ -178,14 +157,9 @@ public class FogFreeShader extends SpotLightFreeShader {
         timer += delta;
     }
 
-    private int sign(float v) {
-        return (v >= 0) ? 1 : -1;
-    }
-
     @Override
     public void begin(Camera camera, RenderContext context) {
         this.context = context;
-
         Vector2 playerVelocity = getPlayerVelocity();
         program.bind();
         program.setUniformMatrix(u_projTrans, camera.combined);
@@ -198,38 +172,33 @@ public class FogFreeShader extends SpotLightFreeShader {
     }
 
     private Vector2 getPlayerVelocity() {
-        Vector2 playerVelocity = new Vector2(0, 0);
         Player player = myShaderProvider.getPlayer();
         if (player != null) {
             Vector3 playerVelocity3 = player.getForwardVelocity();
             Vector3 playerDir = player.getDirection();
-            playerVelocity.set(playerVelocity3.x * sign(playerDir.x), playerVelocity3.z * sign(playerDir.z));
+            return new Vector2(playerVelocity3.x * sign(playerDir.x), playerVelocity3.z * sign(playerDir.z));
         }
-        return playerVelocity;
+        return new Vector2(0, 0);
     }
 
     private void setFogUniforms(Vector2 playerVelocity) {
-        // Устанавливаем цвет тумана и его плотность
-        program.setUniformf("fogColor", new Color(0.5f, 0.5f, 0.5f, 0.9f)); // Цвет тумана (например, серый)
-        program.setUniformf("fogDensity", fogBaseDensity); // Плотность тумана (можно настроить)
-
-        float[] fogVelocity = new float[]{playerVelocity.x, playerVelocity.y};
-        program.setUniform2fv("u_fogVelocity", fogVelocity, 0, 2);
+        program.setUniformf("fogColor", new Color(0.5f, 0.5f, 0.5f, 0.9f));
+        program.setUniformf("fogDensity", fogBaseDensity);
+        program.setUniform2fv("u_fogVelocity", new float[]{playerVelocity.x, playerVelocity.y}, 0, 2);
         program.setUniformf("u_time", timer);
     }
 
     public void setPointLightsUniforms(Renderable renderable) {
-        List<PointLightPlus> pointLightsByPlayerDistAndCamAngle = getPointLights(renderable);
-
-        if (pointLightsByPlayerDistAndCamAngle.isEmpty()) {
+        List<PointLightPlus> pointLights = getPointLights(renderable);
+        if (pointLights.isEmpty()) {
             setDefaultLightUniforms();
         } else {
-            setLightUniforms(pointLightsByPlayerDistAndCamAngle);
+            setLightUniforms(pointLights);
         }
     }
 
     private List<PointLightPlus> getPointLights(Renderable renderable) {
-        List<PointLightPlus> pointLightsByPlayerDistAndCamAngle = new ArrayList<>();
+        List<PointLightPlus> pointLights = new ArrayList<>();
         Player player = myShaderProvider.getPlayer();
         if (player != null) {
             Object userData = renderable.userData;
@@ -240,11 +209,11 @@ public class FogFreeShader extends SpotLightFreeShader {
                 float distance = rendPos2.dst(playerPos3.x, playerPos3.z);
                 if (distance < MAX_LIGHT_RENDERING_DISTANCE) {
                     float angle = myShaderProvider.getViewAngle(player.playerCam, rendPos3);
-                    pointLightsByPlayerDistAndCamAngle = myShaderProvider.getPointLightsByPlayerDistAndCamAngle(distance, angle);
+                    pointLights = myShaderProvider.getPointLightsByPlayerDistAndCamAngle(distance, angle);
                 }
             }
         }
-        return pointLightsByPlayerDistAndCamAngle;
+        return pointLights;
     }
 
     private void setDefaultLightUniforms() {
@@ -272,5 +241,9 @@ public class FogFreeShader extends SpotLightFreeShader {
         bindTexture(renderable);
         setPointLightsUniforms(renderable);
         renderable.meshPart.render(program);
+    }
+
+    private int sign(float v) {
+        return (v >= 0) ? 1 : -1;
     }
 }
