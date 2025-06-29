@@ -61,6 +61,11 @@ public class Labyrinth implements Lab {
 
     private void initializeLabyrinth() {
         labyrinth = new int[width][height];
+        createWalls();
+        createBorders();
+    }
+
+    private void createWalls() {
         for (int j = height - 2; j >= 0; j -= 2) {
             for (int i = 0; i < width - 1; i += 2) {
                 labyrinth[i][j + 1] = LEntity.HORIZONTAL_WALL.ordinal();
@@ -69,22 +74,20 @@ public class Labyrinth implements Lab {
                 labyrinth[i + 1][j] = LEntity.EMPTY.ordinal();
             }
         }
+    }
+
+    private void createBorders() {
+        Arrays.fill(labyrinth[0], LEntity.VERTICAL_WALL.ordinal());
+        Arrays.fill(labyrinth[width - 1], LEntity.VERTICAL_WALL.ordinal());
         for (int i = 0; i < width; i++) {
             labyrinth[i][0] = LEntity.HORIZONTAL_WALL.ordinal();
+            labyrinth[i][height - 1] = LEntity.HORIZONTAL_WALL.ordinal();
         }
-        for (int j = height - 2; j >= 1; j -= 2) {
-            labyrinth[width - 1][j] = LEntity.VERTICAL_WALL.ordinal();
-            labyrinth[width - 1][j + 1] = LEntity.HORIZONTAL_WALL.ordinal();
-        }
-        labyrinth[width - 1][height - 1] = LEntity.HORIZONTAL_WALL.ordinal();
     }
 
     private void printLabyrinth() {
         for (int j = height - 1; j >= 0; j--) {
-            for (int i = 0; i < width; i++) {
-                System.out.print(labyrinth[i][j]);
-            }
-            System.out.println();
+            System.out.println(Arrays.toString(labyrinth[j]));
         }
     }
 
@@ -92,9 +95,7 @@ public class Labyrinth implements Lab {
         Map<Vector2iSeedHash, Integer> puffinsMap = new HashMap<>();
         for (int j = height - 2; j >= 1; j -= 2) {
             for (int i = 1; i <= width - 2; i += 2) {
-                if (LEntity.values()[labyrinth[i][j]] != LEntity.EMPTY) {
-                    continue;
-                }
+                if (LEntity.values()[labyrinth[i][j]] != LEntity.EMPTY) continue;
                 Set<Vector2iSeedHash> prevPosesTmp = new HashSet<>();
                 Map<Vector2iSeedHash, Integer> puffinsTmp = new HashMap<>();
                 boolean foundEscape = setPuffins(puffinsTmp, prevPosesTmp, 0, i, j, new Vector2iSeedHash(i, j), false);
@@ -106,18 +107,22 @@ public class Labyrinth implements Lab {
             }
         }
 
-        List<Vector2iSeedHash> puffinsList = puffinsMap.entrySet().stream()
-            .sorted((e1, e2) -> sortedByEscapeDistance ?
-                e1.getKey().getDistance(escapePos).compareTo(e2.getKey().getDistance(escapePos)) :
-                sortedByDistance ? e1.getValue().compareTo(e2.getValue()) : 0)
+        List<Vector2iSeedHash> puffinsList = sortPuffins(puffinsMap, sortedByEscapeDistance, sortedByDistance, limit);
+        puffinsList.forEach(puffin -> puff(puffin, false));
+        puffinsMap.clear();
+    }
+
+    private List<Vector2iSeedHash> sortPuffins(Map<Vector2iSeedHash, Integer> puffinsMap, boolean sortedByEscapeDistance, boolean sortedByDistance, int limit) {
+        return puffinsMap.entrySet().stream()
+            .sorted((e1, e2) -> {
+                if (sortedByEscapeDistance) {
+                    return e1.getKey().getDistance(escapePos).compareTo(e2.getKey().getDistance(escapePos));
+                }
+                return sortedByDistance ? e1.getValue().compareTo(e2.getValue()) : 0;
+            })
             .limit(limit > 0 ? limit : Integer.MAX_VALUE)
             .map(Map.Entry::getKey)
             .collect(Collectors.toList());
-
-        for (Vector2iSeedHash puffin : puffinsList) {
-            puff(puffin, false);
-        }
-        puffinsMap.clear();
     }
 
     @Override
@@ -126,9 +131,7 @@ public class Labyrinth implements Lab {
     }
 
     public boolean passage(boolean sortedByEscapeDistance, boolean exitWhenFindEscape) {
-        if (LEntity.values()[labyrinth[startX][startY]] != LEntity.EMPTY) {
-            throw new UnsupportedOperationException("Starting position is not empty.");
-        }
+        validateStartPosition();
 
         Set<Vector2iSeedHash> prevPosesTmp = new HashSet<>();
         Map<Vector2iSeedHash, Integer> puffinsTmp = new HashMap<>();
@@ -139,25 +142,36 @@ public class Labyrinth implements Lab {
         if (escape && exitWhenFindEscape) return true;
 
         if (!puffinsTmp.isEmpty()) {
-            List<Vector2iSeedHash> sortedPuffins = puffinsTmp.entrySet().stream()
-                .sorted((e1, e2) -> sortedByEscapeDistance ?
-                    e1.getKey().getDistance(this.escapePos).compareTo(e2.getKey().getDistance(this.escapePos)) :
-                    e1.getValue().compareTo(e2.getValue()))
-                .map(Map.Entry::getKey)
-                .collect(Collectors.toList());
-
-            puffinsSet.add(sortedPuffins.get(0));
-            if (!escape) puffinsSet.add(sortedPuffins.get(sortedPuffins.size() - 1));
-            else puffinsSet.add(sortedPuffins.get((int) (sortedPuffins.size() / 1.6)));
+            puffinsSet.addAll(getSortedPuffins(puffinsTmp, sortedByEscapeDistance));
         }
 
-        for (Vector2i puffin : puffinsSet) {
-            puff(puffin, true);
-        }
+        puffinsSet.forEach(puffin -> puff(puffin, true));
         puffins.clear();
         puffins.addAll(puffinsSet);
 
         return escape;
+    }
+
+    private void validateStartPosition() {
+        if (LEntity.values()[labyrinth[startX][startY]] != LEntity.EMPTY) {
+            throw new UnsupportedOperationException("Starting position is not empty.");
+        }
+    }
+
+    private List<Vector2i> getSortedPuffins(Map<Vector2iSeedHash, Integer> puffinsTmp, boolean sortedByEscapeDistance) {
+        List<Vector2iSeedHash> sortedPuffins = puffinsTmp.entrySet().stream()
+            .sorted((e1, e2) -> sortedByEscapeDistance ?
+                e1.getKey().getDistance(this.escapePos).compareTo(e2.getKey().getDistance(this.escapePos)) :
+                e1.getValue().compareTo(e2.getValue()))
+            .map(Map.Entry::getKey)
+            .collect(Collectors.toList());
+
+        List<Vector2i> puffinsSet = new ArrayList<>();
+        puffinsSet.add(sortedPuffins.get(0));
+        if (!escape) puffinsSet.add(sortedPuffins.get(sortedPuffins.size() - 1));
+        else puffinsSet.add(sortedPuffins.get((int) (sortedPuffins.size() / 1.6)));
+
+        return puffinsSet;
     }
 
     @Override
@@ -188,8 +202,7 @@ public class Labyrinth implements Lab {
             do {
                 escapePos.x = MathUtils.random(0, width - 1);
                 escapePos.y = MathUtils.random(0, height - 1);
-            }
-            while (LEntity.values()[labyrinth[escapePos.x][escapePos.y]] == LEntity.EMPTY);
+            } while (LEntity.values()[labyrinth[escapePos.x][escapePos.y]] == LEntity.EMPTY);
             labyrinth[escapePos.x][escapePos.y] = LEntity.EMPTY.ordinal();
         }
 
@@ -316,22 +329,18 @@ public class Labyrinth implements Lab {
     }
 
     private Vector2iSeedHash getNextPos(int x, int y, Direction direction) {
-        Vector2iSeedHash nextPos = null;
         switch (direction) {
             case LEFT:
-                nextPos = new Vector2iSeedHash(x - 1, y);
-                break;
+                return new Vector2iSeedHash(x - 1, y);
             case RIGHT:
-                nextPos = new Vector2iSeedHash(x + 1, y);
-                break;
+                return new Vector2iSeedHash(x + 1, y);
             case UP:
-                nextPos = new Vector2iSeedHash(x, y + 1);
-                break;
+                return new Vector2iSeedHash(x, y + 1);
             case DOWN:
-                nextPos = new Vector2iSeedHash(x, y - 1);
-                break;
+                return new Vector2iSeedHash(x, y - 1);
+            default:
+                throw new IllegalArgumentException("Invalid direction: " + direction);
         }
-        return nextPos;
     }
 
     private void puff(Vector2i puffin, boolean usePrevPoses) {
@@ -377,10 +386,7 @@ public class Labyrinth implements Lab {
     private void printFinalLabyrinth() {
         System.out.println("Final Labyrinth:");
         for (int j = height - 1; j >= 0; j--) {
-            for (int i = 0; i < width; i++) {
-                System.out.print(labyrinthFin[i][j]);
-            }
-            System.out.println();
+            System.out.println(Arrays.toString(labyrinthFin[j]));
         }
         System.out.println();
     }
