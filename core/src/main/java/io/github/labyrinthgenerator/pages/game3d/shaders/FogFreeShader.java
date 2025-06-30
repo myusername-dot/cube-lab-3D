@@ -1,9 +1,10 @@
 package io.github.labyrinthgenerator.pages.game3d.shaders;
 
-import com.badlogic.gdx.graphics.Camera;
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.*;
+import com.badlogic.gdx.graphics.g3d.Attribute;
 import com.badlogic.gdx.graphics.g3d.Renderable;
+import com.badlogic.gdx.graphics.g3d.attributes.CubemapAttribute;
+import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
 import com.badlogic.gdx.graphics.g3d.utils.RenderContext;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.Vector2;
@@ -33,11 +34,11 @@ public class FogFreeShader extends SpotLightFreeShader {
             "attribute vec2 a_texCoord0;\n" +
             "uniform mat4 u_worldTrans;\n" +
             "uniform mat4 u_projTrans;\n" +
-            "uniform float spotCutoff;\n" +
-            "uniform float fogDensity;\n" +
-            "varying vec4 position;\n" +
-            "varying vec4 position_a;\n" +
-            "varying vec3 v_position;\n" +
+            "uniform float u_spotCutoff;\n" +
+            "uniform float u_fogDensity;\n" +
+            "varying vec4 position;\n" + // gl_Position
+            "varying vec4 aPosition;\n" + // a_position
+            "varying vec3 worldPosition;\n" + // (u_worldTrans * a_position).xyz
             "varying vec2 v_texCoords;\n" +
             "varying vec4 spotColor;\n" +
             "varying float clip2Distance;\n" + // Расстояние до камеры
@@ -46,13 +47,13 @@ public class FogFreeShader extends SpotLightFreeShader {
             "{\n" +
             "    gl_Position = u_projTrans * u_worldTrans * a_position;\n" +
             "    position = gl_Position;\n" +
-            "    position_a = a_position;\n" +
-            "    v_position = (u_worldTrans * a_position).xyz;\n" +
+            "    aPosition = a_position;\n" +
+            "    worldPosition = (u_worldTrans * a_position).xyz;\n" +
             "\n" +
             "\n" + // Вычисляем расстояние до камеры
             "    clip2Distance = length(vec3(position.x, min(0.0, position.y * 4.0), position.z));\n" +
             "\n" + // Вычисляем фактор плотности тумана
-            "    fogClipDistanceFactor = (fogDensity * length(position) / 10);\n" +
+            "    fogClipDistanceFactor = (u_fogDensity * length(position) / 10);\n" +
             "\n" +
             "    vec3 lightPosition  = (gl_Position).xyz;\n" +
             "    vec3 spotDirection  = normalize(lightPosition + vec3(0,0,1));\n" +
@@ -63,7 +64,7 @@ public class FogFreeShader extends SpotLightFreeShader {
             "    angle = max(angle, 0.0);\n" +
             "\n" +
             "    v_texCoords = a_texCoord0;\n" +
-            "    spotColor = (acos(angle) < radians(spotCutoff)) ? vec4(1,1,0.1,1) : vec4(0.1,0.1,0.1,1);\n" +
+            "    spotColor = (acos(angle) < radians(u_spotCutoff)) ? vec4(1,1,0.1,1) : vec4(0.1,0.1,0.1,1);\n" +
             "}";
 
 
@@ -78,30 +79,42 @@ public class FogFreeShader extends SpotLightFreeShader {
             "\n" +
             "varying LOWP vec2 v_texCoords;\n" +
             "uniform sampler2D u_texture;\n" +
-            "uniform vec4 fogColor;\n" +
-            "uniform float u_time;\n" +
+            "uniform samplerCube u_cubemap;\n" +
+            "uniform vec3 u_normalTexture;\n" +
+            "uniform bool u_isReflective;" +
+            //"uniform vec3 u_cameraPosition;\n" + // FIXME
+            "uniform vec4 u_fogColor;\n" +
             "uniform vec2 u_fogVelocity;\n" +
+            "uniform float u_time;\n" +
             "\n" +
             "varying vec4 position;\n" + // Передаем gl_Position
-            "varying vec4 position_a;\n" +
-            "varying vec3 v_position;\n" +
+            "varying vec4 aPosition;\n" + // position_a
+            "varying vec3 worldPosition;\n" + // (u_worldTrans * a_position).xyz
             "varying vec4 spotColor;\n" +
             "varying float clip2Distance;\n" + // Расстояние до камеры
             "varying float fogClipDistanceFactor;\n" + // Фактор плотности тумана
             "\n" +
-            "uniform vec3 u_normalTexture;\n" +
             "uniform vec3 u_pointLights[NUM_LIGHTS];\n" +
             //"uniform vec3 u_pointLightsScreen[NUM_LIGHTS];\n" +
             "uniform vec4 u_pointLightColors[NUM_LIGHTS];\n" +
-            "uniform int pointLightsSize;\n" +
+            "uniform int u_pointLightsSize;\n" +
             "\n" +
             "void main(void)\n" +
             "{\n" +
             "    vec4 c = texture2D(u_texture, v_texCoords);\n" +
+            "    vec4 reflectedColor = vec4(0);\n" +
+            "\n" +
+            "    if (u_isReflective) {\n" +
+            "       vec3 N = normalize(u_normalTexture);\n" +
+            "       vec3 V = normalize(-1.0 * position.xyz);\n" + // normalize(u_cameraPosition - worldPosition)
+            "       vec3 R = reflect(V, N);\n" +
+            "       reflectedColor = texture(u_cubemap, R);\n" +
+            "    }\n" +
+            "\n" +
             "    float heightFactor = max(0.0, position.y);\n" +
             "\n" +
             "    float longWave = clamp(\n" +
-            "        sin(position_a.x + position_a.z + u_time) * (max(-0.5, position.y) + 0.5) * 0.4, \n" +
+            "        sin(aPosition.x + aPosition.z + u_time) * (max(-0.5, position.y) + 0.5) * 0.4, \n" +
             "    0.0, 1.0);\n" +
             "\n" +
             "    float fogFactor = clamp((fogClipDistanceFactor * sqrt(heightFactor) + heightFactor + longWave), 0.0, 0.8);\n" +
@@ -127,16 +140,16 @@ public class FogFreeShader extends SpotLightFreeShader {
             "    }\n" +
             "\n" +
             "\n" + // Основной цвет
-            "    gl_FragColor = mix(mix(mix(c, spotColor, 0.3), fogColor, fogFactor), spotColor, 0.1);\n" +
+            "    gl_FragColor = mix(mix(mix(c, spotColor, 0.3), u_fogColor, fogFactor), spotColor, 0.1);\n" +
             "\n" +
             "\n" + // Обработка точечных источников света
-            "    if (pointLightsSize > 0) {\n" +
+            "    if (u_pointLightsSize > 0) {\n" +
             "        vec3 glowingColor = vec3(0.0);\n" +
-            "        for (int i = 0; i < pointLightsSize; i++) {\n" +
+            "        for (int i = 0; i < u_pointLightsSize; i++) {\n" +
             "            vec3 lightPos = u_pointLights[i];\n" +
             "            vec4 lightColor = u_pointLightColors[i];\n" +
             "            float intensity = 0.003;\n" +
-            "            float distance = length(lightPos - v_position);\n" +
+            "            float distance = length(lightPos - worldPosition);\n" +
             "            float attenuation = intensity / (distance * distance + 0.0001);\n" +
             "            glowingColor += lightColor.rgb * attenuation;\n" +
             "        }\n" +
@@ -175,8 +188,10 @@ public class FogFreeShader extends SpotLightFreeShader {
         Vector2 playerVelocity = getPlayerVelocity();
         program.bind();
         program.setUniformMatrix(u_projTrans, camera.combined);
-        program.setUniformf("spotCutoff", cutoffAngle);
         program.setUniformi("u_texture", 0);
+        program.setUniformi("u_cubemap", 1);
+        program.setUniformi("u_isReflective", 0);
+        program.setUniformf("u_spotCutoff", cutoffAngle);
         setFogUniforms(playerVelocity);
         context.begin();
         context.setDepthTest(GL20.GL_LEQUAL);
@@ -194,8 +209,8 @@ public class FogFreeShader extends SpotLightFreeShader {
     }
 
     private void setFogUniforms(Vector2 playerVelocity) {
-        program.setUniformf("fogColor", new Color(0.5f, 0.5f, 0.5f, 0.9f));
-        program.setUniformf("fogDensity", fogBaseDensity);
+        program.setUniformf("u_fogColor", new Color(0.5f, 0.5f, 0.5f, 0.9f));
+        program.setUniformf("u_fogDensity", fogBaseDensity);
         program.setUniform2fv("u_fogVelocity", new float[]{playerVelocity.x, playerVelocity.y}, 0, 2);
         program.setUniformf("u_time", timer);
     }
@@ -244,7 +259,26 @@ public class FogFreeShader extends SpotLightFreeShader {
             program.setUniform4fv("u_pointLightColors[" + i + "]",
                 new float[]{light.color.r, light.color.g, light.color.b, light.color.a}, 0, 4);
         }
-        program.setUniformi("pointLightsSize", pointLights.size());
+        program.setUniformi("u_pointLightsSize", pointLights.size());
+    }
+
+    @Override
+    public void bindTexture(Renderable renderable) {
+
+        for (Attribute attribute : renderable.material) {
+            if (attribute instanceof TextureAttribute) {
+                TextureAttribute textureAttribute = (TextureAttribute) attribute;
+                Texture texture = textureAttribute.textureDescription.texture;
+                texture.bind(0);
+            }
+
+            if (attribute instanceof CubemapAttribute) {
+                CubemapAttribute cubemapAttribute = (CubemapAttribute) attribute;
+                Cubemap cubemap = cubemapAttribute.textureDescription.texture;
+                cubemap.bind(1);
+                program.setUniformi("u_isReflective", 1);
+            }
+        }
     }
 
     @Override
