@@ -17,6 +17,7 @@ import com.badlogic.gdx.utils.viewport.StretchViewport;
 import io.github.labyrinthgenerator.pages.game2d.Labyrinth2D;
 import io.github.labyrinthgenerator.pages.game3d.CubeLab3D;
 import io.github.labyrinthgenerator.pages.game3d.constants.Constants;
+import io.github.labyrinthgenerator.pages.game3d.cubemap.ReflectiveCubemap;
 import io.github.labyrinthgenerator.pages.game3d.entities.player.Player;
 import io.github.labyrinthgenerator.pages.game3d.shaders.SkyBoxShaderProgram;
 
@@ -45,6 +46,7 @@ public class PlayScreen extends GameScreen {
     private long sfxItemId;
 
     private final SkyBoxShaderProgram envCubeMap;
+    private final ReflectiveCubemap exitCubemap;
 
     public PlayScreen(final CubeLab3D game) {
         super(game);
@@ -54,7 +56,7 @@ public class PlayScreen extends GameScreen {
         guiFont64 = game.getAssMan().get(game.getAssMan().font03_64);
         guiFont32 = game.getAssMan().get(game.getAssMan().font03_32);
 
-        createGlyphLayouts(); // Инициализация GlyphLayout
+        createGlyphLayouts();
 
         sfxItem = game.getAssMan().get(game.getAssMan().sfxItem);
 
@@ -68,6 +70,9 @@ public class PlayScreen extends GameScreen {
 
         Gdx.input.setCursorCatched(true);
         envCubeMap = new SkyBoxShaderProgram(new Pixmap(Gdx.files.internal(game.getAssMan().bgSky01)));
+
+        Vector3 exitPosition = getExitPosition(game);
+        exitCubemap = new ReflectiveCubemap(exitPosition, Constants.WINDOW_WIDTH, Constants.WINDOW_HEIGHT, game.getEntMan());
     }
 
     private Environment createEnvironment() {
@@ -88,6 +93,14 @@ public class PlayScreen extends GameScreen {
             game.getMapBuilder().mapLoadSpawnPosition.x + HALF_UNIT - (HALF_UNIT / 2f) / 2f,
             0,
             game.getMapBuilder().mapLoadSpawnPosition.y + HALF_UNIT - (HALF_UNIT / 2f) / 2f
+        );
+    }
+
+    private Vector3 getExitPosition(final CubeLab3D game) {
+        return new Vector3(
+            game.getMapBuilder().mapLoadExitPosition.x + HALF_UNIT,
+            0,
+            game.getMapBuilder().mapLoadExitPosition.y + HALF_UNIT
         );
     }
 
@@ -180,12 +193,15 @@ public class PlayScreen extends GameScreen {
     @Override
     public void render(final float delta) {
         super.render(delta);
+
+        exitCubemap.updateCubemap(game.getMdlBatch(), env, delta);
         currentCam.update();
 
         game.getFbo().begin();
         clearScreen();
         envCubeMap.render(currentCam);
         renderEntities(delta);
+        exitCubemap.render(game.getMdlBatch(), env, this);
         game.getFbo().end();
 
         renderFinalFbo();
