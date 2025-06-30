@@ -132,11 +132,11 @@ public class MainMenuScreen extends GameScreen {
             handleEscapeKey();
         }
 
-        if (Gdx.input.isKeyJustPressed(Input.Keys.UP) && !displayControls) {
+        if ((Gdx.input.isKeyJustPressed(Input.Keys.UP) || Gdx.input.isKeyJustPressed(Input.Keys.W)) && !displayControls) {
             changeSelectedOption(-1);
         }
 
-        if (Gdx.input.isKeyJustPressed(Input.Keys.DOWN) && !displayControls) {
+        if ((Gdx.input.isKeyJustPressed(Input.Keys.DOWN) || Gdx.input.isKeyJustPressed(Input.Keys.S)) && !displayControls) {
             changeSelectedOption(1);
         }
     }

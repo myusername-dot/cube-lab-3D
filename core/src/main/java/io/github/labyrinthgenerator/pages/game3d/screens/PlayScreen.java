@@ -132,13 +132,13 @@ public class PlayScreen extends GameScreen {
     private void handleGuiMenuInput() {
         game.gameIsPaused = true;
 
-        if (Gdx.input.isKeyJustPressed(Input.Keys.UP)) {
+        if (Gdx.input.isKeyJustPressed(Input.Keys.UP) || Gdx.input.isKeyJustPressed(Input.Keys.W)) {
             guiMenuSelection--;
             limitGuiSelection();
             playItemSound();
         }
 
-        if (Gdx.input.isKeyJustPressed(Input.Keys.DOWN)) {
+        if (Gdx.input.isKeyJustPressed(Input.Keys.DOWN) || Gdx.input.isKeyJustPressed(Input.Keys.S)) {
             guiMenuSelection++;
             limitGuiSelection();
             playItemSound();
