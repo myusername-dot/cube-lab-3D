@@ -82,7 +82,7 @@ public class FogFreeShader extends SpotLightFreeShader {
             "uniform samplerCube u_cubemap;\n" +
             "uniform vec3 u_normalTexture;\n" +
             "uniform bool u_isReflective;" +
-            //"uniform vec3 u_cameraPosition;\n" + // FIXME
+            "uniform vec3 u_cameraPosition;\n" +
             "uniform vec4 u_fogColor;\n" +
             "uniform vec2 u_fogVelocity;\n" +
             "uniform float u_time;\n" +
@@ -92,7 +92,7 @@ public class FogFreeShader extends SpotLightFreeShader {
             "varying vec3 worldPosition;\n" + // (u_worldTrans * a_position).xyz
             "varying vec4 spotColor;\n" +
             "varying float clip2Distance;\n" + // Расстояние до камеры
-            "varying float fogClipDistanceFactor;\n" + // Фактор плотности тумана
+            "varying float fogClipDistanceFactor;\n" +
             "\n" +
             "uniform vec3 u_pointLights[NUM_LIGHTS];\n" +
             //"uniform vec3 u_pointLightsScreen[NUM_LIGHTS];\n" +
@@ -101,14 +101,14 @@ public class FogFreeShader extends SpotLightFreeShader {
             "\n" +
             "void main(void)\n" +
             "{\n" +
-            "    vec4 c = texture2D(u_texture, v_texCoords);\n" +
-            "    vec4 reflectedColor = vec4(0);\n" +
-            "\n" +
+            "    vec4 c = vec4(0);\n" +
             "    if (u_isReflective) {\n" +
             "       vec3 N = normalize(u_normalTexture);\n" +
-            "       vec3 V = normalize(-1.0 * position.xyz);\n" + // normalize(u_cameraPosition - worldPosition)
+            "       vec3 V = normalize(u_cameraPosition - worldPosition);\n" +
             "       vec3 R = reflect(V, N);\n" +
-            "       reflectedColor = texture(u_cubemap, R);\n" +
+            "       c = texture(u_cubemap, R);\n" +
+            "    } else {\n" +
+            "       c = texture2D(u_texture, v_texCoords);" +
             "    }\n" +
             "\n" +
             "    float heightFactor = max(0.0, position.y);\n" +
@@ -178,10 +178,6 @@ public class FogFreeShader extends SpotLightFreeShader {
         u_worldTrans = program.getUniformLocation("u_worldTrans");
     }
 
-    public void increaseTimer(float delta) {
-        timer += delta;
-    }
-
     @Override
     public void begin(Camera camera, RenderContext context) {
         this.context = context;
@@ -193,19 +189,17 @@ public class FogFreeShader extends SpotLightFreeShader {
         program.setUniformi("u_isReflective", 0);
         program.setUniformf("u_spotCutoff", cutoffAngle);
         setFogUniforms(playerVelocity);
+        float[] cameraPosition = new float[]{camera.position.x, camera.position.y, camera.position.z};
+        program.setUniform3fv("u_cameraPosition", cameraPosition, 0, 3);
         context.begin();
         context.setDepthTest(GL20.GL_LEQUAL);
         context.setCullFace(GL20.GL_BACK);
     }
 
-    private Vector2 getPlayerVelocity() {
-        Player player = myShaderProvider.getPlayer();
-        if (player != null) {
-            Vector3 playerVelocity3 = player.getForwardVelocity();
-            Vector3 playerDir = player.getDirection();
-            return new Vector2(playerVelocity3.x * sign(playerDir.x), playerVelocity3.z * sign(playerDir.z));
-        }
-        return new Vector2(0, 0);
+    private void setDefaultLightUniforms() {
+        program.setUniform3fv("u_pointLights[0]", new float[]{0, 0, 0}, 0, 3);
+        //program.setUniform3fv("u_pointLightsScreen[0]", new float[]{0, 0, 0}, 0, 3);
+        program.setUniform4fv("u_pointLightColors[0]", new float[]{0, 0, 0, 0}, 0, 4);
     }
 
     private void setFogUniforms(Vector2 playerVelocity) {
@@ -224,38 +218,13 @@ public class FogFreeShader extends SpotLightFreeShader {
         }
     }
 
-    private List<PointLightPlus> getPointLights(Renderable renderable) {
-        List<PointLightPlus> pointLights = new ArrayList<>();
-        Player player = myShaderProvider.getPlayer();
-        if (player != null) {
-            Object userData = renderable.userData;
-            if (userData instanceof Vector3) {
-                Vector3 rendPos3 = (Vector3) userData;
-                Vector2 rendPos2 = new Vector2(rendPos3.x, rendPos3.z);
-                Vector3 playerPos3 = player.getPositionImmutable();
-                float distance = rendPos2.dst(playerPos3.x, playerPos3.z);
-                if (distance < MAX_LIGHT_RENDERING_DISTANCE) {
-                    float angle = myShaderProvider.getViewAngle(player.playerCam, rendPos3);
-                    pointLights = myShaderProvider.getPointLightsByPlayerDistAndCamAngle(distance, angle);
-                }
-            }
-        }
-        return pointLights;
-    }
-
-    private void setDefaultLightUniforms() {
-        program.setUniform3fv("u_pointLights[0]", new float[]{0, 0, 0}, 0, 3);
-        //program.setUniform3fv("u_pointLightsScreen[0]", new float[]{0, 0, 0}, 0, 3);
-        program.setUniform4fv("u_pointLightColors[0]", new float[]{0, 0, 0, 0}, 0, 4);
-    }
-
     private void setLightUniforms(List<PointLightPlus> pointLights) {
         for (int i = 0; i < pointLights.size(); i++) {
             PointLightPlus light = pointLights.get(i);
             program.setUniform3fv("u_pointLights[" + i + "]",
                 new float[]{light.position.x, light.position.y + HALF_UNIT, light.position.z}, 0, 3);
-           // program.setUniform3fv("u_pointLightsScreen[" + i + "]",
-                //new float[]{light.screenPosition.x, light.screenPosition.y, light.screenPosition.z}, 0, 3);
+            // program.setUniform3fv("u_pointLightsScreen[" + i + "]",
+            //new float[]{light.screenPosition.x, light.screenPosition.y, light.screenPosition.z}, 0, 3);
             program.setUniform4fv("u_pointLightColors[" + i + "]",
                 new float[]{light.color.r, light.color.g, light.color.b, light.color.a}, 0, 4);
         }
@@ -287,6 +256,39 @@ public class FogFreeShader extends SpotLightFreeShader {
         bindTexture(renderable);
         setPointLightsUniforms(renderable);
         renderable.meshPart.render(program);
+    }
+
+    private Vector2 getPlayerVelocity() {
+        Player player = myShaderProvider.getPlayer();
+        if (player != null) {
+            Vector3 playerVelocity3 = player.getForwardVelocity();
+            Vector3 playerDir = player.getDirection();
+            return new Vector2(playerVelocity3.x * sign(playerDir.x), playerVelocity3.z * sign(playerDir.z));
+        }
+        return new Vector2(0, 0);
+    }
+
+    private List<PointLightPlus> getPointLights(Renderable renderable) {
+        List<PointLightPlus> pointLights = new ArrayList<>();
+        Player player = myShaderProvider.getPlayer();
+        if (player != null) {
+            Object userData = renderable.userData;
+            if (userData instanceof Vector3) {
+                Vector3 rendPos3 = (Vector3) userData;
+                Vector2 rendPos2 = new Vector2(rendPos3.x, rendPos3.z);
+                Vector3 playerPos3 = player.getPositionImmutable();
+                float distance = rendPos2.dst(playerPos3.x, playerPos3.z);
+                if (distance < MAX_LIGHT_RENDERING_DISTANCE) {
+                    float angle = myShaderProvider.getViewAngle(player.playerCam, rendPos3);
+                    pointLights = myShaderProvider.getPointLightsByPlayerDistAndCamAngle(distance, angle);
+                }
+            }
+        }
+        return pointLights;
+    }
+
+    public void increaseTimer(float delta) {
+        timer += delta;
     }
 
     private int sign(float v) {

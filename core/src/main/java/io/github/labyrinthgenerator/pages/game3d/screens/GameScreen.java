@@ -14,6 +14,8 @@ import io.github.labyrinthgenerator.pages.game3d.shaders.FogFreeShader;
 
 import java.util.List;
 
+import static io.github.labyrinthgenerator.pages.game3d.constants.Constants.HALF_UNIT;
+
 public abstract class GameScreen implements Screen {
     public final CubeLab3D game;
 
@@ -109,6 +111,22 @@ public abstract class GameScreen implements Screen {
 
     public Player getPlayer() {
         return player;
+    }
+
+    public Vector3 getPlayerSpawnPosition() {
+        return new Vector3(
+            game.getMapBuilder().mapLoadSpawnPosition.x + HALF_UNIT - (HALF_UNIT / 2f) / 2f,
+            0,
+            game.getMapBuilder().mapLoadSpawnPosition.y + HALF_UNIT - (HALF_UNIT / 2f) / 2f
+        );
+    }
+
+    public Vector3 getExitPosition() {
+        return new Vector3(
+            game.getMapBuilder().mapLoadExitPosition.x + HALF_UNIT,
+            0,
+            game.getMapBuilder().mapLoadExitPosition.y + HALF_UNIT
+        );
     }
 
     public void updateShader(float delta) {
