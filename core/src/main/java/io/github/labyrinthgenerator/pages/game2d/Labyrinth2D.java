@@ -112,10 +112,10 @@ public class Labyrinth2D implements Page {
     @Override
     public void input() {
         if (isGameInPause) {
-            if (Gdx.input.isKeyJustPressed(Input.Keys.UP)) {
+            if (Gdx.input.isKeyJustPressed(Input.Keys.UP) || Gdx.input.isKeyJustPressed(Input.Keys.W)) {
                 changeSelectedOption(-1);
             }
-            if (Gdx.input.isKeyJustPressed(Input.Keys.DOWN)) {
+            if (Gdx.input.isKeyJustPressed(Input.Keys.DOWN) || Gdx.input.isKeyJustPressed(Input.Keys.S)) {
                 changeSelectedOption(1);
             }
             if (Gdx.input.isKeyJustPressed(Input.Keys.ENTER)) {
