@@ -5,6 +5,9 @@ import io.github.labyrinthgenerator.pages.game3d.tickable.Tickable;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * For objects that need to be updated every frame.
+ */
 public class TickManager {
 
     private final Set<Tickable> entities = new HashSet<>();
