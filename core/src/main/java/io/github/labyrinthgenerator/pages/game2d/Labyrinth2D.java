@@ -57,7 +57,7 @@ public class Labyrinth2D implements Page {
     private BitmapFont buttonFont64;
     private GlyphLayout[] glyphLayouts;
     private final String[] options = {"PLAY", "REFRESH"};
-    private int selectedOption = 1;
+    private int selectedOption = 0;
 
     @Override
     public void create() {
@@ -113,10 +113,10 @@ public class Labyrinth2D implements Page {
     public void input() {
         if (isGameInPause) {
             if (Gdx.input.isKeyJustPressed(Input.Keys.UP)) {
-                selectedOption = 1;
+                changeSelectedOption(-1);
             }
             if (Gdx.input.isKeyJustPressed(Input.Keys.DOWN)) {
-                selectedOption = 2;
+                changeSelectedOption(1);
             }
             if (Gdx.input.isKeyJustPressed(Input.Keys.ENTER)) {
                 handleMenuSelection();
@@ -124,12 +124,17 @@ public class Labyrinth2D implements Page {
         }
     }
 
+    private void changeSelectedOption(int delta) {
+        selectedOption = (selectedOption + delta + options.length) % options.length; // Изменяем на количество опций
+        //sfxChoice.play(game.currentSfxVolume);
+    }
+
     private void handleMenuSelection() {
         switch (selectedOption) {
-            case 1: // Play
+            case 0: // Play
                 isFinished = true; // Переход к следующей странице
                 break;
-            case 2: // Refresh
+            case 1: // Refresh
                 refresh();
                 break;
             default:
@@ -273,7 +278,7 @@ public class Labyrinth2D implements Page {
     private void drawMenuOptions(SpriteBatch spriteBatch) {
         float baseY = 188;
         for (int i = 0; i < options.length; i++) {
-            drawOption(spriteBatch, i, baseY - i * 32, (selectedOption - 1) == i);
+            drawOption(spriteBatch, i, baseY - i * 32, selectedOption == i);
         }
     }
 
