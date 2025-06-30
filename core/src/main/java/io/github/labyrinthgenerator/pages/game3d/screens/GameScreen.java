@@ -111,6 +111,13 @@ public abstract class GameScreen implements Screen {
         return player;
     }
 
+    public void updateShader(float delta) {
+        Shader shader = game.getShaderProvider().getShader();
+        if (shader instanceof FogFreeShader) {
+            ((FogFreeShader) shader).increaseTimer(delta);
+        }
+    }
+
     public void handleInput(final float delta) {
 //		if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) { // For easy quit while debugging.
 //			Gdx.app.exit();
@@ -137,10 +144,7 @@ public abstract class GameScreen implements Screen {
 
     @Override
     public void render(final float delta) {
-        Shader shader = game.getShaderProvider().getShader();
-        if (shader instanceof FogFreeShader) {
-            ((FogFreeShader) shader).increaseTimer(delta);
-        }
+        updateShader(delta);
         handleInput(delta);
         tick(delta);
     }
