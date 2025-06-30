@@ -16,6 +16,7 @@ import io.github.labyrinthgenerator.pages.game3d.input.GameInputProcessor;
 import io.github.labyrinthgenerator.pages.game3d.managers.*;
 import io.github.labyrinthgenerator.pages.game3d.maps.LMapBuilder;
 import io.github.labyrinthgenerator.pages.game3d.models.ModelMaker;
+import io.github.labyrinthgenerator.pages.game3d.screens.GameScreen;
 import io.github.labyrinthgenerator.pages.game3d.screens.MainMenuScreen;
 import io.github.labyrinthgenerator.pages.game3d.shaders.MyShaderProvider;
 
@@ -178,6 +179,11 @@ public class CubeLab3D extends Game implements Page {
 
     public MyShaderProvider getShaderProvider() {
         return shaderProvider;
+    }
+
+    @Override
+    public GameScreen getScreen() {
+        return (GameScreen) screen;
     }
 
 	@Override

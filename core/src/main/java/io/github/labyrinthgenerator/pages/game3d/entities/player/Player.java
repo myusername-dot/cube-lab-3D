@@ -123,8 +123,8 @@ public class Player extends Entity {
     public float getExitDistance() {
         float playerX = rect.getX();
         float playerZ = rect.getZ();
-        float exitX = screen.game.getMapBuilder().mapLoadExitPosition.x;
-        float exitZ = screen.game.getMapBuilder().mapLoadExitPosition.y;
+        float exitX = screen.getExitPosition().x;
+        float exitZ = screen.getExitPosition().z;
         float dx = exitX - playerX;
         float dz = exitZ - playerZ;
         return (float) Math.sqrt(dx * dx + dz * dz);

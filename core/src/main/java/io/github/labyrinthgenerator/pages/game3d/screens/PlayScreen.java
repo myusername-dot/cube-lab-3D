@@ -63,7 +63,7 @@ public class PlayScreen extends GameScreen {
         game.setScreen(this);
         game.getMapBuilder().buildMap(Labyrinth2D.txtFilename);
 
-        Vector3 playerSpawnPosition = getPlayerSpawnPosition(game);
+        Vector3 playerSpawnPosition = getPlayerSpawnPosition();
         player = new Player(playerSpawnPosition, HALF_UNIT / 2f, HALF_UNIT / 2f, this);
         setCurrentCam(player.playerCam);
         viewport.setCamera(currentCam);
@@ -71,8 +71,7 @@ public class PlayScreen extends GameScreen {
         Gdx.input.setCursorCatched(true);
         envCubeMap = new SkyBoxShaderProgram(new Pixmap(Gdx.files.internal(game.getAssMan().bgSky01)));
 
-        Vector3 exitPosition = getExitPosition(game);
-        exitCubemap = new ReflectiveCubemap(exitPosition, Constants.WINDOW_WIDTH, Constants.WINDOW_HEIGHT, game.getEntMan());
+        exitCubemap = new ReflectiveCubemap(getPlayerSpawnPosition().add(0, 0.5f, 0), game);
     }
 
     private Environment createEnvironment() {
@@ -86,22 +85,6 @@ public class PlayScreen extends GameScreen {
         TextureRegion textureRegion = new TextureRegion((Texture) game.getAssMan().get(game.getAssMan().bgSky01));
         textureRegion.flip(false, true);
         return textureRegion;
-    }
-
-    private Vector3 getPlayerSpawnPosition(final CubeLab3D game) {
-        return new Vector3(
-            game.getMapBuilder().mapLoadSpawnPosition.x + HALF_UNIT - (HALF_UNIT / 2f) / 2f,
-            0,
-            game.getMapBuilder().mapLoadSpawnPosition.y + HALF_UNIT - (HALF_UNIT / 2f) / 2f
-        );
-    }
-
-    private Vector3 getExitPosition(final CubeLab3D game) {
-        return new Vector3(
-            game.getMapBuilder().mapLoadExitPosition.x + HALF_UNIT,
-            0,
-            game.getMapBuilder().mapLoadExitPosition.y + HALF_UNIT
-        );
     }
 
     private void createGlyphLayouts() {
@@ -194,14 +177,21 @@ public class PlayScreen extends GameScreen {
     public void render(final float delta) {
         super.render(delta);
 
-        exitCubemap.updateCubemap(game.getMdlBatch(), env, delta);
+        exitCubemap.updateCubemap(env, delta);
         currentCam.update();
 
         game.getFbo().begin();
+
         clearScreen();
         envCubeMap.render(currentCam);
+
+        game.getMdlBatch().begin(currentCam);
+
         renderEntities(delta);
-        exitCubemap.render(game.getMdlBatch(), env, this);
+        exitCubemap.render(env);
+
+        game.getMdlBatch().end();
+
         game.getFbo().end();
 
         renderFinalFbo();
@@ -213,9 +203,7 @@ public class PlayScreen extends GameScreen {
     }
 
     private void renderEntities(float delta) {
-        game.getMdlBatch().begin(currentCam);
         game.getEntMan().render3DAllEntities(game.getMdlBatch(), env, delta, currentCam.position.x, currentCam.position.z);
-        game.getMdlBatch().end();
     }
 
     private void renderFinalFbo() {
