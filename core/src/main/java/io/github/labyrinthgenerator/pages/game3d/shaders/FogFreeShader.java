@@ -61,7 +61,7 @@ public class FogFreeShader extends SpotLightFreeShader {
             "    spotColor = (acos(angle) < radians(spotCutoff)) ? vec4(1,1,0.1,1) : vec4(0.1,0.1,0.1,1);\n" +
             "\n" +
             "    clip2Distance = length(vec3(position.x, min(0.0, position.y * 4.0), position.z));\n" +
-            "    fogClipDistanceFactor = (fogDensity * length(position) / 20);\n" +
+            "    fogClipDistanceFactor = (fogDensity * length(position) / 10);\n" +
             "}";
 
     private static final String FRAGMENT_SHADER =
@@ -97,7 +97,7 @@ public class FogFreeShader extends SpotLightFreeShader {
             "       sin(position_a.x + position_a.z + u_time) * (max(-0.5, position.y) + 0.5) * 0.4, " +
             "   0.0, 1.0);\n" +
             "\n" +
-            "   float fogFactor = clamp((fogClipDistanceFactor + heightFactor + longWave), 0.0, 0.8);\n" +
+            "   float fogFactor = clamp((fogClipDistanceFactor * sqrt(heightFactor) + heightFactor + longWave), 0.0, 0.8);\n" +
             "\n" +
             "   float radius = length(u_fogVelocity / 2.0);\n" +
             "   float shiftedRadius = (radius > 0) ? (sign(u_fogVelocity.y) > 0 ? 1.0 : 0.3) : 0;\n" +
