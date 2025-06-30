@@ -11,8 +11,6 @@ public abstract class Constants {
 			+ Integer.toString(VERSION_REVISION) + " " + Long.toString(VERSION_BUILD);
 
     public static final int TEXTURE_SIZE = 256;
-    public static final float PPU = 1f / 16f;
-    public static final int TILE_SIZE = 16;
 	public static final float HALF_UNIT = 0.5f;
 
     public static final int CHUNK_SIZE = 10;
