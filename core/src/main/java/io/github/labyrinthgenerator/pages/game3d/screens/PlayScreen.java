@@ -25,7 +25,6 @@ import static io.github.labyrinthgenerator.pages.game3d.constants.Constants.HALF
 
 public class PlayScreen extends GameScreen {
     private final TextureRegion skyBg;
-    private final Environment env;
     private Color fogColor;
 
     private boolean showGuiMenu = false;
@@ -177,8 +176,8 @@ public class PlayScreen extends GameScreen {
     public void render(final float delta) {
         super.render(delta);
 
-        exitCubemap.updateCubemap(env, delta);
         currentCam.update();
+        exitCubemap.updateCubemap(game.getMdlBatch(), env, delta);
 
         game.getFbo().begin();
 
@@ -188,7 +187,7 @@ public class PlayScreen extends GameScreen {
         game.getMdlBatch().begin(currentCam);
 
         renderEntities(delta);
-        exitCubemap.render(env);
+        exitCubemap.render(game.getMdlBatch(), env, currentCam);
 
         game.getMdlBatch().end();
 
@@ -273,9 +272,5 @@ public class PlayScreen extends GameScreen {
     @Override
     public void tick(final float delta) {
         super.tick(delta);
-    }
-
-    public Environment getEnv() {
-        return env;
     }
 }

@@ -11,6 +11,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 import io.github.labyrinthgenerator.pages.game3d.entities.player.Player;
+import io.github.labyrinthgenerator.pages.game3d.mesh.NormalMapAttribute;
 import io.github.labyrinthgenerator.pages.light.PointLightPlus;
 import lombok.extern.slf4j.Slf4j;
 
@@ -31,7 +32,8 @@ public class FogFreeShader extends SpotLightFreeShader {
 
     private static final String VERTEX_SHADER =
         "attribute vec4 a_position;\n" +
-            "attribute vec2 a_texCoord0;\n" +
+            "attribute vec2 a_texCoord0;\n" + // texture
+            "attribute vec2 a_texCoord2;\n" + // normal
             "uniform mat4 u_worldTrans;\n" +
             "uniform mat4 u_projTrans;\n" +
             "uniform float u_spotCutoff;\n" +
@@ -39,7 +41,8 @@ public class FogFreeShader extends SpotLightFreeShader {
             "varying vec4 position;\n" + // gl_Position
             "varying vec4 aPosition;\n" + // a_position
             "varying vec3 worldPosition;\n" + // (u_worldTrans * a_position).xyz
-            "varying vec2 v_texCoords;\n" +
+            "varying vec2 v_texCoords0;\n" +
+            "varying vec2 v_texCoords2;\n" +
             "varying vec4 spotColor;\n" +
             "varying float clip2Distance;\n" + // Расстояние до камеры
             "varying float fogClipDistanceFactor;\n" +
@@ -63,7 +66,8 @@ public class FogFreeShader extends SpotLightFreeShader {
             "    float angle = dot(spotDirection, -lightDirection);\n" +
             "    angle = max(angle, 0.0);\n" +
             "\n" +
-            "    v_texCoords = a_texCoord0;\n" +
+            "    v_texCoords0 = a_texCoord0;\n" +
+            "    v_texCoords2 = a_texCoord2;\n" +
             "    spotColor = (acos(angle) < radians(u_spotCutoff)) ? vec4(1,1,0.1,1) : vec4(0.1,0.1,0.1,1);\n" +
             "}";
 
@@ -77,8 +81,10 @@ public class FogFreeShader extends SpotLightFreeShader {
             "#define LOWP \n" +
             "#endif\n" +
             "\n" +
-            "varying LOWP vec2 v_texCoords;\n" +
+            "varying LOWP vec2 v_texCoords0;\n" +
+            "varying LOWP vec2 v_texCoords2;\n" +
             "uniform sampler2D u_texture;\n" +
+            "uniform sampler2D u_normalMap;\n" +
             "uniform samplerCube u_cubemap;\n" +
             "uniform vec3 u_normalTexture;\n" +
             "uniform bool u_isReflective;" +
@@ -103,12 +109,15 @@ public class FogFreeShader extends SpotLightFreeShader {
             "{\n" +
             "    vec4 c = vec4(0);\n" +
             "    if (u_isReflective) {\n" +
-            "       vec3 N = normalize(u_normalTexture);\n" +
+            "\n" + // Преобразование в диапазон [-1, 1]
+            "       vec3 N = normalize(texture(u_normalMap, v_texCoords2).xyz * 2.0 - 1.0);\n" +
             "       vec3 V = normalize(u_cameraPosition - worldPosition);\n" +
-            "       vec3 R = reflect(V, N);\n" +
+            "       vec3 R = reflect(V, N);\n" + // + 0.1 * normalize(N)
+            "\n" +
             "       c = texture(u_cubemap, R);\n" +
+            "       //c *= 1.0 - smoothstep(0.0, 1.0, length(R));\n" +
             "    } else {\n" +
-            "       c = texture2D(u_texture, v_texCoords);" +
+            "       c = texture2D(u_texture, v_texCoords0);" +
             "    }\n" +
             "\n" +
             "    float heightFactor = max(0.0, position.y);\n" +
@@ -186,7 +195,7 @@ public class FogFreeShader extends SpotLightFreeShader {
         program.setUniformMatrix(u_projTrans, camera.combined);
         program.setUniformi("u_texture", 0);
         program.setUniformi("u_cubemap", 1);
-        program.setUniformi("u_isReflective", 0);
+        program.setUniformi("u_normalMap", 2);
         program.setUniformf("u_spotCutoff", cutoffAngle);
         setFogUniforms(playerVelocity);
         float[] cameraPosition = new float[]{camera.position.x, camera.position.y, camera.position.z};
@@ -235,10 +244,11 @@ public class FogFreeShader extends SpotLightFreeShader {
     public void bindTexture(Renderable renderable) {
 
         for (Attribute attribute : renderable.material) {
-            if (attribute instanceof TextureAttribute) {
-                TextureAttribute textureAttribute = (TextureAttribute) attribute;
-                Texture texture = textureAttribute.textureDescription.texture;
-                texture.bind(0);
+            if (attribute instanceof NormalMapAttribute) {
+                NormalMapAttribute normalAttribute = (NormalMapAttribute) attribute;
+                Texture normalTexture = normalAttribute.textureDescription.texture;
+                normalTexture.bind(2);
+                continue;
             }
 
             if (attribute instanceof CubemapAttribute) {
@@ -247,12 +257,19 @@ public class FogFreeShader extends SpotLightFreeShader {
                 cubemap.bind(1);
                 program.setUniformi("u_isReflective", 1);
             }
+
+            if (attribute instanceof TextureAttribute) {
+                TextureAttribute textureAttribute = (TextureAttribute) attribute;
+                Texture texture = textureAttribute.textureDescription.texture;
+                texture.bind(0);
+            }
         }
     }
 
     @Override
     public void render(Renderable renderable) {
         program.setUniformMatrix(u_worldTrans, renderable.worldTransform);
+        program.setUniformi("u_isReflective", 0); // !drop batch flag
         bindTexture(renderable);
         setPointLightsUniforms(renderable);
         renderable.meshPart.render(program);

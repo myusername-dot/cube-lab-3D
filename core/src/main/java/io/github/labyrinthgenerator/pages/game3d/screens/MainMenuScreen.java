@@ -34,7 +34,6 @@ public class MainMenuScreen extends GameScreen {
     private int fboOption = 0;
     private boolean displayControls = false;
 
-    private final Environment env;
     private Color fogColor;
     private final Sound sfxAmbient;
     private final long sfxAmbientId;

@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.g3d.model.Node;
 import com.badlogic.gdx.graphics.g3d.model.NodePart;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.BoundingBox;
+import com.badlogic.gdx.utils.GdxRuntimeException;
 
 public class ModelInstanceBB extends ModelInstance {
 
@@ -19,20 +20,34 @@ public class ModelInstanceBB extends ModelInstance {
 	public float radius; // for sphere
 	public final BoundingBox renderBox = new BoundingBox();
 
-	public ModelInstanceBB(final Model model, final Vector3 positionStatic) {
-		super(model);
+    public ModelInstanceBB(final Model model, final Vector3 positionStatic) {
+        super(model);
         this.positionStatic = positionStatic;
 
-		calculateTransforms();
-		calculateBoundingBox(renderBox);
-		renderBox.mul(transform);
+        // Проверка на наличие вершин
+        if (model.meshes.size == 0) {
+            throw new GdxRuntimeException("Model has no meshes.");
+        }
 
-		renderBox.getCenter(center);
-		renderBox.getDimensions(dimensions);
-		radius = dimensions.len() / 2f;
-	}
+        updateTransforms();
+    }
 
-	public boolean isInFrustum() {
+    private void updateTransforms() {
+        // Обновите трансформацию
+        calculateTransforms();
+
+        // Инициализируйте границы
+        renderBox.inf(); // Убедитесь, что границы инициализированы
+        calculateBoundingBox(renderBox);
+        renderBox.mul(transform);
+
+        // Получите центр и размеры
+        renderBox.getCenter(center);
+        renderBox.getDimensions(dimensions);
+        radius = dimensions.len() / 2f;
+    }
+
+    public boolean isInFrustum() {
 		return isInFrustum;
 	}
 

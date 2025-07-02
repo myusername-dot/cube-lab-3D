@@ -3,6 +3,7 @@ package io.github.labyrinthgenerator.pages.game3d.screens;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Camera;
+import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.Shader;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.viewport.Viewport;
@@ -19,13 +20,13 @@ import static io.github.labyrinthgenerator.pages.game3d.constants.Constants.HALF
 public abstract class GameScreen implements Screen {
     public final CubeLab3D game;
 
-    protected Camera currentCam;
-
     protected Viewport viewport;
-
-    private final Vector3 currentSpherePos = new Vector3();
+    protected Camera currentCam;
+    protected Environment env;
 
     protected Player player;
+
+    private final Vector3 currentSpherePos = new Vector3();
 
     public GameScreen(final CubeLab3D game) {
         this.game = game;
