@@ -7,7 +7,9 @@ import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
+import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.attributes.CubemapAttribute;
+import com.badlogic.gdx.graphics.g3d.loader.ObjLoader;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.graphics.glutils.FrameBufferCubemap;
 import com.badlogic.gdx.math.MathUtils;
@@ -49,18 +51,31 @@ public class ReflectiveCubemap {
 
         float radius = 1f;
 
-        // MODEL BUILDER
-        /*ModelBuilder modelBuilder = new ModelBuilder();
-        Model sphereModel = modelBuilder.createSphere(
+        Model sphereModel = createCustomSphere(radius);
+
+        reflectiveSphereMdlInst = new ModelInstanceBB(sphereModel, position);
+        log.info("sphere model loaded successfully, radius: " + reflectiveSphereMdlInst.radius);
+
+        //reflectiveSphereMdlInst.transform.rotate(Vector3.X, 180);
+        reflectiveSphereMdlInst.transform.setToTranslation(position);
+        //reflectiveSphereMdlInst.calculateTransforms();
+        //reflectiveSphereMdlInst.updateTransforms(); // bug!
+        camFb.position.set(position.x, position.y/* + reflectiveSphereMdlInst.radius / 2f*/, position.z);
+        camFb.update();
+
+        reflectiveSphereMdlInst.materials.get(0).set(new CubemapAttribute(CubemapAttribute.EnvironmentMap, cubemap));
+        //updateCubemap(game.getScreen().getEnv(), 0);
+    }
+
+    private Model createSphereWithModelBuilder(float radius) {
+        ModelBuilder modelBuilder = new ModelBuilder();
+        return modelBuilder.createSphere(
             radius / 2f, radius / 2f, radius / 2f, 32, 32,
             new Material(ColorAttribute.createDiffuse(Color.GREEN)),
             VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal | VertexAttributes.Usage.TextureCoordinates);
+    }
 
-        // Добавляем нормальную карту в материал
-        sphereModel.materials.get(0).set(normalMapAttribute);
-        //sphereModel.meshes.add(normalMapMesh);*/
-
-        // CUSTOM MESH WITH NORMAL MAP
+    private Model createCustomSphere(float radius) {
         NormalMappedMesh normalMapMesh = createSphereNormalMapMesh(radius, 32, 32);
 
         Texture normalMapTexture = normalMapMesh.getNormalMapTexture();
@@ -76,23 +91,14 @@ public class ReflectiveCubemap {
         // Создаем модель с текстурированным кубом
         modelBuilder.part("sphere", normalMapMesh, GL20.GL_TRIANGLES, material);
 
-        Model sphereModel = modelBuilder.end();
+        return modelBuilder.end();
+    }
 
-        // OBJECT LOADER
-        /*ObjLoader objLoader = new ObjLoader();
-        Model sphereModel = objLoader.loadModel(Gdx.files.internal("models/sphere.obj"));
-        assert sphereModel != null;*/
-
-        reflectiveSphereMdlInst = new ModelInstanceBB(sphereModel, position);
-        log.info("sphere model loaded successfully, radius: " + reflectiveSphereMdlInst.radius);
-
-        reflectiveSphereMdlInst.transform.setToTranslation(position);
-        //reflectiveSphereMdlInst.updateTransforms(); // bug!
-        camFb.position.set(position.x, position.y/* + reflectiveSphereMdlInst.radius / 2f*/, position.z);
-        camFb.update();
-
-        reflectiveSphereMdlInst.materials.get(0).set(new CubemapAttribute(CubemapAttribute.EnvironmentMap, cubemap));
-        //updateCubemap(game.getScreen().getEnv(), 0);
+    private Model loadModel(String path) {
+        ObjLoader objLoader = new ObjLoader();
+        Model sphereModel = objLoader.loadModel(Gdx.files.internal(path));
+        assert sphereModel != null;
+        return sphereModel;
     }
 
     public Vector3 getPosition() {
@@ -117,7 +123,6 @@ public class ReflectiveCubemap {
         fb.begin();
         while (fb.nextSide()) {
             fb.getSide().getUp(camFb.up);
-            //camFb.up.scl(-1);
             fb.getSide().getDirection(camFb.direction);
             camFb.update();
 
