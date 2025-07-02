@@ -3,10 +3,7 @@ package io.github.labyrinthgenerator.pages.game3d.cubemap;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.*;
-import com.badlogic.gdx.graphics.g3d.Environment;
-import com.badlogic.gdx.graphics.g3d.Material;
-import com.badlogic.gdx.graphics.g3d.Model;
-import com.badlogic.gdx.graphics.g3d.ModelBatch;
+import com.badlogic.gdx.graphics.g3d.*;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.attributes.CubemapAttribute;
 import com.badlogic.gdx.graphics.g3d.loader.ObjLoader;
@@ -20,6 +17,8 @@ import io.github.labyrinthgenerator.pages.game3d.CubeLab3D;
 import io.github.labyrinthgenerator.pages.game3d.mesh.NormalMapAttribute;
 import io.github.labyrinthgenerator.pages.game3d.mesh.NormalMappedMesh;
 import io.github.labyrinthgenerator.pages.game3d.models.ModelInstanceBB;
+import io.github.labyrinthgenerator.pages.game3d.shaders.MyShaderProvider;
+import io.github.labyrinthgenerator.pages.game3d.shaders.SkyBoxShaderProgram;
 import lombok.extern.slf4j.Slf4j;
 
 import static io.github.labyrinthgenerator.pages.game3d.constants.Constants.HALF_UNIT;
@@ -111,9 +110,13 @@ public class ReflectiveCubemap {
         reflectiveSphereMdlInst.transform.setToTranslation(position);
     }
 
-    public void updateCubemap(final ModelBatch modelBatch, final Environment env, float delta) {
+    public void updateCubemap(final ModelBatch modelBatch, final Environment env, final SkyBoxShaderProgram envCubeMap, float delta) {
         Camera currentCam = game.getScreen().getCurrentCam();
         if (!game.getScreen().frustumCull(currentCam, reflectiveSphereMdlInst)) return;
+
+        /*MyShaderProvider myShaderProvider = game.getShaderProvider();
+        Shader currentShader = myShaderProvider.currentShader;
+        myShaderProvider.currentShader = null;*/
 
         game.getScreen().setCurrentCam(camFb);
 
@@ -128,14 +131,15 @@ public class ReflectiveCubemap {
 
             ScreenUtils.clear(1, 1, 1, 1, true);
 
+            envCubeMap.render(camFb);
+
             modelBatch.begin(camFb);
-
             game.getEntMan().render3DAllEntities(modelBatch, env, delta, camFb.position.x, camFb.position.z);
-
             modelBatch.end();
         }
         fb.end();
 
+        //myShaderProvider.currentShader = currentShader;
         game.getScreen().setCurrentCam(currentCam);
     }
 

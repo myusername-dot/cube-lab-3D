@@ -177,7 +177,7 @@ public class PlayScreen extends GameScreen {
         super.render(delta);
 
         currentCam.update();
-        exitCubemap.updateCubemap(game.getMdlBatch(), env, delta);
+        exitCubemap.updateCubemap(game.getMdlBatch(), env, envCubeMap, delta);
 
         game.getFbo().begin();
 

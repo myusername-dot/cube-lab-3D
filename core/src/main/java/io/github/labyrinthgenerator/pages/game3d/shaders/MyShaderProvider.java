@@ -30,10 +30,12 @@ public class MyShaderProvider extends Tickable implements ShaderProvider {
     public static final int MAX_NUM_LIGHTS = 20;
     public static final float MAX_LIGHT_RENDERING_DISTANCE = 10f;
 
-    public SpotLightShader spotLightShader;
-    public SpotLightFreeShader spotLightFreeShader;
-    public FogFreeShader fogFreeShader;
-    public DefaultShaderProvider defaultShaderProvider;
+    public final SpotLightShader spotLightShader;
+    public final SpotLightFreeShader spotLightFreeShader;
+    public final FogFreeShader fogFreeShader;
+    public final DefaultShaderProvider defaultShaderProvider;
+
+    public Shader currentShader;
 
     private final TreeMap<Float, Pair<PointLightPlus, Float>> pointLightsByPlayerDistAndCamAngle = new TreeMap<>();
 
@@ -55,6 +57,8 @@ public class MyShaderProvider extends Tickable implements ShaderProvider {
             config.fragmentShader = "#define spotFlag\n\n" + config.fragmentShader;
         }
         defaultShaderProvider = new DefaultShaderProvider(config);
+
+        currentShader = fogFreeShader;
     }
 
     public Player getPlayer() {
@@ -137,7 +141,7 @@ public class MyShaderProvider extends Tickable implements ShaderProvider {
     }
 
     public Shader getShader() {
-        return fogFreeShader;
+        return currentShader;
     }
 
     @Override

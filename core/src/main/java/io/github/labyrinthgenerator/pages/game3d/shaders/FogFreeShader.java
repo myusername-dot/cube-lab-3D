@@ -117,9 +117,7 @@ public class FogFreeShader extends SpotLightFreeShader {
             "       vec3 N = normalize(v_normal * -1);\n" +
             "       vec3 V = normalize(u_cameraPosition - worldPosition);\n" +
             "       vec3 R = reflect(V, N);\n" + // + 0.1 * normalize(N)
-            "\n" +
-            "       c = texture(u_cubemap, R);\n" +
-            "       //c *= 1.0 - smoothstep(0.0, 1.0, length(R));\n" +
+            "       c = texture(u_cubemap, R);\n" + // c *= 1.0 - smoothstep(0.0, 1.0, length(R));
             "    } else {\n" +
             "       c = texture2D(u_texture, v_texCoords0);" +
             "    }\n" +
@@ -153,7 +151,10 @@ public class FogFreeShader extends SpotLightFreeShader {
             "    }\n" +
             "\n" +
             "\n" + // Основной цвет
-            "    gl_FragColor = mix(mix(mix(c, spotColor, 0.3), u_fogColor, fogFactor), spotColor, 0.1);\n" +
+            "    if (!u_isReflective) " +
+            "        gl_FragColor = mix(mix(mix(c, spotColor, 0.3), u_fogColor, fogFactor), spotColor, 0.1);\n" +
+            "    else\n" +
+            "        gl_FragColor = mix(c, u_fogColor, fogFactor);\n" +
             "\n" +
             "\n" + // Обработка точечных источников света
             "    if (u_pointLightsSize > 0) {\n" +
