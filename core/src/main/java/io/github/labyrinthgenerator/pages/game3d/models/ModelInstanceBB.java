@@ -37,7 +37,6 @@ public class ModelInstanceBB extends ModelInstance {
         calculateTransforms();
 
         // Инициализируйте границы
-        renderBox.inf(); // Убедитесь, что границы инициализированы
         calculateBoundingBox(renderBox);
         renderBox.mul(transform);
 

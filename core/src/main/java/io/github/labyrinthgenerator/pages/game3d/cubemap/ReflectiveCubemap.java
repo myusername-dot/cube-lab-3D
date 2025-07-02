@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.attributes.CubemapAttribute;
+import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.graphics.glutils.FrameBufferCubemap;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector3;
@@ -67,12 +68,15 @@ public class ReflectiveCubemap {
         normalMapAttribute.textureDescription.minFilter = Texture.TextureFilter.Nearest;
         normalMapAttribute.textureDescription.magFilter = Texture.TextureFilter.Nearest;
 
-        Material material = new Material();
-        material.set(normalMapAttribute);
+        Material material = new Material(normalMapAttribute);
 
-        Model sphereModel = new Model();
-        sphereModel.meshes.add(normalMapMesh);
-        sphereModel.materials.add(material);
+        ModelBuilder modelBuilder = new ModelBuilder();
+        modelBuilder.begin();
+
+        // Создаем модель с текстурированным кубом
+        modelBuilder.part("sphere", normalMapMesh, GL20.GL_TRIANGLES, material);
+
+        Model sphereModel = modelBuilder.end();
 
         // OBJECT LOADER
         /*ObjLoader objLoader = new ObjLoader();
@@ -138,15 +142,16 @@ public class ReflectiveCubemap {
 
     public static NormalMappedMesh createSphereNormalMapMesh(float radius, int longitudeBands, int latitudeBands) {
         int totalVertices = (longitudeBands + 1) * (latitudeBands + 1);
-        float[] vertices = new float[totalVertices * 3]; // x, y, z
+        float[] vertices = new float[totalVertices * 8]; // x, y, z, nx, ny, nz, u, v
         float[] normals = new float[totalVertices * 3]; // nx, ny, nz
         float[] texCoords = new float[totalVertices * 2]; // u, v
         short[] indices = new short[longitudeBands * latitudeBands * 6];
 
+        // Создание вершин, нормалей и текстурных координат
         int vertexIndex = 0;
+        int normalIndex = 0;
         int texCoordIndex = 0;
 
-        // Создание вершин, нормалей и текстурных координат
         for (int lat = 0; lat <= latitudeBands; lat++) {
             float theta = (float) lat * (float) Math.PI / latitudeBands;
             float sinTheta = (float) Math.sin(theta);
@@ -161,26 +166,29 @@ public class ReflectiveCubemap {
                 float x = cosPhi * sinTheta;
                 float y = cosTheta;
                 float z = sinPhi * sinTheta;
+                float nx = MathUtils.clamp(x, -1, 1);
+                float ny = MathUtils.clamp(y, -1, 1);
+                float nz = MathUtils.clamp(z, -1, 1);
 
+                // all in vertices
                 vertices[vertexIndex++] = x * radius;
                 vertices[vertexIndex++] = y * radius;
                 vertices[vertexIndex++] = z * radius;
+                vertices[vertexIndex++] = nx;
+                vertices[vertexIndex++] = ny;
+                vertices[vertexIndex++] = nz;
+                vertices[vertexIndex++] = (float) lon / longitudeBands;
+                vertices[vertexIndex++] = (float) lat / latitudeBands;
 
                 // Нормали
-                normals[vertexIndex - 3] = x; // nx
-                normals[vertexIndex - 2] = y; // ny
-                normals[vertexIndex - 1] = z; // nz
+                normals[normalIndex++] = nx;
+                normals[normalIndex++] = ny;
+                normals[normalIndex++] = nz;
 
                 // Текстурные координаты
                 texCoords[texCoordIndex++] = (float) lon / longitudeBands;
                 texCoords[texCoordIndex++] = (float) lat / latitudeBands;
             }
-        }
-
-        for (int i = 0; i < totalVertices; i++) {
-            normals[i * 3] = MathUtils.clamp(normals[i * 3], -1, 1);
-            normals[i * 3 + 1] = MathUtils.clamp(normals[i * 3 + 1], -1, 1);
-            normals[i * 3 + 2] = MathUtils.clamp(normals[i * 3 + 2], -1, 1);
         }
 
         // Создание индексов для треугольников
@@ -212,20 +220,22 @@ public class ReflectiveCubemap {
             if (Float.isNaN(n))
                 throw new GdxRuntimeException("Normal contains NaN value.");
 
+        Texture normalTex = createMeshNormalMapTexture(longitudeBands + 1, latitudeBands + 1, normals, texCoords);
 
         NormalMappedMesh mesh = new NormalMappedMesh(true, totalVertices, indices.length,
-            new VertexAttributes(VertexAttribute.Position(), VertexAttribute.Normal(),
-                VertexAttribute.TexCoords(0), VertexAttribute.TexCoords(2))); // FIXME
+            new VertexAttribute(VertexAttributes.Usage.Position, 3, "a_position"),
+            new VertexAttribute(VertexAttributes.Usage.Normal, 3, "a_normal"),
+            new VertexAttribute(VertexAttributes.Usage.TextureCoordinates, 2, "a_texCoord0")); // a_texCoord2
         mesh.setVertices(vertices);
-        Texture normalTex = createMeshNormalMapTexture(longitudeBands + 1, latitudeBands + 1, normals);
-        mesh.setNormalMap(normalTex, texCoords);
         mesh.setIndices(indices);
+        mesh.setNormalMap(normalTex);
 
         return mesh;
     }
 
-    private static Texture createMeshNormalMapTexture(int width, int height, float[] normals) {
+    private static Texture createMeshNormalMapTexture(int width, int height, float[] normals, float[] texCoords) {
         Pixmap pixmap = new Pixmap(width, height, Pixmap.Format.RGBA8888);
+
         for (int i = 0; i < width; i++) {
             for (int j = 0; j < height; j++) {
                 int index = (j * width + i) * 3; // Индекс нормали
@@ -233,9 +243,20 @@ public class ReflectiveCubemap {
                 int g = (int) ((normals[index + 1] * 0.5f + 0.5f) * 255);
                 int b = (int) ((normals[index + 2] * 0.5f + 0.5f) * 255);
                 int rgba = (((r & 255) << 24) | ((g & 255) << 16) | ((b & 255) << 8) | 255);
-                pixmap.drawPixel(i, j, rgba);
+
+                // Используем текстурные координаты для правильного размещения пикселей
+                int texCoordIndex = (j * width + i) * 2; // Индекс текстурной координаты
+                int texCoordU = (int) (texCoords[texCoordIndex] * width);
+                int texCoordV = (int) (texCoords[texCoordIndex + 1] * height);
+
+                // Убедимся, что координаты в пределах границ
+                texCoordU = MathUtils.clamp(texCoordU, 0, width - 1);
+                texCoordV = MathUtils.clamp(texCoordV, 0, height - 1);
+
+                pixmap.drawPixel(texCoordU, texCoordV, rgba);
             }
         }
+
         Texture normalTexture = new Texture(pixmap);
 
         // Используем Gdx.files.local для записи
