@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.attributes.CubemapAttribute;
 import com.badlogic.gdx.graphics.glutils.FrameBufferCubemap;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 import com.badlogic.gdx.utils.ScreenUtils;
@@ -176,6 +177,12 @@ public class ReflectiveCubemap {
             }
         }
 
+        for (int i = 0; i < totalVertices; i++) {
+            normals[i * 3] = MathUtils.clamp(normals[i * 3], -1, 1);
+            normals[i * 3 + 1] = MathUtils.clamp(normals[i * 3 + 1], -1, 1);
+            normals[i * 3 + 2] = MathUtils.clamp(normals[i * 3 + 2], -1, 1);
+        }
+
         // Создание индексов для треугольников
         int index = 0;
         for (int lat = 0; lat < latitudeBands; lat++) {
@@ -196,6 +203,14 @@ public class ReflectiveCubemap {
         if (vertices.length == 0) {
             throw new GdxRuntimeException("Vertices array is empty.");
         }
+
+        for (float v : vertices)
+            if (Float.isNaN(v))
+                throw new GdxRuntimeException("Vertex contains NaN value.");
+
+        for (float n : normals)
+            if (Float.isNaN(n))
+                throw new GdxRuntimeException("Normal contains NaN value.");
 
 
         NormalMappedMesh mesh = new NormalMappedMesh(true, totalVertices, indices.length,
