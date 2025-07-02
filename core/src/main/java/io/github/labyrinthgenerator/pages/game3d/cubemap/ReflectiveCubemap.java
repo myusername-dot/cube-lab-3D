@@ -88,7 +88,7 @@ public class ReflectiveCubemap {
 
         reflectiveSphereMdlInst.transform.setToTranslation(position);
         //reflectiveSphereMdlInst.updateTransforms(); // bug!
-        camFb.position.set(position.x, position.y + reflectiveSphereMdlInst.radius / 2f, position.z);
+        camFb.position.set(position.x, position.y/* + reflectiveSphereMdlInst.radius / 2f*/, position.z);
         camFb.update();
 
         reflectiveSphereMdlInst.materials.get(0).set(new CubemapAttribute(CubemapAttribute.EnvironmentMap, cubemap));
@@ -117,7 +117,7 @@ public class ReflectiveCubemap {
         fb.begin();
         while (fb.nextSide()) {
             fb.getSide().getUp(camFb.up);
-            camFb.up.scl(-1);
+            //camFb.up.scl(-1);
             fb.getSide().getDirection(camFb.direction);
             camFb.update();
 
