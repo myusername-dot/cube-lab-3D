@@ -32,8 +32,9 @@ public class FogFreeShader extends SpotLightFreeShader {
 
     private static final String VERTEX_SHADER =
         "attribute vec4 a_position;\n" +
+            "attribute vec3 a_normal;\n" +
             "attribute vec2 a_texCoord0;\n" + // texture
-            "attribute vec2 a_texCoord2;\n" + // normal
+            //"attribute vec2 a_texCoord2;\n" + // normal
             "uniform mat4 u_worldTrans;\n" +
             "uniform mat4 u_projTrans;\n" +
             "uniform float u_spotCutoff;\n" +
@@ -41,8 +42,9 @@ public class FogFreeShader extends SpotLightFreeShader {
             "varying vec4 position;\n" + // gl_Position
             "varying vec4 aPosition;\n" + // a_position
             "varying vec3 worldPosition;\n" + // (u_worldTrans * a_position).xyz
+            "varying vec3 v_normal;\n" +
             "varying vec2 v_texCoords0;\n" +
-            "varying vec2 v_texCoords2;\n" +
+            //"varying vec2 v_texCoords2;\n" +
             "varying vec4 spotColor;\n" +
             "varying float clip2Distance;\n" + // Расстояние до камеры
             "varying float fogClipDistanceFactor;\n" +
@@ -51,6 +53,7 @@ public class FogFreeShader extends SpotLightFreeShader {
             "    gl_Position = u_projTrans * u_worldTrans * a_position;\n" +
             "    position = gl_Position;\n" +
             "    aPosition = a_position;\n" +
+            "    v_normal = a_normal;\n" +
             "    worldPosition = (u_worldTrans * a_position).xyz;\n" +
             "\n" +
             "\n" + // Вычисляем расстояние до камеры
@@ -67,7 +70,7 @@ public class FogFreeShader extends SpotLightFreeShader {
             "    angle = max(angle, 0.0);\n" +
             "\n" +
             "    v_texCoords0 = a_texCoord0;\n" +
-            "    v_texCoords2 = a_texCoord2;\n" +
+            //"    v_texCoords2 = a_texCoord2;\n" +
             "    spotColor = (acos(angle) < radians(u_spotCutoff)) ? vec4(1,1,0.1,1) : vec4(0.1,0.1,0.1,1);\n" +
             "}";
 
@@ -82,11 +85,10 @@ public class FogFreeShader extends SpotLightFreeShader {
             "#endif\n" +
             "\n" +
             "varying LOWP vec2 v_texCoords0;\n" +
-            "varying LOWP vec2 v_texCoords2;\n" +
+            //"varying LOWP vec2 v_texCoords2;\n" +
             "uniform sampler2D u_texture;\n" +
-            "uniform sampler2D u_normalMap;\n" +
+            //"uniform sampler2D u_normalMap;\n" +
             "uniform samplerCube u_cubemap;\n" +
-            "uniform vec3 u_normalTexture;\n" +
             "uniform bool u_isReflective;" +
             "uniform vec3 u_cameraPosition;\n" +
             "uniform vec4 u_fogColor;\n" +
@@ -96,6 +98,7 @@ public class FogFreeShader extends SpotLightFreeShader {
             "varying vec4 position;\n" + // Передаем gl_Position
             "varying vec4 aPosition;\n" + // position_a
             "varying vec3 worldPosition;\n" + // (u_worldTrans * a_position).xyz
+            "varying vec3 v_normal;\n" +
             "varying vec4 spotColor;\n" +
             "varying float clip2Distance;\n" + // Расстояние до камеры
             "varying float fogClipDistanceFactor;\n" +
@@ -110,7 +113,8 @@ public class FogFreeShader extends SpotLightFreeShader {
             "    vec4 c = vec4(0);\n" +
             "    if (u_isReflective) {\n" +
             "\n" + // Преобразование в диапазон [-1, 1]
-            "       vec3 N = normalize(texture(u_normalMap, v_texCoords2).xyz * 2.0 - 1.0);\n" +
+            "\n" + // normalize(texture(u_normalMap, v_texCoords2).xyz * 2.0 - 1.0)
+            "       vec3 N = normalize(v_normal);\n" +
             "       vec3 V = normalize(u_cameraPosition - worldPosition);\n" +
             "       vec3 R = reflect(V, N);\n" + // + 0.1 * normalize(N)
             "\n" +
@@ -195,7 +199,7 @@ public class FogFreeShader extends SpotLightFreeShader {
         program.setUniformMatrix(u_projTrans, camera.combined);
         program.setUniformi("u_texture", 0);
         program.setUniformi("u_cubemap", 1);
-        program.setUniformi("u_normalMap", 2);
+        //program.setUniformi("u_normalMap", 2);
         program.setUniformf("u_spotCutoff", cutoffAngle);
         setFogUniforms(playerVelocity);
         float[] cameraPosition = new float[]{camera.position.x, camera.position.y, camera.position.z};
@@ -247,7 +251,7 @@ public class FogFreeShader extends SpotLightFreeShader {
             if (attribute instanceof NormalMapAttribute) {
                 NormalMapAttribute normalAttribute = (NormalMapAttribute) attribute;
                 Texture normalTexture = normalAttribute.textureDescription.texture;
-                normalTexture.bind(2);
+                normalTexture.bind(0); // 2 FIXME
                 continue;
             }
 
