@@ -70,7 +70,7 @@ public class PlayScreen extends GameScreen {
         Gdx.input.setCursorCatched(true);
         envCubeMap = new SkyBoxShaderProgram(new Pixmap(Gdx.files.internal(game.getAssMan().bgSky01)));
 
-        exitCubemap = new ReflectiveCubemap(getPlayerSpawnPosition().add(0, 0.5f, 0), game);
+        exitCubemap = new ReflectiveCubemap(getPlayerSpawnPosition().add(0, -1f, 0), game);
     }
 
     private Environment createEnvironment() {
