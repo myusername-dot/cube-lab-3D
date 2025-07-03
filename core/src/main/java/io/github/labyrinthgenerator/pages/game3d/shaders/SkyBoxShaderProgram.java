@@ -20,7 +20,7 @@ public class SkyBoxShaderProgram implements Disposable {
     Texture[] textures;
 
     Mesh quad;
-    boolean invert = false;
+    boolean invert = true;
 
     protected String vertexShader =
         " attribute vec4 a_position; " +
@@ -96,50 +96,54 @@ public class SkyBoxShaderProgram implements Disposable {
         int w = cubemap.getWidth();
         int h = cubemap.getHeight();
 
+        // Устанавливаем размеры для каждой стороны куба
+        int faceWidth = w / 6; // Ширина каждой стороны куба
+        int faceHeight = h; // Высота каждой стороны куба (не обрезаем)
+
         Pixmap[] data = new Pixmap[6];
-        for (int i = 0; i < 6; i++) data[i] = new Pixmap(w / 4, h / 3, Pixmap.Format.RGB888);
-        for (int x = 0; x < w; x++)
+        for (int i = 0; i < 6; i++) {
+            data[i] = new Pixmap(faceWidth, faceHeight, Pixmap.Format.RGB888);
+        }
+
+        for (int x = 0; x < w; x++) {
             for (int y = 0; y < h; y++) {
-                //-X
-                if (x >= 0 && x <= w / 4 && y >= h / 3 && y <= h * 2 / 3)
-                    data[1].drawPixel(x, y - h / 3, cubemap.getPixel(x, y));
-                //+Y
-                if (x >= w / 4 && x <= w / 2 + 1 && y >= 0 && y <= h / 3)
-                    data[2].drawPixel(x - w / 4, y, cubemap.getPixel(x, y));
-                //+Z
-                if (x >= w / 4 && x <= w / 2 && y >= h / 3 && y <= h * 2 / 3)
-                    data[4].drawPixel(x - w / 4, y - h / 3, cubemap.getPixel(x, y));
-                //-Y
-                if (x >= w / 4 && x <= w / 2 && y >= h * 2 / 3 && y <= h)
-                    data[3].drawPixel(x - w / 4, y - h * 2 / 3, cubemap.getPixel(x, y));
-                //+X
-                if (x >= w / 2 && x <= w * 3 / 4 && y >= h / 3 && y <= h * 2 / 3)
-                    data[0].drawPixel(x - w / 2, y - h / 3, cubemap.getPixel(x, y));
-                //-Z
-                if (x >= w * 3 / 4 && x <= w && y >= h / 3 && y <= h * 2 / 3)
-                    data[5].drawPixel(x - w * 3 / 4, y - h / 3, cubemap.getPixel(x, y));
+                // -X
+                if (x >= 0 && x < faceWidth) {
+                    data[0].drawPixel(x, y, cubemap.getPixel(x, y)); // -X
+                }
+                // +X
+                if (x >= faceWidth && x < 2 * faceWidth) {
+                    data[4].drawPixel(x - faceWidth, y, cubemap.getPixel(x, y)); // +X
+                }
+                // -Y
+                if (x >= 2 * faceWidth && x < 3 * faceWidth) {
+                    data[2].drawPixel(x - 2 * faceWidth, y, cubemap.getPixel(x, y)); // -Y
+                }
+                // +Y
+                if (x >= 3 * faceWidth && x < 4 * faceWidth) {
+                    data[3].drawPixel(x - 3 * faceWidth, y, cubemap.getPixel(x, y)); // +Y
+                }
+                // -Z
+                if (x >= 4 * faceWidth && x < 5 * faceWidth) {
+                    data[1].drawPixel(x - 4 * faceWidth, y, cubemap.getPixel(x, y)); // -Z
+                }
+                // +Z
+                if (x >= 5 * faceWidth && x < 6 * faceWidth) {
+                    data[5].drawPixel(x - 5 * faceWidth, y, cubemap.getPixel(x, y)); // +Z
+                }
             }
+        }
 
         textures = new Texture[6];
-
-        textures[0] = new Texture(data[4]);
-        textures[1] = new Texture(data[5]);
-
-        textures[2] = new Texture(data[1]);
-        textures[3] = new Texture(data[0]);
-
-        textures[4] = new Texture(data[2]);
-        textures[5] = new Texture(data[3]);
-
         for (int i = 0; i < 6; i++) {
-            data[i].dispose();
-            data[i] = null;
+            textures[i] = new Texture(data[i]);
+            data[i].dispose(); // Освобождаем память
         }
-        cubemap.dispose();
-        cubemap = null;
 
+        cubemap.dispose(); // Освобождаем исходное изображение
         init();
     }
+
 
     public SkyBoxShaderProgram(FileHandle cubemap) {
         this(new Pixmap(cubemap));

@@ -11,7 +11,7 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 public class AssetsManager extends AssetManager {
     public final String atlas01 = "textures/atlas05.png";
     public final String entities = "textures/entities4.png";
-    public final String bgSky01 = "textures/sky-long2.jpg";
+    public final String bgSky01 = "textures/sky-long5.jpg";
     public final String guiTitle = "textures/title.png";
 
     public final String font03_64 = "fonts/font03_64.fnt";
