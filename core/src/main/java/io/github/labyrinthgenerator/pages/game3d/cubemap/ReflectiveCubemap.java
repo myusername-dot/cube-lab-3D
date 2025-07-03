@@ -112,9 +112,9 @@ public class ReflectiveCubemap {
         Camera currentCam = game.getScreen().getCurrentCam();
         if (!game.getScreen().frustumCull(currentCam, reflectiveSphereMdlInst)) return;
 
-        /*MyShaderProvider myShaderProvider = game.getShaderProvider();
+        MyShaderProvider myShaderProvider = game.getShaderProvider();
         Shader currentShader = myShaderProvider.currentShader;
-        myShaderProvider.currentShader = null;*/
+        myShaderProvider.currentShader = myShaderProvider.fogFreeShader;
 
         game.getScreen().setCurrentCam(camFb);
 
@@ -137,7 +137,7 @@ public class ReflectiveCubemap {
         }
         fb.end();
 
-        //myShaderProvider.currentShader = currentShader;
+        myShaderProvider.currentShader = currentShader;
         game.getScreen().setCurrentCam(currentCam);
     }
 

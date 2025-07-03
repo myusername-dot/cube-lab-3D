@@ -31,6 +31,7 @@ public class MyShaderProvider extends Tickable implements ShaderProvider {
 
     public final SpotLightShader spotLightShader;
     public final SpotLightFreeShader spotLightFreeShader;
+    public final FogFreeShader fogFreeLightShader;
     public final FogFreeShader fogFreeShader;
     public final DefaultShaderProvider defaultShaderProvider;
 
@@ -46,7 +47,9 @@ public class MyShaderProvider extends Tickable implements ShaderProvider {
         spotLightShader.init();
         spotLightFreeShader = new SpotLightFreeShader();
         spotLightFreeShader.init();
-        fogFreeShader = new FogFreeShader(this);
+        fogFreeLightShader = new FogFreeShader(this, true);
+        fogFreeLightShader.init();
+        fogFreeShader = new FogFreeShader(this, false);
         fogFreeShader.init();
         DefaultShader.Config config = new DefaultShader.Config();
         config.vertexShader = Gdx.files.internal("shaders/def.vertex.glsl").readString();
@@ -57,7 +60,7 @@ public class MyShaderProvider extends Tickable implements ShaderProvider {
         }
         defaultShaderProvider = new DefaultShaderProvider(config);
 
-        currentShader = fogFreeShader;
+        currentShader = fogFreeLightShader;
     }
 
     public Player getPlayer() {
@@ -148,7 +151,7 @@ public class MyShaderProvider extends Tickable implements ShaderProvider {
     public void dispose() {
         spotLightShader.dispose();
         spotLightFreeShader.dispose();
-        fogFreeShader.dispose();
+        fogFreeLightShader.dispose();
         defaultShaderProvider.dispose();
     }
 }
