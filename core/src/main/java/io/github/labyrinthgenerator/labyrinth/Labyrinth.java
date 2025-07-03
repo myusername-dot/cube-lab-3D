@@ -126,7 +126,7 @@ public class Labyrinth implements Lab {
     }
 
     @Override
-    public boolean passage() {
+    public boolean passage(boolean skip) {
         return passage(false, false);
     }
 

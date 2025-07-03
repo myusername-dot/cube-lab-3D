@@ -6,7 +6,7 @@ import java.util.Set;
 
 public interface Lab {
     void create();
-    boolean passage();
+    boolean passage(boolean skip);
     int[][] get2D();
     int[][] get3D();
     boolean isFin();
