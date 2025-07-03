@@ -48,7 +48,7 @@ public class ReflectiveCubemap {
 
         cubemap = fb.getColorBufferTexture();
 
-        Model sphereModel = createSphereWithModelBuilder(radius);
+        Model sphereModel = createCustomSphere(radius);
 
         reflectiveSphereMdlInst = new ModelInstanceBB(sphereModel, position);
         log.info("sphere model loaded successfully, radius: " + reflectiveSphereMdlInst.radius);
@@ -73,7 +73,7 @@ public class ReflectiveCubemap {
     }
 
     private Model createCustomSphere(float radius) {
-        NormalMappedMesh normalMapMesh = createSphereNormalMapMesh(radius, 32, 32);
+        NormalMappedMesh normalMapMesh = createSphereNormalMapMesh(radius, 32, 32, false);
 
         Texture normalMapTexture = normalMapMesh.getNormalMapTexture();
         NormalMapAttribute normalMapAttribute = NormalMapAttribute.createDiffuse(normalMapTexture);
@@ -147,7 +147,7 @@ public class ReflectiveCubemap {
         }
     }
 
-    public static NormalMappedMesh createSphereNormalMapMesh(float radius, int longitudeBands, int latitudeBands) {
+    public static NormalMappedMesh createSphereNormalMapMesh(float radius, int longitudeBands, int latitudeBands, boolean flipN) {
         int totalVertices = (longitudeBands + 1) * (latitudeBands + 1);
         float[] vertices = new float[totalVertices * 8]; // x, y, z, nx, ny, nz, u, v
         float[] normals = new float[totalVertices * 3]; // nx, ny, nz
@@ -173,9 +173,9 @@ public class ReflectiveCubemap {
                 float x = cosPhi * sinTheta;
                 float y = cosTheta;
                 float z = sinPhi * sinTheta;
-                float nx = MathUtils.clamp(x, -1, 1);
-                float ny = MathUtils.clamp(y, -1, 1);
-                float nz = MathUtils.clamp(z, -1, 1);
+                float nx = MathUtils.clamp(x, -1, 1) * (flipN ? -1 : 1);
+                float ny = MathUtils.clamp(y, -1, 1) * (flipN ? -1 : 1);
+                float nz = MathUtils.clamp(z, -1, 1) * (flipN ? -1 : 1);
 
                 // all in vertices
                 vertices[vertexIndex++] = x * radius;

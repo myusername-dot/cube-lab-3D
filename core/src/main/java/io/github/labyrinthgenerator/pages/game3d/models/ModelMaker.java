@@ -65,7 +65,7 @@ public class ModelMaker {
             -HALF_UNIT, HALF_UNIT, 0,
             -HALF_UNIT, -HALF_UNIT, 0,
             HALF_UNIT, -HALF_UNIT, 0,
-            0, 0, -1,
+            0, 0, 1,
             material,
             Usage.Position | Usage.Normal | Usage.TextureCoordinates
         );
