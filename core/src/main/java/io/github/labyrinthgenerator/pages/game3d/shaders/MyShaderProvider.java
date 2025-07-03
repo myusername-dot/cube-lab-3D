@@ -4,7 +4,6 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.g3d.Renderable;
 import com.badlogic.gdx.graphics.g3d.Shader;
-import com.badlogic.gdx.graphics.g3d.environment.PointLight;
 import com.badlogic.gdx.graphics.g3d.shaders.DefaultShader;
 import com.badlogic.gdx.graphics.g3d.utils.DefaultShaderProvider;
 import com.badlogic.gdx.graphics.g3d.utils.ShaderProvider;
@@ -102,6 +101,7 @@ public class MyShaderProvider extends Tickable implements ShaderProvider {
 
                 // Проверяем, находится ли точка в пределах угла обзора
                 if (angle > cosFov) {
+                    pointLight.camDistance = distance;
                     pointLight.calculateScreenTransforms(player.playerCam);
                     pointLightsByPlayerDistAndCamAngle.put(distance, new Pair<>(pointLight, angle));
                 }
@@ -111,10 +111,10 @@ public class MyShaderProvider extends Tickable implements ShaderProvider {
 
     public List<PointLightPlus> getPointLightsByPlayerDistAndCamAngle(final float distance, final float angle) {
 
-        return pointLightsByPlayerDistAndCamAngle.subMap(distance - HALF_UNIT * 3, distance + HALF_UNIT * 3).values()
+        return pointLightsByPlayerDistAndCamAngle.subMap(/*distance - HALF_UNIT * 3*/0f, distance + HALF_UNIT * 3).values()
             .stream()
-            .filter(p -> Math.abs(angle - p.snd) < 0.2)
-            .sorted((e1, e2) -> Float.compare(Math.abs(angle - e1.snd), Math.abs(angle - e2.snd)))
+            .filter(p -> Math.abs(angle - p.snd) < 0.8)
+            //.sorted((e1, e2) -> Float.compare(Math.abs(angle - e1.snd), Math.abs(angle - e2.snd)))
             .limit(MAX_NUM_LIGHTS)
             .map(p -> p.fst)
             .collect(Collectors.toList());

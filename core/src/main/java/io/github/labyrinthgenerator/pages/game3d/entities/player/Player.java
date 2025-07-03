@@ -61,7 +61,7 @@ public class Player extends Entity {
                 position.z + rectDepth / 2f),
             screen);
         playerCam = new PerspectiveCamera(70, WINDOW_WIDTH, WINDOW_HEIGHT);
-        playerCam.position.set(new Vector3(0, HALF_UNIT, 0));
+        playerCam.position.set(new Vector3(0, camY, 0));
         playerCam.lookAt(new Vector3(0, camY, HALF_UNIT * 2));
         playerCam.near = 0.01f;
         playerCam.far = 10f;

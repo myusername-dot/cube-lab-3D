@@ -104,7 +104,8 @@ public class FogFreeShader extends SpotLightFreeShader {
             "varying float fogClipDistanceFactor;\n" +
             "\n" +
             "uniform vec3 u_pointLights[NUM_LIGHTS];\n" +
-            //"uniform vec3 u_pointLightsScreen[NUM_LIGHTS];\n" +
+            "uniform float u_pointLightsDistance[NUM_LIGHTS];\n" +
+            "uniform vec3 u_pointLightsScreen[NUM_LIGHTS];\n" +
             "uniform vec4 u_pointLightColors[NUM_LIGHTS];\n" +
             "uniform int u_pointLightsSize;\n" +
             "\n" +
@@ -123,7 +124,7 @@ public class FogFreeShader extends SpotLightFreeShader {
             "    }\n" +
             "\n" +
             //"    float heightFactor = max(0.0, position.y);\n" +
-            "    float heightFactor = max(0.0, (worldPosition.y - 0.5) * 1.6);\n" + // 0..1 -> 0..0.5
+            "    float heightFactor = max(0.0, (worldPosition.y - 0.5) * 1.6);\n" + // 0..1 -> 0..0.5 * 1.6
             "\n" +
             "    float longWave = clamp(\n" +
             //"        sin(aPosition.x + aPosition.z + u_time) * (max(-0.5, position.y) + 0.5) * 0.4, \n" + // 0.5..-0.5
@@ -162,11 +163,19 @@ public class FogFreeShader extends SpotLightFreeShader {
             "    if (u_pointLightsSize > 0) {\n" +
             "        vec3 glowingColor = vec3(0.0);\n" +
             "        for (int i = 0; i < u_pointLightsSize; i++) {\n" +
-            "            vec3 lightPos = u_pointLights[i];\n" +
             "            vec4 lightColor = u_pointLightColors[i];\n" +
+            "            vec3 lightPos = u_pointLights[i];\n" +
             "            float intensity = 0.003;\n" +
-            "            float distance = length(lightPos - worldPosition);\n" +
-            "            float attenuation = intensity / (distance * distance + 0.0001);\n" +
+                "            float distanceWall15 = pow(length(lightPos - worldPosition), 1.5);\n" +
+            "            float attenuation = intensity / (distanceWall15 + 0.0001);\n" +
+            //"          if (lightPos.y <= 0.5) {\n" +
+            "            vec3 lightPosScreen = u_pointLightsScreen[i];\n" +
+            "            float distance = u_pointLightsDistance[i];\n" +
+            "            if (distance > 0.3) {\n" +
+            "               float screenDistance = length(lightPosScreen.xy - gl_FragCoord.xy);\n" +
+            "               attenuation += intensity * 500.0 / (screenDistance * distance + 0.0001)" +
+            "                   * fogFactor;\n" + // fog glowing
+            "            }\n" +
             "            glowingColor += lightColor.rgb * attenuation;\n" +
             "        }\n" +
             "        gl_FragColor.rgb += glowingColor;\n" +
@@ -214,12 +223,13 @@ public class FogFreeShader extends SpotLightFreeShader {
 
     private void setDefaultLightUniforms() {
         program.setUniform3fv("u_pointLights[0]", new float[]{0, 0, 0}, 0, 3);
-        //program.setUniform3fv("u_pointLightsScreen[0]", new float[]{0, 0, 0}, 0, 3);
+        program.setUniform3fv("u_pointLightsDistance[0]", new float[]{0, 0, 0}, 0, 3);
+        program.setUniform3fv("u_pointLightsScreen[0]", new float[]{0, 0, 0}, 0, 3);
         program.setUniform4fv("u_pointLightColors[0]", new float[]{0, 0, 0, 0}, 0, 4);
     }
 
     private void setFogUniforms(Vector2 playerVelocity) {
-        program.setUniformf("u_fogColor", new Color(0.9f, 0.9f, 0.9f, 0.9f));
+        program.setUniformf("u_fogColor", new Color(0.5f, 0.5f, 0.5f, 0.5f));
         program.setUniformf("u_fogDensity", fogBaseDensity);
         program.setUniform2fv("u_fogVelocity", new float[]{playerVelocity.x, playerVelocity.y}, 0, 2);
         program.setUniformf("u_time", timer);
@@ -239,8 +249,9 @@ public class FogFreeShader extends SpotLightFreeShader {
             PointLightPlus light = pointLights.get(i);
             program.setUniform3fv("u_pointLights[" + i + "]",
                 new float[]{light.position.x, light.position.y + HALF_UNIT, light.position.z}, 0, 3);
-            // program.setUniform3fv("u_pointLightsScreen[" + i + "]",
-            //new float[]{light.screenPosition.x, light.screenPosition.y, light.screenPosition.z}, 0, 3);
+            program.setUniformf("u_pointLightsDistance[" + i + "]", light.camDistance);
+            program.setUniform3fv("u_pointLightsScreen[" + i + "]",
+            new float[]{light.screenPosition.x, light.screenPosition.y, light.screenPosition.z}, 0, 3);
             program.setUniform4fv("u_pointLightColors[" + i + "]",
                 new float[]{light.color.r, light.color.g, light.color.b, light.color.a}, 0, 4);
         }
