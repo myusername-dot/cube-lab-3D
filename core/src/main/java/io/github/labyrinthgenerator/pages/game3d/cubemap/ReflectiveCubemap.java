@@ -33,7 +33,7 @@ public class ReflectiveCubemap {
 
     private final CubeLab3D game;
 
-    public ReflectiveCubemap(final Vector3 position, CubeLab3D game) {
+    public ReflectiveCubemap(final Vector3 position, float radius, CubeLab3D game) {
         this.game = game;
 
         camFb = new PerspectiveCamera(90, 640, 480);
@@ -47,8 +47,6 @@ public class ReflectiveCubemap {
         fb.getColorBufferTexture().setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
 
         cubemap = fb.getColorBufferTexture();
-
-        float radius = 1f;
 
         Model sphereModel = createCustomSphere(radius);
 
