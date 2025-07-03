@@ -28,9 +28,11 @@ public class FogFreeShader extends SpotLightFreeShader {
     public float fogDistance = 1.0f;
     private float timer;
 
+    private final boolean lightingFlag;
+
     protected final MyShaderProvider myShaderProvider;
 
-    private static final String VERTEX_SHADER =
+    private final String VERTEX_SHADER =
         "attribute vec4 a_position;\n" +
             "attribute vec3 a_normal;\n" +
             "attribute vec2 a_texCoord0;\n" + // texture
@@ -75,7 +77,7 @@ public class FogFreeShader extends SpotLightFreeShader {
             "}";
 
 
-    private static final String FRAGMENT_SHADER =
+    private String FRAGMENT_SHADER =
         "#define NUM_LIGHTS " + MyShaderProvider.MAX_NUM_LIGHTS + "\n" +
             "#ifdef GL_ES \n" +
             "#define LOWP lowp\n" +
@@ -103,11 +105,13 @@ public class FogFreeShader extends SpotLightFreeShader {
             "varying float clip2Distance;\n" + // Расстояние до камеры
             "varying float fogClipDistanceFactor;\n" +
             "\n" +
+            "#if defined(lightingFlag)\n" +
             "uniform vec3 u_pointLights[NUM_LIGHTS];\n" +
             "uniform float u_pointLightsDistance[NUM_LIGHTS];\n" +
             "uniform vec3 u_pointLightsScreen[NUM_LIGHTS];\n" +
             "uniform vec4 u_pointLightColors[NUM_LIGHTS];\n" +
             "uniform int u_pointLightsSize;\n" +
+            "#endif\n" +
             "\n" +
             "void main(void)\n" +
             "{\n" +
@@ -160,6 +164,7 @@ public class FogFreeShader extends SpotLightFreeShader {
             "        gl_FragColor = mix(c, u_fogColor, fogFactor);\n" +
             "\n" +
             "\n" + // Обработка точечных источников света
+            "#if defined(lightingFlag)\n" +
             "    if (u_pointLightsSize > 0) {\n" +
             "        vec3 glowingColor = vec3(0.0);\n" +
             "        for (int i = 0; i < u_pointLightsSize; i++) {\n" +
@@ -168,10 +173,9 @@ public class FogFreeShader extends SpotLightFreeShader {
             "            float intensity = 0.003;\n" +
                 "            float distanceWall15 = pow(length(lightPos - worldPosition), 1.5);\n" +
             "            float attenuation = intensity / (distanceWall15 + 0.0001);\n" +
-            //"          if (lightPos.y <= 0.5) {\n" +
             "            vec3 lightPosScreen = u_pointLightsScreen[i];\n" +
             "            float distance = u_pointLightsDistance[i];\n" +
-            "            if (distance > 0.3) {\n" +
+            "            if (distance > 0.5) {\n" +
             "               float screenDistance = length(lightPosScreen.xy - gl_FragCoord.xy);\n" +
             "               attenuation += intensity * 500.0 / (screenDistance * distance + 0.0001)" +
             "                   * fogFactor;\n" + // fog glowing
@@ -180,6 +184,7 @@ public class FogFreeShader extends SpotLightFreeShader {
             "        }\n" +
             "        gl_FragColor.rgb += glowingColor;\n" +
             "    }\n" +
+            "#endif\n" +
             "\n" +
             "\n" + // Коррекция цвета
             "    vec3 color = gl_FragColor.rgb;\n" +
@@ -189,12 +194,17 @@ public class FogFreeShader extends SpotLightFreeShader {
             "    gl_FragColor = vec4(color, 1.0);\n" +
             "}\n";
 
-    public FogFreeShader(MyShaderProvider myShaderProvider) {
+    public FogFreeShader(MyShaderProvider myShaderProvider, boolean lightingFlag) {
+        this.lightingFlag = lightingFlag;
         this.myShaderProvider = myShaderProvider;
+        //cutoffAngle = 50f;
     }
 
     @Override
     public void init() {
+        if (lightingFlag) {
+            FRAGMENT_SHADER = "#define lightingFlag\n\n" + FRAGMENT_SHADER;
+        }
         program = new ShaderProgram(VERTEX_SHADER, FRAGMENT_SHADER);
         if (!program.isCompiled()) {
             throw new GdxRuntimeException(program.getLog());
@@ -289,7 +299,7 @@ public class FogFreeShader extends SpotLightFreeShader {
         program.setUniformMatrix(u_worldTrans, renderable.worldTransform);
         program.setUniformi("u_isReflective", 0); // !drop batch flag
         bindTexture(renderable);
-        setPointLightsUniforms(renderable);
+        if (lightingFlag) setPointLightsUniforms(renderable);
         renderable.meshPart.render(program);
     }
 
