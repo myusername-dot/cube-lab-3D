@@ -140,7 +140,7 @@ public class SpotLightShader extends BaseShader {
         program.setUniformf("spotCutoff", cutoffAngle);
         context.begin();
         context.setDepthTest(GL20.GL_LESS);
-        context.setCullFace(GL20.GL_BACK);
+        context.setCullFace(GL20.GL_NONE);
     }
 
     @Override

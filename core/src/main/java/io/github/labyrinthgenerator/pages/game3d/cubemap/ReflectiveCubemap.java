@@ -48,7 +48,7 @@ public class ReflectiveCubemap {
 
         cubemap = fb.getColorBufferTexture();
 
-        Model sphereModel = createCustomSphere(radius);
+        Model sphereModel = createSphereWithModelBuilder(radius);
 
         reflectiveSphereMdlInst = new ModelInstanceBB(sphereModel, position);
         log.info("sphere model loaded successfully, radius: " + reflectiveSphereMdlInst.radius);
@@ -67,7 +67,7 @@ public class ReflectiveCubemap {
     private Model createSphereWithModelBuilder(float radius) {
         ModelBuilder modelBuilder = new ModelBuilder();
         return modelBuilder.createSphere(
-            radius / 2f, radius / 2f, radius / 2f, 32, 32,
+            radius * 2f, radius * 2f, radius * 2f, 32, 32,
             new Material(ColorAttribute.createDiffuse(Color.GREEN)),
             VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal | VertexAttributes.Usage.TextureCoordinates);
     }
