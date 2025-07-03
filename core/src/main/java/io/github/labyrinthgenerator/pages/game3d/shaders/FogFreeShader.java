@@ -283,9 +283,9 @@ public class FogFreeShader extends SpotLightFreeShader {
     private Vector2 getPlayerVelocity() {
         Player player = myShaderProvider.getPlayer();
         if (player != null) {
-            Vector3 playerVelocity3 = player.getForwardVelocity();
+            Vector2 playerVelocity = player.getForwardVelocity();
             Vector3 playerDir = player.getDirection();
-            return new Vector2(playerVelocity3.x * sign(playerDir.x), playerVelocity3.z * sign(playerDir.z));
+            return new Vector2(playerVelocity.x * sign(playerDir.x), playerVelocity.y * sign(playerDir.z));
         }
         return new Vector2(0, 0);
     }
