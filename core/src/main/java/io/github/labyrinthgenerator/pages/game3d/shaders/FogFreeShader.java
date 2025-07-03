@@ -165,25 +165,23 @@ public class FogFreeShader extends SpotLightFreeShader {
             "\n" +
             "\n" + // Обработка точечных источников света
             "#if defined(lightingFlag)\n" +
-            "    if (u_pointLightsSize > 0) {\n" +
-            "        vec3 glowingColor = vec3(0.0);\n" +
-            "        for (int i = 0; i < u_pointLightsSize; i++) {\n" +
-            "            vec4 lightColor = u_pointLightColors[i];\n" +
-            "            vec3 lightPos = u_pointLights[i];\n" +
-            "            float intensity = 0.003;\n" +
-                "            float distanceWall15 = pow(length(lightPos - worldPosition), 1.5);\n" +
-            "            float attenuation = intensity / (distanceWall15 + 0.0001);\n" +
-            "            vec3 lightPosScreen = u_pointLightsScreen[i];\n" +
-            "            float distance = u_pointLightsDistance[i];\n" +
-            "            if (distance > 0.5) {\n" +
-            "               float screenDistance = length(lightPosScreen.xy - gl_FragCoord.xy);\n" +
-            "               attenuation += intensity * 500.0 / (screenDistance * distance + 0.0001)" +
-            "                   * fogFactor;\n" + // fog glowing
-            "            }\n" +
-            "            glowingColor += lightColor.rgb * attenuation;\n" +
+            "    vec3 glowingColor = vec3(0.0);\n" +
+            "    for (int i = 0; i < u_pointLightsSize; i++) {\n" +
+            "        vec4 lightColor = u_pointLightColors[i];\n" +
+            "        vec3 lightPos = u_pointLights[i];\n" +
+            "        float intensity = 0.003;\n" +
+            "        float distanceWall15 = pow(length(lightPos - worldPosition), 1.5);\n" +
+            "        float attenuation = intensity / (distanceWall15 + 0.0001);\n" +
+            "        vec3 lightPosScreen = u_pointLightsScreen[i];\n" +
+            "        float distance = u_pointLightsDistance[i];\n" +
+            "        if (distance > 0.5) {\n" +
+            "            float screenDistance = length(lightPosScreen.xy - gl_FragCoord.xy);\n" +
+            "            attenuation += intensity * 500.0 / (screenDistance * distance + 0.0001)" +
+            "               * fogFactor;\n" + // fog glowing
             "        }\n" +
-            "        gl_FragColor.rgb += glowingColor;\n" +
+            "        glowingColor += lightColor.rgb * attenuation;\n" +
             "    }\n" +
+            "    gl_FragColor.rgb += glowingColor;\n" +
             "#endif\n" +
             "\n" +
             "\n" + // Коррекция цвета
