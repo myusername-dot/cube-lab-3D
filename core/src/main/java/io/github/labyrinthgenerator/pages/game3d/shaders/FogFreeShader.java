@@ -57,11 +57,11 @@ public class FogFreeShader extends SpotLightFreeShader {
             "    worldPosition = (u_worldTrans * a_position).xyz;\n" +
             "\n" +
             "\n" + // Вычисляем расстояние до камеры
-            "    clip2Distance = length(vec3(position.x, min(0.0, position.y * 4.0), position.z));\n" +
+            "    clip2Distance = length(vec3(position.x, min(0.0, position.y * 4.0), position.z));\n" + // todo FIXME
             "\n" + // Вычисляем фактор плотности тумана
-            "    fogClipDistanceFactor = (u_fogDensity * length(position) / 10);\n" +
+            "    fogClipDistanceFactor = (u_fogDensity * length(position) / 16);\n" +
             "\n" +
-            "    vec3 lightPosition  = (gl_Position).xyz;\n" +
+            "    vec3 lightPosition  = (position).xyz;\n" +
             "    vec3 spotDirection  = normalize(lightPosition + vec3(0,0,1));\n" +
             "    vec4 vertex = gl_ModelViewMatrix * gl_Vertex;\n" +
             "    vec3 lightDirection = normalize(vertex.xyz - lightPosition);\n" +
@@ -122,7 +122,7 @@ public class FogFreeShader extends SpotLightFreeShader {
             "       c = texture2D(u_texture, v_texCoords0);" +
             "    }\n" +
             "\n" +
-            "    float heightFactor = max(0.0, position.y);\n" +
+            "    float heightFactor = clamp(worldPosition.y - 0.5, 0.0, 0.5);\n" +
             "\n" +
             "    float longWave = clamp(\n" +
             "        sin(aPosition.x + aPosition.z + u_time) * (max(-0.5, position.y) + 0.5) * 0.4, \n" +
@@ -217,7 +217,7 @@ public class FogFreeShader extends SpotLightFreeShader {
     }
 
     private void setFogUniforms(Vector2 playerVelocity) {
-        program.setUniformf("u_fogColor", new Color(0.5f, 0.5f, 0.5f, 0.9f));
+        program.setUniformf("u_fogColor", new Color(0.9f, 0.9f, 0.9f, 0.9f));
         program.setUniformf("u_fogDensity", fogBaseDensity);
         program.setUniform2fv("u_fogVelocity", new float[]{playerVelocity.x, playerVelocity.y}, 0, 2);
         program.setUniformf("u_time", timer);
