@@ -59,11 +59,21 @@ public class ModelMaker {
         Texture texture = textureRegionToTexture((Texture) game.getAssMan().get(game.getAssMan().atlas01),
             textureX, textureY, TEXTURE_SIZE, TEXTURE_SIZE);
         Material material = getTextureMaterial(TextureAttribute.Diffuse, texture);
-        Model wallModel = mdlBuilder.createRect(HALF_UNIT, HALF_UNIT, 0, -HALF_UNIT,
-            HALF_UNIT, 0, -HALF_UNIT, -HALF_UNIT, 0, HALF_UNIT,
-            -HALF_UNIT, 0, 0, 0, -1, material, Usage.Position | Usage.Normal | Usage.TextureCoordinates);
+
+        Model wallModel = mdlBuilder.createRect(
+            HALF_UNIT, HALF_UNIT, 0,
+            -HALF_UNIT, HALF_UNIT, 0,
+            -HALF_UNIT, -HALF_UNIT, 0,
+            HALF_UNIT, -HALF_UNIT, 0,
+            0, 0, -1,
+            material,
+            Usage.Position | Usage.Normal | Usage.TextureCoordinates
+        );
 
         switch (direction) {
+            case "NORTH":
+                wallModel.nodes.get(0).rotation.set(Vector3.Y, 0f);
+                break;
             case "SOUTH":
                 wallModel.nodes.get(0).rotation.set(Vector3.Y, 180f);
                 break;

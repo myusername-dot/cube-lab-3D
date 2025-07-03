@@ -114,7 +114,7 @@ public class FogFreeShader extends SpotLightFreeShader {
             "    if (u_isReflective) {\n" +
             "\n" + // Преобразование в диапазон [-1, 1]
             "\n" + // normalize(texture(u_normalMap, v_texCoords2).xyz * 2.0 - 1.0)
-            "       vec3 N = normalize(v_normal * -1);\n" +
+            "       vec3 N = normalize(v_normal);\n" +
             "       vec3 V = normalize(u_cameraPosition - worldPosition);\n" +
             "       vec3 R = reflect(V, N);\n" + // + 0.1 * normalize(N)
             "       c = texture(u_cubemap, R);\n" + // c *= 1.0 - smoothstep(0.0, 1.0, length(R));
@@ -207,7 +207,7 @@ public class FogFreeShader extends SpotLightFreeShader {
         program.setUniform3fv("u_cameraPosition", cameraPosition, 0, 3);
         context.begin();
         context.setDepthTest(GL20.GL_LEQUAL);
-        context.setCullFace(GL20.GL_BACK);
+        context.setCullFace(GL20.GL_NONE);
     }
 
     private void setDefaultLightUniforms() {
