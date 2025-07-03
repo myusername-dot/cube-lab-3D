@@ -18,7 +18,7 @@ import static io.github.labyrinthgenerator.pages.game3d.constants.Constants.*;
 
 @Slf4j
 public class Player extends Entity {
-    private final Vector3 movementDir = new Vector3();
+    private final Vector2 movementDir = new Vector2();
 
     public final RectanglePlus rect;
     public final PerspectiveCamera playerCam;
@@ -29,11 +29,15 @@ public class Player extends Entity {
     float camY = HALF_UNIT;
 
     private final float playerMoveSpeed = 4f;
-    private final float acceleration = 10f; // Ускорение
-    private final float deceleration = 10f; // Замедление
+    private final float acceleration = 10f;
+    private final float deceleration = 10f;
 
-    private final Vector3 velocity = new Vector3(); // Текущая скорость игрока
-    private final Vector3 forwardVelocity = new Vector3(); // Текущая скорость игрока
+    private final float jumpStrength = 5.0f;
+    private boolean isOnGround = true;
+
+    private float velocityY = 0f;
+    private final Vector2 velocity = new Vector2();
+    private final Vector2 forwardVelocity = new Vector2();
 
     private boolean cheats = false;
 
@@ -78,7 +82,7 @@ public class Player extends Entity {
     }
 
     private void setCamPosition() {
-        playerCam.position.set(getPositionX(), camY, getPositionZ());
+        playerCam.position.set(getPositionX(), getPositionY() + camY, getPositionZ());
     }
 
     public void addHP(final int addHP) {
@@ -148,26 +152,37 @@ public class Player extends Entity {
                 Gdx.input.getDeltaY() * -cameraRotationSpeed * delta);
         }
 
+        if (!isOnGround) {
+            velocityY -= 9.81f * delta;
+        }
+
+        if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE) && isOnGround) {
+            velocityY = jumpStrength;
+            isOnGround = false;
+        }
+
         if (Gdx.input.isKeyPressed(Input.Keys.W)) {
-            movementDir.add(playerCam.direction);
+            movementDir.add(playerCam.direction.x, playerCam.direction.z);
             headbob = true;
         }
 
         if (Gdx.input.isKeyPressed(Input.Keys.S)) {
-            movementDir.sub(playerCam.direction);
+            movementDir.sub(playerCam.direction.x, playerCam.direction.z);
             headbob = true;
         }
 
         boolean horizontalMovement = false;
 
         if (Gdx.input.isKeyPressed(Input.Keys.A)) {
-            movementDir.sub(playerCam.direction.cpy().crs(playerCam.up));
+            Vector3 rightDir = playerCam.direction.cpy().crs(playerCam.up);
+            movementDir.sub(rightDir.x, rightDir.z);
             horizontalMovement = true;
             headbob = true;
         }
 
         if (Gdx.input.isKeyPressed(Input.Keys.D)) {
-            movementDir.add(playerCam.direction.cpy().crs(playerCam.up));
+            Vector3 rightDir = playerCam.direction.cpy().crs(playerCam.up);
+            movementDir.add(rightDir.x, rightDir.z);
             horizontalMovement = true;
             headbob = true;
         }
@@ -183,8 +198,9 @@ public class Player extends Entity {
 
         // Ограничиваем скорость только в направлении камеры, чтобы игрока не заносило на поворотах
         Vector3 cameraForward = playerCam.direction.cpy().nor();
-        float forwardVelocityScl = velocity.cpy().dot(cameraForward); // Получаем скорость в направлении камеры
-        forwardVelocity.set(cameraForward.scl(forwardVelocityScl)); // Устанавливаем скорость только в направлении
+        float forwardVelocityScl = velocity.cpy().dot(cameraForward.x, cameraForward.z); // Получаем скорость в направлении камеры
+        cameraForward.scl(forwardVelocityScl);
+        forwardVelocity.set(cameraForward.x, cameraForward.z); // Устанавливаем скорость только в направлении
 
         // Ограничиваем скорость
         if (forwardVelocity.len() > playerMoveSpeed) {
@@ -242,20 +258,34 @@ public class Player extends Entity {
             headbob = false;
         }
 
-        // Обновляем позицию игрока
-        Vector2 newPositionXZ = rect.rectangle.getPosition(new Vector2()).add(velocity.x * delta, velocity.z * delta);
-        rect.newPosition.set(newPositionXZ.x, rect.getY(), newPositionXZ.y);
+        Vector3 newPosition = new Vector3(
+            rect.getX() + velocity.x * delta,
+            rect.getY() - velocityY * delta,
+            rect.getZ() + velocity.y * delta
+        );
+
+        if (newPosition.y > 0f) {
+            newPosition.y = 0f;
+            isOnGround = true;
+            velocityY = 0f;
+        }
+
+        rect.newPosition.set(newPosition.x, newPosition.y, newPosition.z);
+    }
+
+    public Vector2 getMovementDir() {
+        return movementDir;
     }
 
     public Vector3 getDirection() {
         return playerCam.direction.cpy();
     }
 
-    public Vector3 getVelocity() {
+    public Vector2 getVelocity() {
         return velocity.cpy();
     }
 
-    public Vector3 getForwardVelocity() {
+    public Vector2 getForwardVelocity() {
         return forwardVelocity.cpy();
     }
 
@@ -316,7 +346,7 @@ public class Player extends Entity {
             rect.setZ(rect.newPosition.z);
         }
 
-        setPosition(rect.getX() + rect.getWidth() / 2f, 0f, rect.getZ() + rect.getDepth() / 2f);
+        setPosition(rect.getX() + rect.getWidth() / 2f, rect.getY(), rect.getZ() + rect.getDepth() / 2f);
         setCamPosition();
 
         rect.oldPosition.set(rect.getPosition());
