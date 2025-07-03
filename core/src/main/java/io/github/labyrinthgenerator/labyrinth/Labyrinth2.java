@@ -75,9 +75,9 @@ public class Labyrinth2 implements Lab {
     }
 
     @Override
-    public boolean passage() {
+    public boolean passage(boolean skip) {
         boolean escape = false;
-        while (!isFin() && !dirty) escape = passageStack();
+        while (!isFin() && (skip || !dirty)) escape = passageStack();
         return escape;
     }
 

@@ -156,7 +156,7 @@ public class Labyrinth2D implements Page {
     }
 
     private void handlePuffPuffinsLogic() {
-        escape = lab.passage();
+        escape = lab.passage(true);
         puffPuffins = !lab.isFin();
     }
 
