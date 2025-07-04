@@ -95,24 +95,21 @@ public class LMapBuilder {
                 int id = Integer.parseInt(line.substring(i, i + 1));
                 Labyrinth.LEntity entity = Labyrinth.LEntity.values()[id];
 
-                Cell3D currentCell3D = new Cell3D(new Vector3(i, 0, j), (GameScreen) game.getScreen());
+                Cell3D currentCell3D = new Cell3D(new Vector3(i, 0, j), game.getScreen());
 
-                currentCell3D.hasFloor = true;
-                currentCell3D.hasCeiling = true;
-                currentCell3D.texRegFloor = texFloor;
-                currentCell3D.texRegCeiling = texFloor;
-                currentCell3D.texRegEast = texWall;
-                currentCell3D.texRegNorth = texWall;
-                currentCell3D.texRegSouth = texWall;
-                currentCell3D.texRegWest = texWall;
                 if (entity == Labyrinth.LEntity.EMPTY) {
-                    currentCell3D.hasCeiling = false;
-                    currentCell3D.hasWallNorth = false;
-                    currentCell3D.hasWallWest = false;
-                    currentCell3D.hasWallSouth = false;
-                    currentCell3D.hasWallEast = false;
+                    currentCell3D.hasFloor = true;
+                    currentCell3D.texRegFloor = texFloor;
                     currentCell3D.mobSpawn = true;
                 } else {
+                    currentCell3D.hasWallNorth = true;
+                    currentCell3D.hasWallWest = true;
+                    currentCell3D.hasWallSouth = true;
+                    currentCell3D.hasWallEast = true;
+                    currentCell3D.texRegEast = texWall;
+                    currentCell3D.texRegNorth = texWall;
+                    currentCell3D.texRegSouth = texWall;
+                    currentCell3D.texRegWest = texWall;
 
                     final RectanglePlus rect = new RectanglePlus(
                         i, 0, j,
@@ -122,6 +119,14 @@ public class LMapBuilder {
                     // центровка в центр координат
                     rect.setX(rect.getX() - HALF_UNIT);
                     rect.setZ(rect.getZ() - HALF_UNIT);
+
+                    cell3DList.add(currentCell3D);
+
+                    // FLOOR LAYER 2
+                    currentCell3D = new Cell3D(new Vector3(i, -1, j), game.getScreen());
+                    currentCell3D.hasFloor = true;
+                    currentCell3D.texRegFloor = texFloor;
+                    // FLOOR LAYER 2
                 }
                 cell3DList.add(currentCell3D);
             }
@@ -134,25 +139,29 @@ public class LMapBuilder {
             for (final Cell3D otherCell3D : cell3DList) {
                 Vector3 otherPosition = otherCell3D.getPositionImmutable();
 
-                if (otherCell3D.hasWallWest
-                    && otherPosition.x == currentPosition.x - 1
-                    && otherPosition.z == currentPosition.z) {
-                    currentCell3D.hasWallEast = false;
-                }
-                if (otherCell3D.hasWallEast
-                    && otherPosition.x == currentPosition.x + 1
-                    && otherPosition.z == currentPosition.z) {
-                    currentCell3D.hasWallWest = false;
+                if (otherCell3D.hasWallNorth
+                    && otherPosition.x == currentPosition.x
+                    && otherPosition.y == currentPosition.y
+                    && otherPosition.z == currentPosition.z + 1) {
+                    currentCell3D.hasWallSouth = false;
                 }
                 if (otherCell3D.hasWallSouth
                     && otherPosition.x == currentPosition.x
+                    && otherPosition.y == currentPosition.y
                     && otherPosition.z == currentPosition.z - 1) {
                     currentCell3D.hasWallNorth = false;
                 }
-                if (otherCell3D.hasWallNorth
-                    && otherPosition.x == currentPosition.x
-                    && otherPosition.z == currentPosition.z + 1) {
-                    currentCell3D.hasWallSouth = false;
+                if (otherCell3D.hasWallEast
+                    && otherPosition.x == currentPosition.x + 1
+                    && otherPosition.y == currentPosition.y
+                    && otherPosition.z == currentPosition.z) {
+                    currentCell3D.hasWallWest = false;
+                }
+                if (otherCell3D.hasWallWest
+                    && otherPosition.x == currentPosition.x - 1
+                    && otherPosition.y == currentPosition.y
+                    && otherPosition.z == currentPosition.z) {
+                    currentCell3D.hasWallEast = false;
                 }
             }
         }

@@ -90,7 +90,7 @@ public class SpotLightFreeShader implements Shader {
 
         context.begin();
         context.setDepthTest(GL20.GL_LEQUAL);
-        context.setCullFace(GL20.GL_NONE);
+        context.setCullFace(GL20.GL_BACK);
     }
 
     public void bindTexture(Renderable renderable) {

@@ -22,10 +22,10 @@ public class Cell3D extends Entity {
     private ModelInstanceBB mdlInstFloor;
     private ModelInstanceBB mdlInstCeiling;
 
-    public boolean hasWallNorth = true;
-    public boolean hasWallSouth = true;
-    public boolean hasWallWest = true;
-    public boolean hasWallEast = true;
+    public boolean hasWallNorth = false;
+    public boolean hasWallSouth = false;
+    public boolean hasWallWest = false;
+    public boolean hasWallEast = false;
     public boolean hasFloor = false;
     public boolean hasCeiling = false;
     public boolean mobSpawn = false;
