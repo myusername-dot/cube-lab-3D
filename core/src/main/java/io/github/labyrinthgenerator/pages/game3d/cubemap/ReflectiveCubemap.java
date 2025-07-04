@@ -48,7 +48,7 @@ public class ReflectiveCubemap {
 
         cubemap = fb.getColorBufferTexture();
 
-        Model sphereModel = createCustomSphere(radius);
+        Model sphereModel = createCustomSphere(radius, false);
 
         reflectiveSphereMdlInst = new ModelInstanceBB(sphereModel, position);
         log.info("sphere model loaded successfully, radius: " + reflectiveSphereMdlInst.radius);
@@ -72,8 +72,8 @@ public class ReflectiveCubemap {
             VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal | VertexAttributes.Usage.TextureCoordinates);
     }
 
-    private Model createCustomSphere(float radius) {
-        NormalMappedMesh normalMapMesh = createSphereNormalMapMesh(radius, 32, 32, false);
+    private Model createCustomSphere(float radius, boolean flipN) {
+        NormalMappedMesh normalMapMesh = createSphereNormalMapMesh(radius, 32, 32, flipN);
 
         Texture normalMapTexture = normalMapMesh.getNormalMapTexture();
         NormalMapAttribute normalMapAttribute = NormalMapAttribute.createDiffuse(normalMapTexture);
