@@ -27,8 +27,7 @@ public class Labyrinth2D implements Page {
 
     public static String txtFilename;
 
-    public Viewport viewport;
-
+    private Viewport viewport;
     private Texture prefPoseTexture;
     private Texture prefPoseAcceptEscapeTexture;
     private Texture puffinTexture;
@@ -69,6 +68,11 @@ public class Labyrinth2D implements Page {
     public void refresh() {
         tools.refresh();
         lab = tools.getLabyrinth();
+        initializeGameState();
+        disposeBlurredBackground();
+    }
+
+    private void initializeGameState() {
         prevPoses = new ArrayList<>(6);
         puffins = new ArrayList<>(6);
         for (int edge = 0; edge < 6; edge++) {
@@ -81,6 +85,9 @@ public class Labyrinth2D implements Page {
         isGameInPause = false;
         screenshot = false;
         txtFile = false;
+    }
+
+    private void disposeBlurredBackground() {
         if (blurredBackground != null) {
             blurredBackground.dispose();
             blurredBackground = null;
@@ -112,21 +119,24 @@ public class Labyrinth2D implements Page {
     @Override
     public void input() {
         if (isGameInPause) {
-            if (Gdx.input.isKeyJustPressed(Input.Keys.UP) || Gdx.input.isKeyJustPressed(Input.Keys.W)) {
-                changeSelectedOption(-1);
-            }
-            if (Gdx.input.isKeyJustPressed(Input.Keys.DOWN) || Gdx.input.isKeyJustPressed(Input.Keys.S)) {
-                changeSelectedOption(1);
-            }
-            if (Gdx.input.isKeyJustPressed(Input.Keys.ENTER)) {
-                handleMenuSelection();
-            }
+            handleMenuNavigation();
+        }
+    }
+
+    private void handleMenuNavigation() {
+        if (Gdx.input.isKeyJustPressed(Input.Keys.UP) || Gdx.input.isKeyJustPressed(Input.Keys.W)) {
+            changeSelectedOption(-1);
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.DOWN) || Gdx.input.isKeyJustPressed(Input.Keys.S)) {
+            changeSelectedOption(1);
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.ENTER)) {
+            handleMenuSelection();
         }
     }
 
     private void changeSelectedOption(int delta) {
-        selectedOption = (selectedOption + delta + options.length) % options.length; // Изменяем на количество опций
-        //sfxChoice.play(game.currentSfxVolume);
+        selectedOption = (selectedOption + delta + options.length) % options.length;
     }
 
     private void handleMenuSelection() {
@@ -145,7 +155,6 @@ public class Labyrinth2D implements Page {
     @Override
     public void logic() {
         frame++;
-
         if (!isLogicFrame()) return;
 
         boolean finalize = true;
@@ -184,47 +193,53 @@ public class Labyrinth2D implements Page {
         tools.prepareDraw();
         SpriteBatch spriteBatch = tools.getSpriteBatch();
 
-        // Рисуем размытие заднего фона, если есть
         if (isGameInPause) {
-            if (blurredBackground != null) {
-                spriteBatch.draw(blurredBackground, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-            } else {
-                tools.drawLabyrinth();
-                handleSaving(); // финальный скриншот
-                tools.createBlurredBackground(); // Создаем размытие заднего фона для меню
-            }
-            drawMenuOptions(spriteBatch);
+            handlePauseDraw(spriteBatch);
         } else {
-            float scale = tools.getScale();
-            int screenX = tools.getScreenX();
-            int screenY = tools.getScreenY();
-            drawPreviousPoses(spriteBatch, scale, screenX, screenY);
-            drawPuffins(spriteBatch, scale, screenX, screenY);
-            tools.drawLabyrinth();
-            handleSaving();
+            handleGameDraw(spriteBatch);
         }
 
         tools.endDraw();
     }
 
+    private void handlePauseDraw(SpriteBatch spriteBatch) {
+        if (blurredBackground != null) {
+            spriteBatch.draw(blurredBackground, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        } else {
+            tools.drawLabyrinth();
+            handleSaving();
+            blurredBackground = tools.createBlurredBackground();
+        }
+        drawMenuOptions(spriteBatch);
+    }
+
+    private void handleGameDraw(SpriteBatch spriteBatch) {
+        float scale = tools.getScale();
+        int screenX = tools.getScreenX();
+        int screenY = tools.getScreenY();
+        drawPreviousPoses(spriteBatch, scale, screenX, screenY);
+        drawPuffins(spriteBatch, scale, screenX, screenY);
+        tools.drawLabyrinth();
+        handleSaving();
+    }
+
     private void drawPreviousPoses(SpriteBatch spriteBatch, float scale, int screenX, int screenY) {
         for (int edge = 0; edge < 6; edge++) {
-            int offsetX = tools.getEdgeOffsetX(edge);
-            int offsetY = tools.getEdgeOffsetY(edge);
-            for (Vector2i prevPose : prevPoses.get(edge)) {
-                Texture textureToDraw = escape[edge] ? prefPoseAcceptEscapeTexture : prefPoseTexture;
-                spriteBatch.draw(textureToDraw, screenX + (offsetX + prevPose.x) * scale, screenY + (offsetY + prevPose.y) * scale, scale, scale);
-            }
+            drawPoses(spriteBatch, scale, screenX, screenY, edge, prevPoses.get(edge), escape[edge] ? prefPoseAcceptEscapeTexture : prefPoseTexture);
         }
     }
 
     private void drawPuffins(SpriteBatch spriteBatch, float scale, int screenX, int screenY) {
         for (int edge = 0; edge < 6; edge++) {
-            int offsetX = tools.getEdgeOffsetX(edge);
-            int offsetY = tools.getEdgeOffsetY(edge);
-            for (Vector2i puffin : puffins.get(edge)) {
-                spriteBatch.draw(puffinTexture, screenX + (offsetX + puffin.x) * scale, screenY + (offsetY + puffin.y) * scale, scale, scale);
-            }
+            drawPoses(spriteBatch, scale, screenX, screenY, edge, puffins.get(edge), puffinTexture);
+        }
+    }
+
+    private void drawPoses(SpriteBatch spriteBatch, float scale, int screenX, int screenY, int edge, Set<Vector2i> poses, Texture textureToDraw) {
+        int offsetX = tools.getEdgeOffsetX(edge);
+        int offsetY = tools.getEdgeOffsetY(edge);
+        for (Vector2i pose : poses) {
+            spriteBatch.draw(textureToDraw, screenX + (offsetX + pose.x) * scale, screenY + (offsetY + pose.y) * scale, scale, scale);
         }
     }
 
@@ -237,9 +252,9 @@ public class Labyrinth2D implements Page {
 
     private void drawOption(SpriteBatch spriteBatch, int index, float y, boolean isSelected) {
         float x = viewport.getWorldWidth() / 2f - glyphLayouts[index].width / 2f;
-        buttonFont64.draw(spriteBatch, options[index], x, y); // Используем текст из массива options
+        buttonFont64.draw(spriteBatch, options[index], x, y);
         if (isSelected) {
-            buttonFont64.draw(spriteBatch, ">", x - 32, y); // Индикатор выбора
+            buttonFont64.draw(spriteBatch, ">", x - 32, y);
         }
     }
 

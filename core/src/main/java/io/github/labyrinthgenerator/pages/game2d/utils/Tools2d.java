@@ -36,26 +36,27 @@ public class Tools2d {
     private Texture escapeTexture;
 
     private Lab[] labyrinth;
-    private int lWH;
+    private int labyrinthWidthHeight;
     private int screenX, screenY;
 
     public void create() {
         application = MyApplication.getApplicationInstance();
         initializeTextures();
         createFonts("fonts/clacon2.ttf");
-        //refresh();
     }
 
     public void refresh() {
-        if (spriteBatch != null) spriteBatch.dispose();
-        setupViewportAndCamera(); // FIXME
+        disposeSpriteBatch();
+        setupViewportAndCamera();
         initializeLabyrinthDimensions();
-        labyrinth = new Lab[6];
-        for (int edge = 0; edge < 6; edge++) {
-            labyrinth[edge] = new Labyrinth2(0, 0, lWH, lWH);
-            labyrinth[edge].create();
-        }
+        createLabyrinths();
         calculateScreenCoordinates();
+    }
+
+    private void disposeSpriteBatch() {
+        if (spriteBatch != null) {
+            spriteBatch.dispose();
+        }
     }
 
     private void setupViewportAndCamera() {
@@ -74,7 +75,7 @@ public class Tools2d {
         escapeTexture = new Texture("labyrinth2d/escape.png");
     }
 
-    protected void createFonts(String fontName) {
+    private void createFonts(String fontName) {
         FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal(fontName));
         FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
         parameter.size = 50;
@@ -83,49 +84,62 @@ public class Tools2d {
     }
 
     private void initializeLabyrinthDimensions() {
-        lWH = (int) (((MyApplication.windowW - 1f) / 4f) / MyApplication.lDivider);
-        lWH += lWH % 2 == 0 ? 1 : 0;
+        labyrinthWidthHeight = (int) (((MyApplication.windowW - 1f) / 4f) / MyApplication.lDivider);
+        labyrinthWidthHeight += labyrinthWidthHeight % 2 == 0 ? 1 : 0;
+    }
+
+    private void createLabyrinths() {
+        labyrinth = new Lab[6];
+        for (int edge = 0; edge < 6; edge++) {
+            labyrinth[edge] = new Labyrinth2(0, 0, labyrinthWidthHeight, labyrinthWidthHeight);
+            labyrinth[edge].create();
+        }
     }
 
     private void calculateScreenCoordinates() {
-        screenX = (int) (MyApplication.windowW - MyApplication.lDivider * lWH * 4);
-        screenY = (int) (MyApplication.windowH - MyApplication.lDivider * lWH * 3);
+        screenX = (int) (MyApplication.windowW - MyApplication.lDivider * labyrinthWidthHeight * 4);
+        screenY = (int) (MyApplication.windowH - MyApplication.lDivider * labyrinthWidthHeight * 3);
     }
 
     public int getEdgeOffsetX(int edge) {
-        return edge < 4 ? edge * lWH : lWH;
+        return edge < 4 ? edge * labyrinthWidthHeight : labyrinthWidthHeight;
     }
 
     public int getEdgeOffsetY(int edge) {
-        return edge < 4 ? lWH : edge == 4 ? 0 : lWH * 2;
+        return edge < 4 ? labyrinthWidthHeight : edge == 4 ? 0 : labyrinthWidthHeight * 2;
     }
 
     public void drawLabyrinth() {
         for (int edge = 0; edge < 6; edge++) {
-            int offsetX = getEdgeOffsetX(edge);
-            int offsetY = getEdgeOffsetY(edge);
-            int[][] labyrinthArray = labyrinth[edge].get2D();
-            for (int j = 0; j < lWH; j++) {
-                for (int i = 0; i < lWH; i++) {
-                    Labyrinth.LEntity entity = Labyrinth.LEntity.values()[labyrinthArray[i][j]];
-                    switch (entity) {
-                        case VERTICAL_WALL:
-                            drawVerticalWall(i, j, offsetX, offsetY);
-                            break;
-                        case HORIZONTAL_WALL:
-                        case LU_CORNER:
-                        case RU_CORNER:
-                        case LD_CORNER:
-                        case RD_CORNER:
-                            drawHorizontalWall(i, j, offsetX, offsetY, labyrinthArray);
-                            break;
-                        default:
-                            break;
-                    }
+            drawEdgeLabyrinth(edge);
+        }
+    }
+
+    private void drawEdgeLabyrinth(int edge) {
+        int offsetX = getEdgeOffsetX(edge);
+        int offsetY = getEdgeOffsetY(edge);
+        int[][] labyrinthArray = labyrinth[edge].get2D();
+
+        for (int j = 0; j < labyrinthWidthHeight; j++) {
+            for (int i = 0; i < labyrinthWidthHeight; i++) {
+                Labyrinth.LEntity entity = Labyrinth.LEntity.values()[labyrinthArray[i][j]];
+                switch (entity) {
+                    case VERTICAL_WALL:
+                        drawVerticalWall(i, j, offsetX, offsetY);
+                        break;
+                    case HORIZONTAL_WALL:
+                    case LU_CORNER:
+                    case RU_CORNER:
+                    case LD_CORNER:
+                    case RD_CORNER:
+                        drawHorizontalWall(i, j, offsetX, offsetY, labyrinthArray);
+                        break;
+                    default:
+                        break;
                 }
             }
-            drawEntryAndEscape(offsetX, offsetY);
         }
+        drawEntryAndEscape(offsetX, offsetY);
     }
 
     private void drawVerticalWall(int i, int j, int offsetX, int offsetY) {
@@ -147,9 +161,9 @@ public class Tools2d {
     }
 
     private boolean shouldDrawHorizontalWall(int i, int j, int[][] labyrinthArray) {
-        return i < lWH - 1 &&
+        return i < labyrinthWidthHeight - 1 &&
             (Labyrinth.LEntity.values()[labyrinthArray[i + 1][j]] != Labyrinth.LEntity.EMPTY ||
-                (i > 0 && j > 1 && j < lWH - 1 &&
+                (i > 0 && j > 1 && j < labyrinthWidthHeight - 1 &&
                     Labyrinth.LEntity.values()[labyrinthArray[i - 1][j]] == Labyrinth.LEntity.EMPTY &&
                     Labyrinth.LEntity.values()[labyrinthArray[i + 1][j]] == Labyrinth.LEntity.EMPTY &&
                     Labyrinth.LEntity.values()[labyrinthArray[i][j - 1]] == Labyrinth.LEntity.EMPTY &&
@@ -157,7 +171,7 @@ public class Tools2d {
     }
 
     private void drawEntryAndEscape(int offsetX, int offsetY) {
-        spriteBatch.draw(escapeTexture, screenX + (offsetX + lWH - 2) * MyApplication.lDivider, screenY + (offsetY + lWH - 2) * MyApplication.lDivider, MyApplication.lDivider, MyApplication.lDivider);
+        spriteBatch.draw(escapeTexture, screenX + (offsetX + labyrinthWidthHeight - 2) * MyApplication.lDivider, screenY + (offsetY + labyrinthWidthHeight - 2) * MyApplication.lDivider, MyApplication.lDivider, MyApplication.lDivider);
         spriteBatch.draw(entryTexture, screenX + (offsetX + 1) * MyApplication.lDivider, screenY + (1 + offsetY) * MyApplication.lDivider, MyApplication.lDivider, MyApplication.lDivider);
     }
 
@@ -196,12 +210,11 @@ public class Tools2d {
     }
 
     private void writeLabyrinthToFile(File txtFile) {
-
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(txtFile))) {
             for (int edge = 0; edge < 6; edge++) {
                 int[][] labyrinthArray = labyrinth[edge].get3D();
-                for (int j = lWH - 1; j >= 0; j--) {
-                    for (int i = 0; i < lWH; i++) {
+                for (int j = labyrinthWidthHeight - 1; j >= 0; j--) {
+                    for (int i = 0; i < labyrinthWidthHeight; i++) {
                         writer.write(Integer.toString(labyrinthArray[i][j]));
                     }
                     writer.newLine();
@@ -216,7 +229,6 @@ public class Tools2d {
 
     public static BufferedImage pixmapToBufferedImage(Pixmap pixmap) throws IOException {
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-
             PixmapIO.PNG writer = new PixmapIO.PNG(pixmap.getWidth() * pixmap.getHeight() * 4);
             try {
                 writer.setFlipY(false);
@@ -225,7 +237,6 @@ public class Tools2d {
             } finally {
                 writer.dispose();
             }
-
             return ImageIO.read(new ByteArrayInputStream(baos.toByteArray()));
         }
     }
@@ -233,64 +244,44 @@ public class Tools2d {
     public Texture createBlurredBackground() {
         Texture blurredBackground = null;
         try {
-            // Создаем скриншот лабиринта
             Pixmap pixmap = Pixmap.createFromFrameBuffer(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
             BufferedImage originalImage = Tools2d.pixmapToBufferedImage(pixmap);
-
-
-            // Размытие по Гауссу
-            float sigma = 1.0f;
-            int kernelRadius = 10;
-            int size = kernelRadius * 2 + 1;
-            float[] data = new float[size * size];
-            float sigma22 = 2 * sigma * sigma;
-            float normalization = 1.0f / (float) (Math.PI * sigma22);
-
-            // Создание ядра Gaussian
-            float sum = 0.0f;
-            for (int i = -kernelRadius; i <= kernelRadius; i++) {
-                for (int j = -kernelRadius; j <= kernelRadius; j++) {
-                    float x = (float) i;
-                    float y = (float) j;
-                    int i1 = (i + kernelRadius) * size + (j + kernelRadius);
-                    data[i1] = (float) (normalization * Math.exp(-(x * x + y * y) / sigma22));
-                    sum += data[i1];
-                }
-            }
-
-            // Нормализация
-            if (sum != 0) {
-                for (int i = 0; i < data.length; i++) {
-                    data[i] /= sum;
-                }
-            } else {
-                throw new IllegalStateException("Normalization sum is zero");
-            }
-
-            Kernel kernel = new Kernel(size, size, data);
-
-
-            // Create a ConvolveOp with the kernel
-            ConvolveOp op = new ConvolveOp(kernel, ConvolveOp.EDGE_NO_OP, null);
-
-            //ImageIO.write(originalImage, "png", new File("original_output.png"));
-            BufferedImage blurredImage = new BufferedImage(originalImage.getWidth(), originalImage.getHeight(), originalImage.getType());
-            // Apply the blur
-            op.filter(originalImage, blurredImage);
-            //ImageIO.write(blurredImage, "png", new File("blurred_output.png"));
-
-            // Leave only blue color
-            int a = 0xff, r = 0, g = 0, b = 0xff;
-            int mascARGB = (a << 24) | (r << 16) | (g << 8) | b;
-            Pixmap blurredImagePixmap = Tools2d.bufferedImageToPixmap(blurredImage, mascARGB);
-            blurredBackground = new Texture(blurredImagePixmap);
-
-            blurredImagePixmap.dispose();
-            pixmap.dispose(); // Освобождаем память
+            blurredBackground = applyGaussianBlur(originalImage);
+            pixmap.dispose();
         } catch (IOException e) {
             log.error("An error occurred during createBlurredBackground()", e);
         }
         return blurredBackground;
+    }
+
+    private Texture applyGaussianBlur(BufferedImage originalImage) throws IOException {
+        float sigma = 1.0f;
+        int kernelRadius = 10;
+        int size = kernelRadius * 2 + 1;
+        float[] data = new float[size * size];
+        float normalization = 1.0f / (float) (Math.PI * 2 * sigma * sigma);
+        float sum = 0.0f;
+
+        for (int i = -kernelRadius; i <= kernelRadius; i++) {
+            for (int j = -kernelRadius; j <= kernelRadius; j++) {
+                float value = normalization * (float) Math.exp(-(i * i + j * j) / (2 * sigma * sigma));
+                data[(i + kernelRadius) * size + (j + kernelRadius)] = value;
+                sum += value;
+            }
+        }
+
+        for (int i = 0; i < data.length; i++) {
+            data[i] /= sum;
+        }
+
+        Kernel kernel = new Kernel(size, size, data);
+        ConvolveOp op = new ConvolveOp(kernel, ConvolveOp.EDGE_NO_OP, null);
+        BufferedImage blurredImage = new BufferedImage(originalImage.getWidth(), originalImage.getHeight(), originalImage.getType());
+        op.filter(originalImage, blurredImage);
+
+        int maskARGB = (0xff << 24) | (0 << 16) | (0 << 8) | 0xff; // Blue color
+        Pixmap blurredImagePixmap = Tools2d.bufferedImageToPixmap(blurredImage, maskARGB);
+        return new Texture(blurredImagePixmap);
     }
 
     public static Pixmap bufferedImageToPixmap(BufferedImage image, int maskARGB) throws IOException {
@@ -298,17 +289,15 @@ public class Tools2d {
         for (int i = 0; i < image.getWidth(); i++) {
             for (int j = 0; j < image.getHeight(); j++) {
                 int rgb = image.getRGB(i, j);
-                int a = (rgb >> 24) & (0xff & maskARGB >> 24); // Alpha
-                int r = (rgb >> 16) & (0xff & maskARGB >> 16); // Red
-                int g = (rgb >> 8) & (0xff & maskARGB >> 8);  // Green
-                int b = rgb & 0xff & maskARGB;        // Blue
+                int a = (rgb >> 24) & (0xff & maskARGB >> 24);
+                int r = (rgb >> 16) & (0xff & maskARGB >> 16);
+                int g = (rgb >> 8) & (0xff & maskARGB >> 8);
+                int b = rgb & 0xff & maskARGB;
                 pixmap.drawPixel(i, j, (r << 24) | (g << 16) | (b << 8) | a);
             }
         }
-
         return pixmap;
     }
-
 
     public SpriteBatch getSpriteBatch() {
         return spriteBatch;
