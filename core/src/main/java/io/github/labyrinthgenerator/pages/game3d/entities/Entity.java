@@ -43,43 +43,43 @@ public abstract class Entity {
 
         entMan = screen.game.getEntMan();
         id = entMan.assignId();
-        chunk = entMan.addEntityOnChunk(this.position.x, this.position.z, this);
+        chunk = entMan.addEntityOnChunk(this.position, this);
         chunkMan = screen.game.getChunkMan();
     }
 
     public void setPosition(Vector3 newPosition) {
         position.set(newPosition);
-        if (!chunk.contains(position.x, position.z)) {
+        if (!chunk.contains(position.x, position.y, position.z)) {
             updateChunk();
         }
     }
 
     public void setPosition(float x, float y, float z) {
         position.set(x, y, z);
-        if (!chunk.contains(position.x, position.z)) {
+        if (!chunk.contains(position.x, position.y, position.z)) {
             updateChunk();
         }
     }
 
     public void addToPosition(float x, float y, float z) {
         position.add(x, y, z);
-        if (!chunk.contains(position.x, position.z)) {
+        if (!chunk.contains(position.x, position.y, position.z)) {
             updateChunk();
         }
     }
 
     public synchronized void updateChunk() {
         if (isDestroyed) return;
-        Vector2 worldSize = chunkMan.getWorldSize();
-        if (position.x < -0.5 || position.z < -0.5 ||
-            position.x > worldSize.x || position.z > worldSize.y) {
+        Vector3 worldSize = chunkMan.getWorldSize();
+        if (position.x < -0.5 || position.y > 0.5 || position.z < -0.5 ||
+            position.x > worldSize.x || position.y < worldSize.y || position.z > worldSize.z) {
             log.warn("Entity id: " + id + " position " + position + " out of bounds.");
             return;
         }
-        if (chunk != chunkMan.get(chunk.x, chunk.z)) {
+        if (chunk != chunkMan.get(chunk.x, chunk.y, chunk.z)) {
             throw new RuntimeException("Entity id: " + id + ", method updateChunk(), " + chunk + " is invalid.");
         }
-        Chunk newChunk = chunkMan.get(position.x, position.z);
+        Chunk newChunk = chunkMan.get(position.x, position.y, position.z);
         if (newChunk == null) {
             throw new NullPointerException("Chunk at position " + position + " is null.");
         }

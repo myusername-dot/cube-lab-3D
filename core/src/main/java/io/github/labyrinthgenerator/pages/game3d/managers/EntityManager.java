@@ -2,6 +2,7 @@ package io.github.labyrinthgenerator.pages.game3d.managers;
 
 import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
+import com.badlogic.gdx.math.Vector3;
 import io.github.labyrinthgenerator.pages.game3d.chunks.Chunk;
 import io.github.labyrinthgenerator.pages.game3d.entities.Entity;
 import io.github.labyrinthgenerator.pages.game3d.entities.player.Player;
@@ -36,11 +37,11 @@ public class EntityManager {
         this.chunkMan = chunkMan;
     }
 
-    public Chunk addEntityOnChunk(float x, float z, final Entity ent) {
+    public Chunk addEntityOnChunk(final Vector3 pos, final Entity ent) {
         entitiesById.put(ent.getId(), ent);
-        Chunk chunk = chunkMan.get(x, z);
+        Chunk chunk = chunkMan.get(pos.x, pos.y, pos.z);
         if (chunk == null) {
-            throw new NullPointerException("Chunk at position " + x + ", " + z + " is null.");
+            throw new NullPointerException("Chunk at position " + pos + " is null.");
         }
 
         entitiesByChunks.computeIfAbsent(chunk, k -> new ConcurrentHashMap<>()).put(ent, justObject);
@@ -63,14 +64,18 @@ public class EntityManager {
         }
     }
 
-    public List<Entity> getNearestEntities(float playerX, float playerZ) {
-        List<Chunk> nearestChunks = chunkMan.getNearestChunks(playerX, playerZ);
+    public List<Entity> getNearestEntities(Vector3 playersPos) {
+        List<Chunk> nearestChunks = chunkMan.getNearestChunks(playersPos);
         if (nearestChunks == null || nearestChunks.isEmpty()) {
-            throw new NullPointerException("nearestChunks == null || nearestChunks.isEmpty() at position " + playerX + ", " + playerZ + ".");
+            throw new NullPointerException("nearestChunks == null || nearestChunks.isEmpty() at position " + playersPos + ".");
         }
 
         List<Entity> nearestEntities = new ArrayList<>();
         for (Chunk chunk : nearestChunks) {
+            if (!entitiesByChunks.containsKey(chunk)) {
+                //log.warn("Method getNearestEntities: !entitiesByChunks.containsKey(chunk).");
+                continue;
+            }
             nearestEntities.addAll(entitiesByChunks.get(chunk).keySet());
         }
         return nearestEntities;
@@ -94,8 +99,12 @@ public class EntityManager {
         entitiesById.clear();
     }
 
-    public void render3DAllEntities(final ModelBatch mdlBatch, final Environment env, final float delta, float playerX, float playerZ) {
-        for (Chunk chunk : chunkMan.getNearestChunks(playerX, playerZ)) {
+    public void render3DAllEntities(final ModelBatch mdlBatch, final Environment env, final float delta, final Vector3 pos) {
+        for (Chunk chunk : chunkMan.getNearestChunks(pos)) {
+            if (!entitiesByChunks.containsKey(chunk)) {
+                //log.warn("Method render3DAllEntities: !entitiesByChunks.containsKey(chunk).");
+                continue;
+            }
             for (final Entity ent : entitiesByChunks.get(chunk).keySet()) {
                 if (ent.shouldRender3D()) {
                     ent.render3D(mdlBatch, env, delta);
@@ -104,13 +113,13 @@ public class EntityManager {
         }
     }
 
-    public synchronized void tickAllEntities(final float delta, float playerX, float playerZ) {
+    public synchronized void tickAllEntities(final float delta, final Vector3 pos) {
         long tickTime = System.currentTimeMillis();
         try {
             startTransaction();
             screen.game.getRectMan().joinTransaction(transactionId);
 
-            List<Chunk> nearestChunks = chunkMan.getNearestChunks(playerX, playerZ);
+            List<Chunk> nearestChunks = chunkMan.getNearestChunks(pos);
             executeTickInParallel(nearestChunks, delta);
 
             screen.game.getRectMan().commitTransaction();
@@ -130,6 +139,10 @@ public class EntityManager {
         List<Future<Boolean>> futures = new ArrayList<>();
 
         for (Chunk chunk : nearestChunks) {
+            if (!entitiesByChunks.containsKey(chunk)) {
+                //log.warn("Method getNearestEntities: !entitiesByChunks.containsKey(chunk).");
+                continue;
+            }
             Set<Entity> entitiesByChunkClone = new HashSet<>(entitiesByChunks.get(chunk).keySet());
             futures.add(executorService.submit(new TickChunk(entitiesByChunkClone, delta)));
         }

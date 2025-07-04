@@ -1,5 +1,6 @@
 package io.github.labyrinthgenerator.pages.game3d.managers;
 
+import com.badlogic.gdx.math.Vector3;
 import io.github.labyrinthgenerator.pages.game3d.CubeLab3D;
 import io.github.labyrinthgenerator.pages.game3d.chunks.Chunk;
 import io.github.labyrinthgenerator.pages.game3d.entities.Entity;
@@ -35,7 +36,7 @@ public class RectManager {
     }
 
     public void addRect(final RectanglePlus rect) {
-        Chunk chunk = chunkMan.get(rect.getX() + rect.getWidth() / 2f, rect.getZ() + rect.getDepth() / 2f);
+        Chunk chunk = chunkMan.get(rect.getX() + rect.getWidth() / 2f, rect.getY(), rect.getZ() + rect.getDepth() / 2f);
         rects.computeIfAbsent(chunk, k -> new ConcurrentHashMap<>())
             .computeIfAbsent(rect.filter, k -> new ConcurrentHashMap<>())
             .put(rect, justObject);
@@ -46,7 +47,7 @@ public class RectManager {
     }
 
     public void updateEntityChunkIfExistsRect(final Chunk oldChunk, final Chunk newChunk, final Entity ent) {
-        Player player = ((GameScreen) game.getScreen()).getPlayer();
+        Player player = game.getScreen().getPlayer();
         log.debug(player != null && player.getId() == ent.getId() ?
             "Try to move the Player's rectangle to the other chunk." :
             "Entity id: " + ent.getId() + " is trying to move.");
@@ -84,18 +85,22 @@ public class RectManager {
         }
     }
 
-    public List<RectanglePlus> getNearestRectsByFilters(float playerX, float playerZ, final RectanglePlus rect) {
+    public List<RectanglePlus> getNearestRectsByFilters(final Vector3 pos, final RectanglePlus rect) {
         List<RectanglePlusFilter> filters = game.getOverlapFilterMan().getFiltersOverlap(rect.filter);
         if (filters.isEmpty()) return Collections.emptyList();
 
-        List<Chunk> nearestChunks = chunkMan.getNearestChunks(playerX, playerZ);
+        List<Chunk> nearestChunks = chunkMan.getNearestChunks(pos);
         if (nearestChunks == null || nearestChunks.isEmpty()) {
-            throw new NullPointerException("nearestChunks == null || nearestChunks.isEmpty() at position " + playerX + ", " + playerZ + ".");
+            throw new NullPointerException("nearestChunks == null || nearestChunks.isEmpty() at position " + pos + ".");
         }
 
         List<RectanglePlus> nearestRects = new ArrayList<>();
         for (Chunk chunk : nearestChunks) {
             for (RectanglePlusFilter filter : filters) {
+                if (!rects.containsKey(chunk)) {
+                    //log.warn("Method getNearestRectsByFilters: !rects.containsKey(chunk).");
+                    continue;
+                }
                 Map<RectanglePlus, Object> otherRects = rects.get(chunk).get(filter);
                 if (otherRects == null) continue;
                 for (final RectanglePlus otherRect : otherRects.keySet()) {

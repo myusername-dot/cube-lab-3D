@@ -132,7 +132,7 @@ public class ReflectiveCubemap {
             envCubeMap.render(camFb);
 
             modelBatch.begin(camFb);
-            game.getEntMan().render3DAllEntities(modelBatch, env, delta, camFb.position.x, camFb.position.z);
+            game.getEntMan().render3DAllEntities(modelBatch, env, delta, camFb.position.cpy());
             modelBatch.end();
         }
         fb.end();
