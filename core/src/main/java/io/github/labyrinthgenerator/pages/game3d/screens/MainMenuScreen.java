@@ -107,15 +107,11 @@ public class MainMenuScreen extends GameScreen {
     private void setupCamera(final CubeLab3D game) {
         currentCam = new PerspectiveCamera(70, 640, 480);
         currentCam.position.set(new Vector3(0, HALF_UNIT, 0));
-        currentCam.lookAt(new Vector3(0, HALF_UNIT, HALF_UNIT * 2));
+        currentCam.lookAt(new Vector3(0, HALF_UNIT, -HALF_UNIT * 2));
         currentCam.near = 0.01f;
         currentCam.far = 10f;
         currentCam.update();
-        currentCam.position.set(
-            game.getMapBuilder().mapLoadSpawnPosition.x,
-            HALF_UNIT,
-            game.getMapBuilder().mapLoadSpawnPosition.y
-        );
+        currentCam.position.set(getPlayerSpawnPosition().add(0, HALF_UNIT, 0));
         viewport.setCamera(currentCam);
     }
 
