@@ -82,6 +82,10 @@ public class Player extends Entity {
             .add(adjustVecForGravity(new Vector3(0, camY, 0), true)));
     }
 
+    public float getGravityScl() {
+        return gravityDirection.x + gravityDirection.y + gravityDirection.z;
+    }
+
     public void setGravityDirection(Vector3f newGravityDirection) {
         this.gravityDirection = newGravityDirection;//.nor(); // Нормализуем вектор
         updateCameraRotation();
@@ -117,10 +121,11 @@ public class Player extends Entity {
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.SHIFT_LEFT)) {
             setGravityDirection(gravityDirection.cpy().scl(-1));
+            isOnGround = false;
         }
 
-        // todo y scl
-        playerCam.rotate(/*adjustVecForGravity(*/Vector3.Y/*, false)*/, Gdx.input.getDeltaX() * -cameraRotationSpeed * delta);
+        playerCam.rotate(adjustVecForGravity(Vector3.Y, false),
+            Gdx.input.getDeltaX() * -cameraRotationSpeed * getGravityScl() * delta);
 
         if (verticalCameraMovement) {
             playerCam.rotate(/*adjustVecForGravity(*/new Vector3(playerCam.direction.z, 0f, -playerCam.direction.x)/*, false)*/,
