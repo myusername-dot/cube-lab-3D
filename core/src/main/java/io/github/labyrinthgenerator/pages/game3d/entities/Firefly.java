@@ -94,7 +94,7 @@ public class Firefly extends Enemy {
 
         setPosition(
             rect.getX() + rect.getWidth() / 2f,
-            rect.getY() + rect.getHeight() / 2f,
+            rect.getY() - rect.getHeight() / 2f,
             rect.getZ() + rect.getDepth() / 2f
         );
 

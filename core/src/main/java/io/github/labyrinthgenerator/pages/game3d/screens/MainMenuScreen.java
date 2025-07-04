@@ -201,7 +201,7 @@ public class MainMenuScreen extends GameScreen {
         clearScreen();
         drawSkyBackground();
         game.getMdlBatch().begin(currentCam);
-        game.getEntMan().render3DAllEntities(game.getMdlBatch(), env, delta, currentCam.position.x, currentCam.position.z);
+        game.getEntMan().render3DAllEntities(game.getMdlBatch(), env, delta, currentCam.position.cpy());
         game.getMdlBatch().end();
         game.getFbo().end();
 

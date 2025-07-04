@@ -219,7 +219,7 @@ public class Tools2d {
                     }
                     writer.newLine();
                 }
-                writer.write("\\edge");
+                writer.write("/edge");
                 writer.newLine();
             }
         } catch (IOException e) {

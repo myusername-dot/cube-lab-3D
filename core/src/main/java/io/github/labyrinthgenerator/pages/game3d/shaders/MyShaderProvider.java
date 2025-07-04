@@ -86,7 +86,7 @@ public class MyShaderProvider extends Tickable implements ShaderProvider {
         player.playerCam.update();
 
         Vector3 playerPos3 = player.getPositionImmutable();
-        List<Entity> nearestEntities = game.getEntMan().getNearestEntities(playerPos3.x, playerPos3.z);
+        List<Entity> nearestEntities = game.getEntMan().getNearestEntities(player.getPositionImmutable());
         List<PointLightPlus> pointLights = nearestEntities.stream()
             .map(Entity::getPointLight)
             .filter(Objects::nonNull)

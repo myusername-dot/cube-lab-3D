@@ -202,7 +202,7 @@ public class PlayScreen extends GameScreen {
     }
 
     private void renderEntities(float delta) {
-        game.getEntMan().render3DAllEntities(game.getMdlBatch(), env, delta, currentCam.position.x, currentCam.position.z);
+        game.getEntMan().render3DAllEntities(game.getMdlBatch(), env, delta, currentCam.position.cpy());
     }
 
     private void renderFinalFbo() {
@@ -217,11 +217,12 @@ public class PlayScreen extends GameScreen {
     private void renderDebugInfo() {
         if (showExitDistance && !showGuiMenu) {
             guiFont32.draw(game.getBatch(), "position          : " + player.getPositionImmutable(), viewport.getWorldWidth() / 8f, viewport.getWorldHeight() - 32);
-            guiFont32.draw(game.getBatch(), "movement dir      : " + player.getMovementDir(), viewport.getWorldWidth() / 8f, viewport.getWorldHeight() - 48);
-            guiFont32.draw(game.getBatch(), "cam dir           : " + player.getDirection(), viewport.getWorldWidth() / 8f, viewport.getWorldHeight() - 64);
-            guiFont32.draw(game.getBatch(), "velocity          : " + player.getVelocity(), viewport.getWorldWidth() / 8f, viewport.getWorldHeight() - 80);
-            guiFont32.draw(game.getBatch(), "velocity forward  : " + player.getVelocity(), viewport.getWorldWidth() / 8f, viewport.getWorldHeight() - 96);
-            guiFont32.draw(game.getBatch(), "Exit distance     : " + player.getExitDistance(), viewport.getWorldWidth() / 8f, viewport.getWorldHeight() - 112);
+            guiFont32.draw(game.getBatch(), "rectangle         : " + player.rect.getPosition(), viewport.getWorldWidth() / 8f, viewport.getWorldHeight() - 48);
+            guiFont32.draw(game.getBatch(), "movement dir      : " + player.getMovementDir(), viewport.getWorldWidth() / 8f, viewport.getWorldHeight() - 64);
+            guiFont32.draw(game.getBatch(), "cam dir           : " + player.getDirection(), viewport.getWorldWidth() / 8f, viewport.getWorldHeight() - 80);
+            guiFont32.draw(game.getBatch(), "velocity          : " + player.getVelocity(), viewport.getWorldWidth() / 8f, viewport.getWorldHeight() - 96);
+            guiFont32.draw(game.getBatch(), "velocity forward  : " + player.getVelocity(), viewport.getWorldWidth() / 8f, viewport.getWorldHeight() - 112);
+            guiFont32.draw(game.getBatch(), "Exit distance     : " + player.getExitDistance(), viewport.getWorldWidth() / 8f, viewport.getWorldHeight() - 128);
         }
     }
 

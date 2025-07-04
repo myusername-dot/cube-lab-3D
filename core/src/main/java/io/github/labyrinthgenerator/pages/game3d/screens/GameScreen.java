@@ -37,11 +37,7 @@ public abstract class GameScreen implements Screen {
     }
 
     public void checkOverlaps(final RectanglePlus rect, final float delta) {
-        List<RectanglePlus> nearestRects = game.getRectMan().getNearestRectsByFilters(
-            currentCam.position.x,
-            currentCam.position.z,
-            rect
-        );
+        List<RectanglePlus> nearestRects = game.getRectMan().getNearestRectsByFilters(currentCam.position, rect);
 
         checkOverlapX(rect, nearestRects, delta);
         checkOverlapY(rect, nearestRects, delta);
@@ -66,6 +62,8 @@ public abstract class GameScreen implements Screen {
      * Check for overlap in angle X.
      */
     private void checkOverlapY(final RectanglePlus rect, List<RectanglePlus> nearestRects, final float delta) {
+        if (rect.newPosition.y > 0.5f) rect.newPosition.y = 0.5f; // FIXME
+
         rect.setY(rect.newPosition.y);
 
         // остановка у стен
@@ -191,7 +189,7 @@ public abstract class GameScreen implements Screen {
 
     public void tick(final float delta) {
         if (!game.gameIsPaused) {
-            game.getEntMan().tickAllEntities(delta, currentCam.position.x, currentCam.position.z);
+            game.getEntMan().tickAllEntities(delta, currentCam.position.cpy());
             game.getTickMan().tickAllEntities(delta);
         }
     }
