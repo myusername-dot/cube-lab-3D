@@ -37,6 +37,7 @@ public class Tools2d {
 
     private Lab[] labyrinth;
     private int labyrinthWidthHeight;
+    private float scaleX, scaleY;
     private int screenX, screenY;
 
     public void create() {
@@ -86,6 +87,9 @@ public class Tools2d {
     private void initializeLabyrinthDimensions() {
         labyrinthWidthHeight = (int) (((MyApplication.windowW - 1f) / 4f) / MyApplication.lDivider);
         labyrinthWidthHeight += labyrinthWidthHeight % 2 == 0 ? 1 : 0;
+        scaleX = MyApplication.lDivider;
+        float labScreenH = labyrinthWidthHeight * 3f;
+        scaleY = MyApplication.windowH / labScreenH;
     }
 
     private void createLabyrinths() {
@@ -97,8 +101,8 @@ public class Tools2d {
     }
 
     private void calculateScreenCoordinates() {
-        screenX = (int) (MyApplication.windowW - MyApplication.lDivider * labyrinthWidthHeight * 4);
-        screenY = (int) (MyApplication.windowH - MyApplication.lDivider * labyrinthWidthHeight * 3);
+        screenX = (int) (MyApplication.windowW - scaleX * labyrinthWidthHeight * 4);
+        screenY = (int) (MyApplication.windowH - scaleY * labyrinthWidthHeight * 3);
     }
 
     public int getEdgeOffsetX(int edge) {
@@ -145,8 +149,8 @@ public class Tools2d {
     private void drawVerticalWall(int i, int j, int offsetX, int offsetY) {
         spriteBatch.draw(
             verticalWallTexture,
-            screenX + (i + offsetX) * MyApplication.lDivider, screenY + (j + offsetY) * MyApplication.lDivider - MyApplication.lDivider,
-            MyApplication.lDivider / 4f, MyApplication.lDivider * 2
+            screenX + (i + offsetX) * scaleX, screenY + (j + offsetY) * scaleY - scaleY,
+            scaleX / 4f, scaleY * 2
         );
     }
 
@@ -154,8 +158,8 @@ public class Tools2d {
         if (shouldDrawHorizontalWall(i, j, labyrinthArray)) {
             spriteBatch.draw(
                 horizontalWallTexture,
-                screenX + (i + offsetX) * MyApplication.lDivider, screenY + (j + offsetY) * MyApplication.lDivider,
-                MyApplication.lDivider, MyApplication.lDivider / 4f
+                screenX + (i + offsetX) * scaleX, screenY + (j + offsetY) * scaleY,
+                scaleX, scaleY / 4f * 2
             );
         }
     }
@@ -171,8 +175,8 @@ public class Tools2d {
     }
 
     private void drawEntryAndEscape(int offsetX, int offsetY) {
-        spriteBatch.draw(escapeTexture, screenX + (offsetX + labyrinthWidthHeight - 2) * MyApplication.lDivider, screenY + (offsetY + labyrinthWidthHeight - 2) * MyApplication.lDivider, MyApplication.lDivider, MyApplication.lDivider);
-        spriteBatch.draw(entryTexture, screenX + (offsetX + 1) * MyApplication.lDivider, screenY + (1 + offsetY) * MyApplication.lDivider, MyApplication.lDivider, MyApplication.lDivider);
+        spriteBatch.draw(escapeTexture, screenX + (offsetX + labyrinthWidthHeight - 2) * scaleX, screenY + (offsetY + labyrinthWidthHeight - 2) * scaleY, scaleX, scaleY);
+        spriteBatch.draw(entryTexture, screenX + (offsetX + 1) * scaleX, screenY + (1 + offsetY) * scaleY, scaleX, scaleY);
     }
 
     public void prepareDraw() {
@@ -307,8 +311,12 @@ public class Tools2d {
         return labyrinth;
     }
 
-    public float getScale() {
-        return MyApplication.lDivider;
+    public float getScaleX() {
+        return scaleX;
+    }
+
+    public float getScaleY() {
+        return scaleY;
     }
 
     public int getScreenX() {
