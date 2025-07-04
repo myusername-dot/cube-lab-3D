@@ -12,6 +12,7 @@ import io.github.labyrinthgenerator.pages.game3d.entities.Firefly;
 import io.github.labyrinthgenerator.pages.game3d.rect.RectanglePlus;
 import io.github.labyrinthgenerator.pages.game3d.rect.filters.RectanglePlusFilter;
 import io.github.labyrinthgenerator.pages.game3d.screens.GameScreen;
+import io.github.labyrinthgenerator.pages.game3d.vectors.Vector3f;
 import lombok.extern.slf4j.Slf4j;
 
 import static io.github.labyrinthgenerator.pages.game3d.constants.Constants.*;
@@ -36,23 +37,18 @@ public class Player extends Entity {
     private boolean isOnGround = true;
 
     private float velocityY = 0f;
-    private final Vector2 velocity = new Vector2();
-    private final Vector2 forwardVelocity = new Vector2();
+    private final Vector2 horizontalVelocity = new Vector2();
+    private final Vector2 horizontalForwardVelocity = new Vector2();
+
+    private Vector3f gravityDirection = new Vector3f(0, 1, 0);
 
     private boolean cheats = false;
 
-    private final int maxHP = 100;
     private int currentHP = 100;
     public boolean isDead = false;
     public boolean gotHit = false;
 
     public int currentInventorySlot = 1;
-
-    public boolean renderBloodOverlay = false;
-    private final float bloodOverlayAlphaMax = 1f;
-    private final float bloodOverlayAlphaMin = 0f;
-    private final float bloodOverlayAlphaSpeed = 5f;
-    public float bloodOverlayAlpha = bloodOverlayAlphaMin;
 
     public Player(Vector3 position, float rectWidth, float rectDepth, final GameScreen screen) {
         super(position.cpy().set(
@@ -82,47 +78,21 @@ public class Player extends Entity {
     }
 
     private void setCamPosition() {
-        playerCam.position.set(getPositionX(), getPositionY() + camY, getPositionZ());
+        playerCam.position.set(new Vector3(getPositionX(), getPositionY(), getPositionZ())
+            .add(adjustVecForGravity(new Vector3(0, camY, 0), true)));
     }
 
-    public void addHP(final int addHP) {
-        this.currentHP += addHP;
-
-        if (currentHP > maxHP) {
-            currentHP = maxHP;
-        }
-
-//		log.info("Current HP: " + currentHP);
+    public void setGravityDirection(Vector3f newGravityDirection) {
+        this.gravityDirection = newGravityDirection;//.nor(); // Нормализуем вектор
+        updateCameraRotation();
     }
 
-    public int getCurrentHP() {
-        return currentHP;
+    private void updateCameraRotation() {
+        // Поворачиваем камеру так, чтобы пол был под ногами
+        playerCam.up.set(new Vector3(gravityDirection.x, gravityDirection.y, gravityDirection.z));
+        //playerCam.direction.set(gravityDirection); // Направление камеры
+        playerCam.update();
     }
-
-    /*public final void collectItems() {
-        final float rangeDistanceFromCam = 2f;
-
-        float rectX = rect.getX() + rect.getWidth() / 2f;
-        float rectZ = rect.getZ() + rect.getDepth() / 2f;
-        for (final RectanglePlus rect : screen.game.getRectMan().getRectsByFilter(RectanglePlusFilter.ITEM)) {
-            if (Intersector.intersectSegmentRectangle(playerCam.position.x, playerCam.position.z,
-                playerCam.position.x + playerCam.direction.x * rangeDistanceFromCam,
-                playerCam.position.z + playerCam.direction.z * rangeDistanceFromCam, rect.rectangle)) {
-
-                float rectInRangeDistance = Vector2.dst2(playerCam.position.x, playerCam.position.z,
-                    rectX, rectZ);
-
-                if (rectInRangeDistance < rangeDistanceFromCam) {
-                    if (screen.game.getEntMan()
-                        .getEntityFromId(rect.getConnectedEntityId()) instanceof IUsable) {
-                        IUsable currentUsableInterface = (IUsable) screen.game.getEntMan()
-                            .getEntityFromId(rect.getConnectedEntityId());
-                        currentUsableInterface.onUse();
-                    }
-                }
-            }
-        }
-    }*/
 
     public float getExitDistance() {
         float playerX = rect.getX();
@@ -145,10 +115,15 @@ public class Player extends Entity {
             currentInventorySlot = currentInventorySlot < 1 ? 6 : currentInventorySlot;
         }
 
-        playerCam.rotate(Vector3.Y, Gdx.input.getDeltaX() * -cameraRotationSpeed * delta);
+        if (Gdx.input.isKeyJustPressed(Input.Keys.SHIFT_LEFT)) {
+            setGravityDirection(gravityDirection.cpy().scl(-1));
+        }
+
+        // todo y scl
+        playerCam.rotate(/*adjustVecForGravity(*/Vector3.Y/*, false)*/, Gdx.input.getDeltaX() * -cameraRotationSpeed * delta);
 
         if (verticalCameraMovement) {
-            playerCam.rotate(new Vector3(playerCam.direction.z, 0f, -playerCam.direction.x),
+            playerCam.rotate(/*adjustVecForGravity(*/new Vector3(playerCam.direction.z, 0f, -playerCam.direction.x)/*, false)*/,
                 Gdx.input.getDeltaY() * -cameraRotationSpeed * delta);
         }
 
@@ -190,32 +165,28 @@ public class Player extends Entity {
         // Нормализуем направление движения и применяем ускорение
         if (movementDir.len() > 0) {
             movementDir.nor(); // Нормализуем
-            velocity.add(movementDir.cpy().scl(acceleration * delta)); // Увеличиваем скорость
+            horizontalVelocity.add(movementDir.cpy().scl(acceleration * delta)); // Увеличиваем скорость
         } else {
             // Если игрок не движется, замедляем скорость
-            velocity.scl(1 - deceleration * delta);
+            horizontalVelocity.scl(1 - deceleration * delta);
         }
 
         // Ограничиваем скорость только в направлении камеры, чтобы игрока не заносило на поворотах
         Vector3 cameraForward = playerCam.direction.cpy().nor();
-        float forwardVelocityScl = velocity.cpy().dot(cameraForward.x, cameraForward.z); // Получаем скорость в направлении камеры
+        float forwardVelocityScl = horizontalVelocity.cpy().dot(cameraForward.x, cameraForward.z); // Получаем скорость в направлении камеры
         cameraForward.scl(forwardVelocityScl);
-        forwardVelocity.set(cameraForward.x, cameraForward.z); // Устанавливаем скорость только в направлении
+        horizontalForwardVelocity.set(cameraForward.x, cameraForward.z); // Устанавливаем скорость только в направлении
 
         // Ограничиваем скорость
-        if (forwardVelocity.len() > playerMoveSpeed) {
+        if (horizontalForwardVelocity.len() > playerMoveSpeed) {
             // получаем единичный скаляр по отношению к длине и умножаем на макс скорость
-            forwardVelocity.nor().scl(playerMoveSpeed);
+            horizontalForwardVelocity.nor().scl(playerMoveSpeed);
         }
 
-        if (!horizontalMovement) velocity.set(forwardVelocity);
-        else if (velocity.len() > playerMoveSpeed) {
-            velocity.nor().scl(playerMoveSpeed);
+        if (!horizontalMovement) horizontalVelocity.set(horizontalForwardVelocity);
+        else if (horizontalVelocity.len() > playerMoveSpeed) {
+            horizontalVelocity.nor().scl(playerMoveSpeed);
         }
-
-		/*if (Gdx.input.isKeyJustPressed(Input.Keys.E)) {
-			useUsableInterface(currentUsableInterface);
-		}*/
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_1)) {
             currentInventorySlot = 1;
@@ -258,10 +229,12 @@ public class Player extends Entity {
             headbob = false;
         }
 
+        Vector3 velocity = adjustVecForGravity(new Vector3(horizontalVelocity.x, -velocityY, horizontalVelocity.y), true);
+
         Vector3 newPosition = new Vector3(
             rect.getX() + velocity.x * delta,
-            rect.getY() - velocityY * delta,
-            rect.getZ() + velocity.y * delta
+            rect.getY() + velocity.y * delta,
+            rect.getZ() + velocity.z * delta
         );
 
         if (newPosition.y > 0f) {
@@ -273,6 +246,34 @@ public class Player extends Entity {
         rect.newPosition.set(newPosition.x, newPosition.y, newPosition.z);
     }
 
+    public Vector3 adjustVecForGravity(Vector3 in, boolean invertY) {
+        int yScl = invertY ? 1 : -1;
+        Vector3 out;
+        if (gravityDirection.equals(new Vector3(0, 1, 0))) {
+            // Гравитация направлена вниз
+            out = new Vector3(in.x, in.y, in.z);
+        } else if (gravityDirection.equals(new Vector3(0, -1, 0))) {
+            // Гравитация направлена вверх
+            out = new Vector3(in.x, -1 * yScl * in.y, in.z);
+        } else if (gravityDirection.equals(new Vector3(1, 0, 0))) {
+            // Гравитация направлена вправо
+            out = new Vector3(in.y, in.x, in.z);
+        } else if (gravityDirection.equals(new Vector3(-1, 0, 0))) {
+            // Гравитация направлена влево
+            out = new Vector3(-1 * yScl * in.y, in.x, in.z);
+        } else if (gravityDirection.equals(new Vector3(0, 0, 1))) {
+            // Гравитация направлена вперед
+            out = new Vector3(in.z, in.x, in.y);
+        } else if (gravityDirection.equals(new Vector3(0, 0, -1))) {
+            // Гравитация направлена назад
+            out = new Vector3(in.z, in.x, -1 * yScl * in.y);
+        } else {
+            out = new Vector3(0, 0, 0);
+        }
+        return out;
+    }
+
+
     public Vector2 getMovementDir() {
         return movementDir;
     }
@@ -281,12 +282,12 @@ public class Player extends Entity {
         return playerCam.direction.cpy();
     }
 
-    public Vector2 getVelocity() {
-        return velocity.cpy();
+    public Vector2 getHorizontalVelocity() {
+        return horizontalVelocity.cpy();
     }
 
-    public Vector2 getForwardVelocity() {
-        return forwardVelocity.cpy();
+    public Vector2 getHorizontalForwardVelocity() {
+        return horizontalForwardVelocity.cpy();
     }
 
     @Override
@@ -302,16 +303,6 @@ public class Player extends Entity {
 		}*/
     }
 
-    public void subHP(final int subHP) {
-        this.currentHP -= subHP;
-
-        if (currentHP < 0) {
-            currentHP = 0;
-        }
-
-        gotHit = true;
-    }
-
     @Override
     public void render3D(final ModelBatch mdlBatch, final Environment env, final float delta) {
         super.render3D(mdlBatch, env, delta);
@@ -319,24 +310,6 @@ public class Player extends Entity {
 
     @Override
     public void tick(final float delta) {
-        if (gotHit) {
-            renderBloodOverlay = true;
-            bloodOverlayAlpha = bloodOverlayAlphaMax;
-            gotHit = false;
-        }
-
-        if (renderBloodOverlay) {
-            bloodOverlayAlpha -= delta * bloodOverlayAlphaSpeed;
-
-            if (bloodOverlayAlpha <= bloodOverlayAlphaMin) {
-                renderBloodOverlay = false;
-            }
-        }
-
-        if (currentHP == 0) {
-            isDead = true;
-//			log.info("Player is dead.");
-        }
 
         if (!cheats) {
             screen.checkOverlaps(rect, delta);
