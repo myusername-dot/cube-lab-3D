@@ -214,32 +214,32 @@ public class Labyrinth2D implements Page {
     }
 
     private void handleGameDraw(SpriteBatch spriteBatch) {
-        float scale = tools.getScale();
+        float scaleX = tools.getScaleX(), scaleY = tools.getScaleY();
         int screenX = tools.getScreenX();
         int screenY = tools.getScreenY();
-        drawPreviousPoses(spriteBatch, scale, screenX, screenY);
-        drawPuffins(spriteBatch, scale, screenX, screenY);
+        drawPreviousPoses(spriteBatch, scaleX, scaleY, screenX, screenY);
+        drawPuffins(spriteBatch, scaleX, scaleY, screenX, screenY);
         tools.drawLabyrinth();
         handleSaving();
     }
 
-    private void drawPreviousPoses(SpriteBatch spriteBatch, float scale, int screenX, int screenY) {
+    private void drawPreviousPoses(SpriteBatch spriteBatch, float scaleX, float scaleY, int screenX, int screenY) {
         for (int edge = 0; edge < 6; edge++) {
-            drawPoses(spriteBatch, scale, screenX, screenY, edge, prevPoses.get(edge), escape[edge] ? prefPoseAcceptEscapeTexture : prefPoseTexture);
+            drawPoses(spriteBatch, scaleX, scaleY, screenX, screenY, edge, prevPoses.get(edge), escape[edge] ? prefPoseAcceptEscapeTexture : prefPoseTexture);
         }
     }
 
-    private void drawPuffins(SpriteBatch spriteBatch, float scale, int screenX, int screenY) {
+    private void drawPuffins(SpriteBatch spriteBatch, float scaleX, float scaleY, int screenX, int screenY) {
         for (int edge = 0; edge < 6; edge++) {
-            drawPoses(spriteBatch, scale, screenX, screenY, edge, puffins.get(edge), puffinTexture);
+            drawPoses(spriteBatch, scaleX, scaleY, screenX, screenY, edge, puffins.get(edge), puffinTexture);
         }
     }
 
-    private void drawPoses(SpriteBatch spriteBatch, float scale, int screenX, int screenY, int edge, Set<Vector2i> poses, Texture textureToDraw) {
+    private void drawPoses(SpriteBatch spriteBatch, float scaleX, float scaleY, int screenX, int screenY, int edge, Set<Vector2i> poses, Texture textureToDraw) {
         int offsetX = tools.getEdgeOffsetX(edge);
         int offsetY = tools.getEdgeOffsetY(edge);
         for (Vector2i pose : poses) {
-            spriteBatch.draw(textureToDraw, screenX + (offsetX + pose.x) * scale, screenY + (offsetY + pose.y) * scale, scale, scale);
+            spriteBatch.draw(textureToDraw, screenX + (offsetX + pose.x) * scaleX, screenY + (offsetY + pose.y) * scaleY, scaleX, scaleY);
         }
     }
 
