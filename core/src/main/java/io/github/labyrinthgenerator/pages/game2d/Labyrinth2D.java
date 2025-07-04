@@ -3,7 +3,6 @@ package io.github.labyrinthgenerator.pages.game2d;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Camera;
-import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
@@ -18,10 +17,8 @@ import io.github.labyrinthgenerator.pages.game3d.CubeLab3D;
 import io.github.labyrinthgenerator.pages.game3d.vectors.Vector2i;
 import lombok.extern.slf4j.Slf4j;
 
-import java.awt.image.BufferedImage;
-import java.awt.image.ConvolveOp;
-import java.awt.image.Kernel;
-import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -37,23 +34,22 @@ public class Labyrinth2D implements Page {
     private Texture puffinTexture;
     private Texture blurredBackground;
 
-    private Tools2d toolsPage;
+    private Tools2d tools;
 
     private int frame;
     private static final int FRAMERATE = 60;
 
-    private boolean escape;
-    private boolean puffPuffins;
+    private boolean[] escape = new boolean[6];
+    private boolean[] puffPuffins = new boolean[6];
     private boolean isFinished;
     private boolean isGameInPause;
     private boolean screenshot;
     private boolean txtFile;
 
-    private Lab lab;
-    private Set<Vector2i> prevPoses;
-    private Set<Vector2i> puffins;
+    private Lab[] lab;
+    private List<Set<Vector2i>> prevPoses;
+    private List<Set<Vector2i>> puffins;
 
-    // Кнопки
     private BitmapFont buttonFont64;
     private GlyphLayout[] glyphLayouts;
     private final String[] options = {"PLAY", "REFRESH"};
@@ -71,12 +67,16 @@ public class Labyrinth2D implements Page {
     }
 
     public void refresh() {
-        toolsPage.refresh();
-        lab = toolsPage.getLabyrinth();
-        prevPoses = lab.getPrevPosses();
-        puffins = lab.getPuffins();
-        puffPuffins = true;
-        escape = false;
+        tools.refresh();
+        lab = tools.getLabyrinth();
+        prevPoses = new ArrayList<>(6);
+        puffins = new ArrayList<>(6);
+        for (int edge = 0; edge < 6; edge++) {
+            prevPoses.add(lab[edge].getPrevPosses());
+            puffins.add(lab[edge].getPuffins());
+            puffPuffins[edge] = true;
+            escape[edge] = false;
+        }
         isFinished = false;
         isGameInPause = false;
         screenshot = false;
@@ -94,8 +94,8 @@ public class Labyrinth2D implements Page {
     }
 
     private void createToolsPage() {
-        toolsPage = new Tools2d();
-        toolsPage.create();
+        tools = new Tools2d();
+        tools.create();
     }
 
     private void setupFonts() {
@@ -148,87 +148,32 @@ public class Labyrinth2D implements Page {
 
         if (!isLogicFrame()) return;
 
-        if (puffPuffins) {
-            handlePuffPuffinsLogic();
-        } else if (!isGameInPause) {
+        boolean finalize = true;
+        for (int edge = 0; edge < 6; edge++) {
+            if (puffPuffins[edge]) {
+                handlePuffPuffinsLogic(edge);
+                finalize = false;
+            }
+        }
+        if (finalize && !isGameInPause) {
             finalizeLabyrinth();
         }
     }
 
-    private void handlePuffPuffinsLogic() {
-        escape = lab.passage(true);
-        puffPuffins = !lab.isFin();
+    private void handlePuffPuffinsLogic(int edge) {
+        escape[edge] = lab[edge].passage(false);
+        puffPuffins[edge] = !lab[edge].isFin();
     }
 
     private void finalizeLabyrinth() {
-        lab.convertTo3dGame();
-        escape = true;
+        for (int edge = 0; edge < 6; edge++) {
+            lab[edge].convertTo3dGame();
+            escape[edge] = true;
+        }
         isGameInPause = true; // Устанавливаем флаг паузы
         screenshot = true; // Установим флаг для сохранения скриншота
         txtFile = MyApplication.saveAsTxt;
     }
-
-    private void createBlurredBackground() {
-        try {
-            // Создаем скриншот лабиринта
-            Pixmap pixmap = Pixmap.createFromFrameBuffer(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-            BufferedImage originalImage = Tools2d.pixmapToBufferedImage(pixmap);
-
-
-            // Размытие по Гауссу
-            float sigma = 1.0f;
-            int kernelRadius = 10;
-            int size = kernelRadius * 2 + 1;
-            float[] data = new float[size * size];
-            float sigma22 = 2 * sigma * sigma;
-            float normalization = 1.0f / (float) (Math.PI * sigma22);
-
-            // Создание ядра Gaussian
-            float sum = 0.0f;
-            for (int i = -kernelRadius; i <= kernelRadius; i++) {
-                for (int j = -kernelRadius; j <= kernelRadius; j++) {
-                    float x = (float) i;
-                    float y = (float) j;
-                    int i1 = (i + kernelRadius) * size + (j + kernelRadius);
-                    data[i1] = (float) (normalization * Math.exp(-(x * x + y * y) / sigma22));
-                    sum += data[i1];
-                }
-            }
-
-            // Нормализация
-            if (sum != 0) {
-                for (int i = 0; i < data.length; i++) {
-                    data[i] /= sum;
-                }
-            } else {
-                throw new IllegalStateException("Normalization sum is zero");
-            }
-
-            Kernel kernel = new Kernel(size, size, data);
-
-
-            // Create a ConvolveOp with the kernel
-            ConvolveOp op = new ConvolveOp(kernel, ConvolveOp.EDGE_NO_OP, null);
-
-            //ImageIO.write(originalImage, "png", new File("original_output.png"));
-            BufferedImage blurredImage = new BufferedImage(originalImage.getWidth(), originalImage.getHeight(), originalImage.getType());
-            // Apply the blur
-            op.filter(originalImage, blurredImage);
-            //ImageIO.write(blurredImage, "png", new File("blurred_output.png"));
-
-            // Leave only blue color
-            int a = 0xff, r = 0, g = 0, b = 0xff;
-            int mascARGB = (a << 24) | (r << 16) | (g << 8) | b;
-            Pixmap blurredImagePixmap = Tools2d.bufferedImageToPixmap(blurredImage, mascARGB);
-            blurredBackground = new Texture(blurredImagePixmap);
-
-            blurredImagePixmap.dispose();
-            pixmap.dispose(); // Освобождаем память
-        } catch (IOException e) {
-            log.error("An error occurred during createBlurredBackground()", e);
-        }
-    }
-
 
     private boolean isLogicFrame() {
         return frame % (60 / FRAMERATE) == 0;
@@ -236,42 +181,50 @@ public class Labyrinth2D implements Page {
 
     @Override
     public void draw() {
-        toolsPage.prepareDraw();
-        SpriteBatch spriteBatch = toolsPage.getSpriteBatch();
+        tools.prepareDraw();
+        SpriteBatch spriteBatch = tools.getSpriteBatch();
 
         // Рисуем размытие заднего фона, если есть
         if (isGameInPause) {
             if (blurredBackground != null) {
                 spriteBatch.draw(blurredBackground, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
             } else {
-                toolsPage.drawLabyrinth();
+                tools.drawLabyrinth();
                 handleSaving(); // финальный скриншот
-                createBlurredBackground(); // Создаем размытие заднего фона для меню
+                tools.createBlurredBackground(); // Создаем размытие заднего фона для меню
             }
             drawMenuOptions(spriteBatch);
         } else {
-            float scale = toolsPage.getScale();
-            int screenX = toolsPage.getScreenX();
-            int screenY = toolsPage.getScreenY();
+            float scale = tools.getScale();
+            int screenX = tools.getScreenX();
+            int screenY = tools.getScreenY();
             drawPreviousPoses(spriteBatch, scale, screenX, screenY);
             drawPuffins(spriteBatch, scale, screenX, screenY);
-            toolsPage.drawLabyrinth();
+            tools.drawLabyrinth();
             handleSaving();
         }
 
-        toolsPage.endDraw();
+        tools.endDraw();
     }
 
     private void drawPreviousPoses(SpriteBatch spriteBatch, float scale, int screenX, int screenY) {
-        for (Vector2i prevPose : prevPoses) {
-            Texture textureToDraw = escape ? prefPoseAcceptEscapeTexture : prefPoseTexture;
-            spriteBatch.draw(textureToDraw, screenX + prevPose.x * scale, screenY + prevPose.y * scale, scale, scale);
+        for (int edge = 0; edge < 6; edge++) {
+            int offsetX = tools.getEdgeOffsetX(edge);
+            int offsetY = tools.getEdgeOffsetY(edge);
+            for (Vector2i prevPose : prevPoses.get(edge)) {
+                Texture textureToDraw = escape[edge] ? prefPoseAcceptEscapeTexture : prefPoseTexture;
+                spriteBatch.draw(textureToDraw, screenX + (offsetX + prevPose.x) * scale, screenY + (offsetY + prevPose.y) * scale, scale, scale);
+            }
         }
     }
 
     private void drawPuffins(SpriteBatch spriteBatch, float scale, int screenX, int screenY) {
-        for (Vector2i puffin : puffins) {
-            spriteBatch.draw(puffinTexture, screenX + puffin.x * scale, screenY + puffin.y * scale, scale, scale);
+        for (int edge = 0; edge < 6; edge++) {
+            int offsetX = tools.getEdgeOffsetX(edge);
+            int offsetY = tools.getEdgeOffsetY(edge);
+            for (Vector2i puffin : puffins.get(edge)) {
+                spriteBatch.draw(puffinTexture, screenX + (offsetX + puffin.x) * scale, screenY + (offsetY + puffin.y) * scale, scale, scale);
+            }
         }
     }
 
@@ -292,15 +245,15 @@ public class Labyrinth2D implements Page {
 
     private void handleSaving() {
         UUID uuid = null;
-        if (screenshot) uuid = toolsPage.saveAsImage();
-        if (txtFile) txtFilename = toolsPage.saveAsTxt(uuid);
+        if (screenshot) uuid = tools.saveAsImage();
+        if (txtFile) txtFilename = tools.saveAsTxt(uuid);
         screenshot = false;
         txtFile = false;
     }
 
     @Override
     public Camera getCamera() {
-        return toolsPage.getCamera();
+        return tools.getCamera();
     }
 
     @Override
@@ -316,6 +269,6 @@ public class Labyrinth2D implements Page {
 
     @Override
     public void dispose() {
-        toolsPage.dispose();
+        tools.dispose();
     }
 }
