@@ -27,7 +27,7 @@ public class Player extends Entity {
     private final float cameraRotationSpeed = 25f;
     boolean headbob = false;
     boolean verticalCameraMovement = false;
-    float camY = HALF_UNIT;
+    float camY = 0f;
 
     private final float playerMoveSpeed = 4f;
     private final float acceleration = 10f;
@@ -61,7 +61,7 @@ public class Player extends Entity {
 
         rect = new RectanglePlus(
             position.x - rectWidth / 2f,
-            position.y + rectHeight / 2f,
+            position.y + rectHeight / 2f, // FIXME world position bug h > 0
             position.z - rectDepth / 2f,
             rectWidth, rectHeight, rectDepth,
             id, RectanglePlusFilter.PLAYER,
@@ -238,8 +238,8 @@ public class Player extends Entity {
             rect.getZ() + velocity.z * delta
         );
 
-        if (newPosition.y > 0f) {
-            newPosition.y = 0f;
+        if (newPosition.y > rect.getHeight() / 2f) { // fixme
+            newPosition.y = rect.getHeight() / 2f;
             isOnGround = true;
             velocityY = 0f;
         }

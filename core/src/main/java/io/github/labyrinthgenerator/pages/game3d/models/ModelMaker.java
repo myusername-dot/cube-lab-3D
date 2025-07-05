@@ -12,6 +12,7 @@ import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.math.Vector3;
 import io.github.labyrinthgenerator.pages.game3d.CubeLab3D;
 
+import static io.github.labyrinthgenerator.pages.game3d.constants.Constants.HALF_UNIT;
 import static io.github.labyrinthgenerator.pages.game3d.constants.Constants.TEXTURE_SIZE;
 
 public class ModelMaker {
@@ -41,8 +42,8 @@ public class ModelMaker {
         mdlEnemy = createModelWithTexture(1, 1, 0, 0, 1, 0, 0,
             0, 0, 1, 0, 0, 0, 0, -1, getTextureMaterial(TextureAttribute.Diffuse));
 
-        mdlPoint = createModelWithTexture(1 / 6f, 1 / 6f, 0, 0,
-            1 / 6f, 0, 0, 0, 0, 1 / 6f, 0, 0,
+        mdlPoint = createModelWithTexture(HALF_UNIT / 6f, HALF_UNIT / 6f, 0, -HALF_UNIT / 6f,
+            HALF_UNIT / 6f, 0, -HALF_UNIT / 6f, -HALF_UNIT / 6f, 0, HALF_UNIT / 6f, -HALF_UNIT / 6f, 0,
             0, 0, -1, getTextureMaterial(TextureAttribute.Diffuse));
 
         mdlWallNorth = createWallModel(0, TEXTURE_SIZE, "NORTH");
@@ -72,12 +73,14 @@ public class ModelMaker {
         switch (direction) {
             case "NORTH":
                 wallModel.nodes.get(0).rotation.set(Vector3.Y, 180f);
+                wallModel.nodes.get(0).translation.add(1, 0, 0);
                 break;
             case "SOUTH":
                 wallModel.nodes.get(0).rotation.set(Vector3.Y, 0f);
                 break;
             case "WEST":
                 wallModel.nodes.get(0).rotation.set(Vector3.Y, 90f);
+                wallModel.nodes.get(0).translation.add(0, 0, 1);
                 break;
             case "EAST":
                 wallModel.nodes.get(0).rotation.set(Vector3.Y, -90f);
@@ -90,9 +93,11 @@ public class ModelMaker {
         Texture texture = textureRegionToTexture(game.getAssMan().get(game.getAssMan().atlas01),
             textureX, textureY, TEXTURE_SIZE, TEXTURE_SIZE);
         Material material = getTextureMaterial(TextureAttribute.Diffuse, texture);
-        Model model = mdlBuilder.createRect(1, 1, 0, 0,
-            1, 0, 0, 0, 0, 1,
-            0, 0, 0, direction, 0, material, Usage.Position | Usage.Normal | Usage.TextureCoordinates);
+        Model model = mdlBuilder.createRect(
+            1, 1, 0, 0,
+            1, 0, 0, 0,
+            0, 1, 0, 0,
+            0, direction, 0, material, Usage.Position | Usage.Normal | Usage.TextureCoordinates);
 
         model.nodes.get(0).rotation.set(Vector3.X, direction == 1 ? 90f : -90f);
         return model;

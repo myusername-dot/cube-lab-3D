@@ -62,7 +62,7 @@ public abstract class GameScreen implements Screen {
      * Check for overlap in angle X.
      */
     private void checkOverlapY(final RectanglePlus rect, List<RectanglePlus> nearestRects, final float delta) {
-        if (rect.newPosition.y > 0.5f) rect.newPosition.y = 0.5f; // FIXME
+        //if (rect.newPosition.y > 0.5f) rect.newPosition.y = 0.5f; // FIXME
 
         rect.setY(rect.newPosition.y);
 
@@ -115,7 +115,7 @@ public abstract class GameScreen implements Screen {
     public Vector3 getPlayerSpawnPosition() {
         return new Vector3(
             game.getMapBuilder().mapLoadSpawnPosition.x + HALF_UNIT - (HALF_UNIT / 2f) / 2f,
-            0,
+            HALF_UNIT,
             game.getMapBuilder().mapLoadSpawnPosition.y + HALF_UNIT - (HALF_UNIT / 2f) / 2f
         );
     }
