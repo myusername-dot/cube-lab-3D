@@ -12,8 +12,6 @@ import io.github.labyrinthgenerator.pages.game3d.entities.Entity;
 import io.github.labyrinthgenerator.pages.game3d.models.ModelInstanceBB;
 import io.github.labyrinthgenerator.pages.game3d.screens.GameScreen;
 
-import static io.github.labyrinthgenerator.pages.game3d.constants.Constants.HALF_UNIT;
-
 public class Cell3D extends Entity {
     private ModelInstanceBB mdlInstWallNorth;
     private ModelInstanceBB mdlInstWallSouth;
@@ -33,7 +31,7 @@ public class Cell3D extends Entity {
     public Texture texRegNorth, texRegSouth, texRegWest, texRegEast, texRegFloor, texRegCeiling;
 
     public Cell3D(final Vector3 position, final GameScreen screen) {
-        super(position.add(0, HALF_UNIT, 0), screen);
+        super(position, screen);
     }
 
     private ModelInstanceBB createModelInstanceBB(Model model, Texture texture, Vector3 positionImmutable) {
@@ -49,27 +47,27 @@ public class Cell3D extends Entity {
     public void buildCell() {
         if (hasWallNorth) {
             mdlInstWallNorth = createWallInstance(screen.game.getCellBuilder().mdlWallNorth, texRegNorth,
-                getPositionImmutable().add(0, 0, -HALF_UNIT));
+                getPositionImmutable());
         }
         if (hasWallSouth) {
             mdlInstWallSouth = createWallInstance(screen.game.getCellBuilder().mdlWallSouth, texRegSouth,
-                getPositionImmutable().add(0, 0, HALF_UNIT));
+                getPositionImmutable().add(0, 0, 1));
         }
         if (hasWallWest) {
             mdlInstWallWest = createWallInstance(screen.game.getCellBuilder().mdlWallWest, texRegWest,
-                getPositionImmutable().add(HALF_UNIT, 0, 0));
+                getPositionImmutable().add(1, 0, 0));
         }
         if (hasWallEast) {
             mdlInstWallEast = createWallInstance(screen.game.getCellBuilder().mdlWallEast, texRegEast,
-                getPositionImmutable().add(-HALF_UNIT, 0, 0));
+                getPositionImmutable());
         }
         if (hasFloor) {
             mdlInstFloor = createFloorOrCeilingInstance(screen.game.getCellBuilder().mdlFloor, texRegFloor,
-                getPositionImmutable().add(0, HALF_UNIT, 0));
+                getPositionImmutable().add(0, 1, 0));
         }
         if (hasCeiling) {
             mdlInstCeiling = createFloorOrCeilingInstance(screen.game.getCellBuilder().mdlCeiling, texRegCeiling,
-                getPositionImmutable().add(0, -HALF_UNIT, 0));
+                getPositionImmutable());
         }
     }
 

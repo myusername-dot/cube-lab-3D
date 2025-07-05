@@ -12,7 +12,6 @@ import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.math.Vector3;
 import io.github.labyrinthgenerator.pages.game3d.CubeLab3D;
 
-import static io.github.labyrinthgenerator.pages.game3d.constants.Constants.HALF_UNIT;
 import static io.github.labyrinthgenerator.pages.game3d.constants.Constants.TEXTURE_SIZE;
 
 public class ModelMaker {
@@ -39,11 +38,11 @@ public class ModelMaker {
     private void buildModels() {
         mdlGrid = mdlBuilder.createLineGrid(10, 10, 1, 1, new Material(), Usage.Position | Usage.Normal);
 
-        mdlEnemy = createModelWithTexture(HALF_UNIT, HALF_UNIT, 0, -HALF_UNIT, HALF_UNIT, 0, -HALF_UNIT,
-            -HALF_UNIT, 0, HALF_UNIT, -HALF_UNIT, 0, 0, 0, -1, getTextureMaterial(TextureAttribute.Diffuse));
+        mdlEnemy = createModelWithTexture(1, 1, 0, 0, 1, 0, 0,
+            0, 0, 1, 0, 0, 0, 0, -1, getTextureMaterial(TextureAttribute.Diffuse));
 
-        mdlPoint = createModelWithTexture(HALF_UNIT / 6f, HALF_UNIT / 6f, 0, -HALF_UNIT / 6f,
-            HALF_UNIT / 6f, 0, -HALF_UNIT / 6f, -HALF_UNIT / 6f, 0, HALF_UNIT / 6f, -HALF_UNIT / 6f, 0,
+        mdlPoint = createModelWithTexture(1 / 6f, 1 / 6f, 0, 0,
+            1 / 6f, 0, 0, 0, 0, 1 / 6f, 0, 0,
             0, 0, -1, getTextureMaterial(TextureAttribute.Diffuse));
 
         mdlWallNorth = createWallModel(0, TEXTURE_SIZE, "NORTH");
@@ -56,15 +55,15 @@ public class ModelMaker {
     }
 
     private Model createWallModel(int textureX, int textureY, String direction) {
-        Texture texture = textureRegionToTexture((Texture) game.getAssMan().get(game.getAssMan().atlas01),
+        Texture texture = textureRegionToTexture(game.getAssMan().get(game.getAssMan().atlas01),
             textureX, textureY, TEXTURE_SIZE, TEXTURE_SIZE);
         Material material = getTextureMaterial(TextureAttribute.Diffuse, texture);
 
         Model wallModel = mdlBuilder.createRect(
-            HALF_UNIT, HALF_UNIT, 0,
-            -HALF_UNIT, HALF_UNIT, 0,
-            -HALF_UNIT, -HALF_UNIT, 0,
-            HALF_UNIT, -HALF_UNIT, 0,
+            1, 1, 0,
+            0, 1, 0,
+            0, 0, 0,
+            1, 0, 0,
             1, 0, 1,
             material,
             Usage.Position | Usage.Normal | Usage.TextureCoordinates
@@ -88,12 +87,12 @@ public class ModelMaker {
     }
 
     private Model createFloorOrCeilingModel(int textureX, int textureY, int direction) {
-        Texture texture = textureRegionToTexture((Texture) game.getAssMan().get(game.getAssMan().atlas01),
+        Texture texture = textureRegionToTexture(game.getAssMan().get(game.getAssMan().atlas01),
             textureX, textureY, TEXTURE_SIZE, TEXTURE_SIZE);
         Material material = getTextureMaterial(TextureAttribute.Diffuse, texture);
-        Model model = mdlBuilder.createRect(HALF_UNIT, HALF_UNIT, 0, -HALF_UNIT,
-            HALF_UNIT, 0, -HALF_UNIT, -HALF_UNIT, 0, HALF_UNIT,
-            -HALF_UNIT, 0, 0, direction, 0, material, Usage.Position | Usage.Normal | Usage.TextureCoordinates);
+        Model model = mdlBuilder.createRect(1, 1, 0, 0,
+            1, 0, 0, 0, 0, 1,
+            0, 0, 0, direction, 0, material, Usage.Position | Usage.Normal | Usage.TextureCoordinates);
 
         model.nodes.get(0).rotation.set(Vector3.X, direction == 1 ? 90f : -90f);
         return model;

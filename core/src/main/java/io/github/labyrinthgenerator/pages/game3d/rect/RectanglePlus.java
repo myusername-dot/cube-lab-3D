@@ -49,10 +49,19 @@ public class RectanglePlus {
         return new Vector3(x, y, z);
     }
 
-    public RectanglePlus setPosition(float x, float y, float z) {
+    public RectanglePlus set(float x, float y, float z) {
         this.x = x;
         this.y = y;
         this.z = z;
+        rectangle.setPosition(x, z);
+
+        return this;
+    }
+
+    public RectanglePlus add(Vector3 v) {
+        x += v.x;
+        y += v.y;
+        z += v.z;
         rectangle.setPosition(x, z);
 
         return this;
