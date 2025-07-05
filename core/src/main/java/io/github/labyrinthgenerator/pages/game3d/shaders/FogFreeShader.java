@@ -173,9 +173,9 @@ public class FogFreeShader extends SpotLightFreeShader {
             "        float attenuation = intensity / (distanceWall15 + 0.0001);\n" +
             "        vec3 lightPosScreen = u_pointLightsScreen[i];\n" +
             "        float distance = u_pointLightsDistance[i];\n" +
-            "        if (distance > 0.5) {\n" +
+            "        if (distance > 0.5 && fogFactor > 0) {\n" +
             "            float screenDistance = length(lightPosScreen.xy - gl_FragCoord.xy);\n" +
-            "            attenuation += intensity * 500.0 / (screenDistance * distance + 0.0001)" +
+            "            attenuation += intensity * 1000.0 / (screenDistance * distance + 0.0001)" +
             "               * fogFactor;\n" + // fog glowing
             "        }\n" +
             "        glowingColor += lightColor.rgb * attenuation;\n" +
