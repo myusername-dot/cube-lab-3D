@@ -18,7 +18,6 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.ArrayList;
 import java.util.List;
 
-import static io.github.labyrinthgenerator.pages.game3d.constants.Constants.HALF_UNIT;
 import static io.github.labyrinthgenerator.pages.game3d.shaders.MyShaderProvider.MAX_LIGHT_RENDERING_DISTANCE;
 
 @Slf4j
@@ -226,7 +225,7 @@ public class FogFreeShader extends SpotLightFreeShader {
         program.setUniform3fv("u_cameraPosition", cameraPosition, 0, 3);
         context.begin();
         context.setDepthTest(GL20.GL_LEQUAL);
-        context.setCullFace(GL20.GL_BACK);
+        context.setCullFace(GL20.GL_NONE);
     }
 
     private void setDefaultLightUniforms() {
@@ -256,7 +255,7 @@ public class FogFreeShader extends SpotLightFreeShader {
         for (int i = 0; i < pointLights.size(); i++) {
             PointLightPlus light = pointLights.get(i);
             program.setUniform3fv("u_pointLights[" + i + "]",
-                new float[]{light.position.x, light.position.y + HALF_UNIT, light.position.z}, 0, 3);
+                new float[]{light.position.x, light.position.y, light.position.z}, 0, 3);
             program.setUniformf("u_pointLightsDistance[" + i + "]", light.camDistance);
             program.setUniform3fv("u_pointLightsScreen[" + i + "]",
             new float[]{light.screenPosition.x, light.screenPosition.y, light.screenPosition.z}, 0, 3);

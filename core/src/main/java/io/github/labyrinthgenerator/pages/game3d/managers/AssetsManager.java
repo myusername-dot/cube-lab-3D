@@ -46,7 +46,7 @@ public class AssetsManager extends AssetManager {
     public void loadSounds() {
 //		sfx
         //load(sfxDoorOpening, Sound.class);
-        load(sfxAmbientDark, Sound.class);
+        //load(sfxAmbientDark, Sound.class);
         load(sfxItem, Sound.class);
 
 //		music

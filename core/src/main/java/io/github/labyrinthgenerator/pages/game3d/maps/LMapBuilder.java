@@ -8,13 +8,13 @@ import io.github.labyrinthgenerator.labyrinth.Labyrinth;
 import io.github.labyrinthgenerator.pages.game3d.CubeLab3D;
 import io.github.labyrinthgenerator.pages.game3d.cell.Cell3D;
 import io.github.labyrinthgenerator.pages.game3d.entities.Firefly;
+import io.github.labyrinthgenerator.pages.game3d.entities.player.Player;
 import io.github.labyrinthgenerator.pages.game3d.managers.ChunkManager;
 import io.github.labyrinthgenerator.pages.game3d.models.ModelMaker;
 import io.github.labyrinthgenerator.pages.game3d.rect.RectanglePlus;
 import io.github.labyrinthgenerator.pages.game3d.rect.filters.RectanglePlusFilter;
-import io.github.labyrinthgenerator.pages.game3d.screens.GameScreen;
 import io.github.labyrinthgenerator.pages.game3d.tickable.Wave;
-import io.github.labyrinthgenerator.pages.game3d.vectors.Vector2i;
+import io.github.labyrinthgenerator.pages.game3d.vectors.Vector3f;
 import io.github.labyrinthgenerator.pages.game3d.vectors.Vector3i;
 import lombok.extern.slf4j.Slf4j;
 
@@ -31,6 +31,15 @@ import static io.github.labyrinthgenerator.pages.game3d.constants.Constants.*;
 public class LMapBuilder {
 
     private final CubeLab3D game;
+
+    private final Vector3f[] gravityDirections = new Vector3f[]{
+        new Vector3f(0f, 1, 0),   // Грань 1: вверх
+        new Vector3f(0, 0, 1),   // Грань 3: вперед
+        new Vector3f(0, -1, 0),  // Грань 2: вниз
+        new Vector3f(0, 0, -1),  // Грань 4: назад
+        new Vector3f(1, 0, 0),   // Грань 5: вправо
+        new Vector3f(-1, 0, 0)   // Грань 6: влево
+    };
 
     public Vector2 mapLoadSpawnPosition = new Vector2();
     public Vector2 mapLoadExitPosition = new Vector2();
@@ -77,44 +86,63 @@ public class LMapBuilder {
     public void buildMap(String fileName) {
         List<List<String>> edges = readFile(fileName);
 
-        int width = edges.get(0).get(edges.get(0).size() - 1).length(), height = 1, depth = edges.get(0).size();
+        int width = edges.get(0).get(edges.get(0).size() - 1).length(), height = width, depth = edges.get(0).size();
 
         // CHUNKS
-        Vector3i chunksSize = new Vector3i((width / CHUNK_SIZE + 1) * 4, height, (depth / CHUNK_SIZE + 1) * 3);
+        Vector3i chunksSize = new Vector3i(width / CHUNK_SIZE + 1, height / CHUNK_SIZE + 1, depth / CHUNK_SIZE + 1);
         ChunkManager chunkMan = new ChunkManager(chunksSize);
         game.setChunkMan(chunkMan);
 
         for (int i = 0; i < chunksSize.x; i++)
             for (int j = 0; j < chunksSize.y; j++)
                 for (int k = 0; k < chunksSize.z; k++)
-                chunkMan.add(i * CHUNK_SIZE, -j * CHUNK_SIZE, k * CHUNK_SIZE); // -j!!!
+                    chunkMan.add(i * CHUNK_SIZE, -j * CHUNK_SIZE, k * CHUNK_SIZE); // -j!!!
 
+        // WALLS TEX
+        final Texture texWall = ModelMaker.textureRegionToTexture(
+            game.getAssMan().get(game.getAssMan().atlas01), 2 * TEXTURE_SIZE, 0, TEXTURE_SIZE, TEXTURE_SIZE);
+        final Texture texFloor = ModelMaker.textureRegionToTexture(
+            game.getAssMan().get(game.getAssMan().atlas01), 6 * TEXTURE_SIZE, 0, TEXTURE_SIZE, TEXTURE_SIZE);
+
+        // EDGES
         for (int edge = 0; edge < 6; edge++) {
             List<String> lines = edges.get(edge);
 
             assert width == lines.get(lines.size() - 1).length();
             assert depth == lines.size();
 
-            int offsetX = edge < 4 ? edge * width : width;
-            int offsetZ = edge < 4 ? depth : edge == 4 ? 0 : depth * 2;
+            // Сдвиги по осям в зависимости от направления гравитации
+            int offsetX = (int) (gravityDirections[edge].x * width);
+            if (offsetX <= 0) offsetX = 0;
+            else offsetX -= 1; // FIXME
+            int offsetZ = (int) (gravityDirections[edge].z * depth);
+            if (offsetZ <= 0) offsetZ = 0;
+            else offsetZ -= 1; // FIXME
+            int offsetY = (int) (gravityDirections[edge].y * height);
+            if (offsetY >= 0) offsetY = 0;
+            else offsetY += 1; // FIXME
+
+            //offsetX = offsetY = offsetZ = 0;
+
+            Vector3 scl = new Vector3();
 
             // WALLS
-            final Texture texWall = ModelMaker.textureRegionToTexture(
-                game.getAssMan().get(game.getAssMan().atlas01), 2 * TEXTURE_SIZE, 0, TEXTURE_SIZE, TEXTURE_SIZE);
-            final Texture texFloor = ModelMaker.textureRegionToTexture(
-                game.getAssMan().get(game.getAssMan().atlas01), 6 * TEXTURE_SIZE, 0, TEXTURE_SIZE, TEXTURE_SIZE);
-
             List<Cell3D> cell3DList = new ArrayList<>();
-            for (int k = offsetZ; k < offsetZ + depth; k++) {
-                String line = lines.get(k - offsetZ);
-                //System.out.println(line);
+            for (int k = 0; k < depth; k++) {
+                String line = lines.get(k);
                 int length = line.length();
                 assert length == width;
-                for (int i = offsetX; i < offsetX + width; i++) {
-                    int id = Integer.parseInt(line.substring(i - offsetX, i - offsetX + 1));
+                for (int i = 0; i < width; i++) {
+                    int id = Integer.parseInt(line.substring(i, i + 1));
                     Labyrinth.LEntity entity = Labyrinth.LEntity.values()[id];
 
-                    Cell3D currentCell3D = new Cell3D(new Vector3(i, 0, k), game.getScreen());
+                    // Применяем сдвиги к координатам
+                    Vector3 cellPosition = Player.adjustVecForGravity(
+                        gravityDirections[edge],
+                        new Vector3(i, 0, k),
+                        true
+                    ).add(offsetX, offsetY, offsetZ);
+                    Cell3D currentCell3D = new Cell3D(cellPosition, game.getScreen());
 
                     if (entity == Labyrinth.LEntity.EMPTY) {
                         currentCell3D.hasFloor = true;
@@ -131,18 +159,27 @@ public class LMapBuilder {
                         currentCell3D.texRegWest = texWall;
 
                         final RectanglePlus rect = new RectanglePlus(
-                            i, 0, k,
+                            cellPosition.x, cellPosition.y, cellPosition.z,
                             1, 1, 1,
                             currentCell3D.getId(), RectanglePlusFilter.WALL,
                             game.getRectMan());
-                        // центровка в центр координат
-                        rect.setX(rect.getX() - HALF_UNIT);
-                        rect.setZ(rect.getZ() - HALF_UNIT);
+
+                        // Центровка в центр координат
+                        /*scl.set(-HALF_UNIT, 0, -HALF_UNIT);
+                        scl = Player.adjustVecForGravity(gravityDirections[edge], scl, true);
+                        rect.add(scl);*/
 
                         cell3DList.add(currentCell3D);
 
                         // FLOOR LAYER 2
-                        currentCell3D = new Cell3D(new Vector3(i, -1, k), game.getScreen());
+                        currentCell3D = new Cell3D(
+                            Player.adjustVecForGravity(
+                                gravityDirections[edge],
+                                new Vector3(i, -1, k),
+                                true
+                            ).add(offsetX, offsetY, offsetZ),
+                            game.getScreen()
+                        );
                         currentCell3D.hasFloor = true;
                         currentCell3D.texRegFloor = texFloor;
                         // FLOOR LAYER 2
@@ -198,11 +235,10 @@ public class LMapBuilder {
                 int minFirefliesCount = 2, maxFirefliesCount = 5;
                 int firefliesC = MathUtils.random(minFirefliesCount, maxFirefliesCount);
                 for (int i = 0; i < firefliesC; i++) {
-                    Firefly firefly = new Firefly(
-                        new Vector3(
-                            cell3D.getPositionX() - HALF_UNIT,
-                            MathUtils.random(0f, 0.4f),
-                            cell3D.getPositionZ() - HALF_UNIT),
+                    scl.set(0, MathUtils.random(0f, 0.4f), 0);
+                    scl = Player.adjustVecForGravity(gravityDirections[edge], scl, true);
+                    new Firefly(
+                        new Vector3(cell3D.getPositionX(), 0, cell3D.getPositionZ()).add(scl),
                         game.getScreen(),
                         wave);
                 }
@@ -212,10 +248,10 @@ public class LMapBuilder {
         // SPAWN
         // -0.5, 0.5; 0.5, 1
         // depth - 2 - 0.5; depth - 1 - 0.5
-        mapLoadSpawnPosition.x = HALF_UNIT;
-        mapLoadSpawnPosition.y = depth * 2 - 2 - HALF_UNIT;
+        mapLoadSpawnPosition.x = 1;
+        mapLoadSpawnPosition.y = depth - 2;
 
-        mapLoadExitPosition.x = width - 2 - HALF_UNIT;
-        mapLoadExitPosition.y = depth + HALF_UNIT;
+        mapLoadExitPosition.x = width - 2;
+        mapLoadExitPosition.y = 1;
     }
 }

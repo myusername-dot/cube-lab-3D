@@ -50,12 +50,8 @@ public class Player extends Entity {
 
     public int currentInventorySlot = 1;
 
-    public Player(Vector3 position, float rectWidth, float rectDepth, final GameScreen screen) {
-        super(position.cpy().set(
-                position.x + rectWidth / 2f,
-                position.y,
-                position.z + rectDepth / 2f),
-            screen);
+    public Player(Vector3 position, float rectWidth, float rectHeight, float rectDepth, final GameScreen screen) {
+        super(position, screen);
         playerCam = new PerspectiveCamera(70, WINDOW_WIDTH, WINDOW_HEIGHT);
         playerCam.position.set(new Vector3(0, camY, 0));
         playerCam.lookAt(new Vector3(0, camY, -HALF_UNIT * 2));
@@ -64,10 +60,10 @@ public class Player extends Entity {
         playerCam.update();
 
         rect = new RectanglePlus(
-            position.x,
-            position.y,
-            position.z,
-            rectWidth, HALF_UNIT, rectDepth,
+            position.x - rectWidth / 2f,
+            position.y + rectHeight / 2f,
+            position.z - rectDepth / 2f,
+            rectWidth, rectHeight, rectDepth,
             id, RectanglePlusFilter.PLAYER,
             screen.game.getRectMan()
         );
@@ -78,8 +74,8 @@ public class Player extends Entity {
     }
 
     private void setCamPosition() {
-        playerCam.position.set(new Vector3(getPositionX(), getPositionY(), getPositionZ())
-            .add(adjustVecForGravity(new Vector3(0, camY, 0), true)));
+        playerCam.position.set(getPositionImmutable()
+            .add(adjustVecForGravity(gravityDirection, new Vector3(0f, camY, 0f), true)));
     }
 
     public float getGravityScl() {
@@ -99,8 +95,8 @@ public class Player extends Entity {
     }
 
     public float getExitDistance() {
-        float playerX = rect.getX();
-        float playerZ = rect.getZ();
+        float playerX = getPositionX();
+        float playerZ = getPositionZ();
         float exitX = screen.getExitPosition().x;
         float exitZ = screen.getExitPosition().z;
         float dx = exitX - playerX;
@@ -124,7 +120,7 @@ public class Player extends Entity {
             isOnGround = false;
         }
 
-        playerCam.rotate(adjustVecForGravity(Vector3.Y, false),
+        playerCam.rotate(adjustVecForGravity(gravityDirection, Vector3.Y, false),
             Gdx.input.getDeltaX() * -cameraRotationSpeed * getGravityScl() * delta);
 
         if (verticalCameraMovement) {
@@ -234,11 +230,11 @@ public class Player extends Entity {
             headbob = false;
         }
 
-        Vector3 velocity = adjustVecForGravity(new Vector3(horizontalVelocity.x, -velocityY, horizontalVelocity.y), true);
+        Vector3 velocity = adjustVecForGravity(gravityDirection, new Vector3(horizontalVelocity.x, velocityY, horizontalVelocity.y), true);
 
         Vector3 newPosition = new Vector3(
             rect.getX() + velocity.x * delta,
-            rect.getY() + velocity.y * delta,
+            rect.getY() - velocity.y * delta,
             rect.getZ() + velocity.z * delta
         );
 
@@ -251,7 +247,7 @@ public class Player extends Entity {
         rect.newPosition.set(newPosition.x, newPosition.y, newPosition.z);
     }
 
-    public Vector3 adjustVecForGravity(Vector3 in, boolean invertY) {
+    public static Vector3 adjustVecForGravity(Vector3f gravityDirection, Vector3 in, boolean invertY) {
         int yScl = invertY ? 1 : -1;
         Vector3 out;
         if (gravityDirection.equals(new Vector3(0, 1, 0))) {
@@ -262,16 +258,16 @@ public class Player extends Entity {
             out = new Vector3(in.x, -1 * yScl * in.y, in.z);
         } else if (gravityDirection.equals(new Vector3(1, 0, 0))) {
             // Гравитация направлена вправо
-            out = new Vector3(in.y, in.x, in.z);
+            out = new Vector3(-1 * in.y, -1 * in.x, in.z);
         } else if (gravityDirection.equals(new Vector3(-1, 0, 0))) {
             // Гравитация направлена влево
-            out = new Vector3(-1 * yScl * in.y, in.x, in.z);
+            out = new Vector3(in.z, -1 * in.x, -1 * in.y);
         } else if (gravityDirection.equals(new Vector3(0, 0, 1))) {
             // Гравитация направлена вперед
-            out = new Vector3(in.z, in.x, in.y);
+            out = new Vector3(in.x, -1 * in.z, -1 * in.y);
         } else if (gravityDirection.equals(new Vector3(0, 0, -1))) {
             // Гравитация направлена назад
-            out = new Vector3(in.z, in.x, -1 * yScl * in.y);
+            out = new Vector3(-1 * in.y, -1 * in.z, in.x);
         } else {
             out = new Vector3(0, 0, 0);
         }
@@ -324,7 +320,7 @@ public class Player extends Entity {
             rect.setZ(rect.newPosition.z);
         }
 
-        setPosition(rect.getX() + rect.getWidth() / 2f, rect.getY(), rect.getZ() + rect.getDepth() / 2f);
+        setPosition(rect.getX() + rect.getWidth() / 2f, rect.getY() - rect.getHeight() / 2f, rect.getZ() + rect.getDepth() / 2f);
         setCamPosition();
 
         rect.oldPosition.set(rect.getPosition());

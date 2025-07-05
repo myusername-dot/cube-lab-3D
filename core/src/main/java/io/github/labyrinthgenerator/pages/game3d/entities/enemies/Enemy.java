@@ -9,8 +9,6 @@ import io.github.labyrinthgenerator.pages.game3d.rect.RectanglePlus;
 import io.github.labyrinthgenerator.pages.game3d.screens.GameScreen;
 import lombok.extern.slf4j.Slf4j;
 
-import static io.github.labyrinthgenerator.pages.game3d.constants.Constants.HALF_UNIT;
-
 @Slf4j
 public abstract class Enemy extends Entity {
     protected ModelInstanceBB mdlInst;
@@ -23,7 +21,7 @@ public abstract class Enemy extends Entity {
     protected int currentHp = maxHp;
 
     public Enemy(final Vector3 position, final GameScreen screen) {
-        super(position.set(position.x + HALF_UNIT, position.y, position.z + HALF_UNIT), screen);
+        super(position, screen);
     }
 
     public void addHp(final int amount) {

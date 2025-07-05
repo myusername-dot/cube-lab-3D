@@ -47,7 +47,7 @@ public class FireflyAI extends EnemyAI {
     }
 
     private void updateCurrentPosition() {
-        currentPos.set(parent.getPositionX(), parent.getPositionY(), parent.getPositionZ());
+        currentPos.set(parent.getPositionImmutable());
     }
 
     private void handleMovingState(final float delta) {
@@ -65,7 +65,7 @@ public class FireflyAI extends EnemyAI {
     private void setNewTargetPosition() {
         targetPos.set(
             currentPos.x + MathUtils.random(-targetPosXZRandomMaxMin, targetPosXZRandomMaxMin),
-            currentPos.y + MathUtils.random(-targetPosYRandomMaxMin, targetPosYRandomMaxMin),
+            currentPos.y - MathUtils.random(-targetPosYRandomMaxMin, targetPosYRandomMaxMin),
             currentPos.z + MathUtils.random(-targetPosXZRandomMaxMin, targetPosXZRandomMaxMin)
         );
 

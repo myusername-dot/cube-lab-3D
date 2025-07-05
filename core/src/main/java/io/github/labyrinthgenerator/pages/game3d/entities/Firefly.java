@@ -64,7 +64,9 @@ public class Firefly extends Enemy {
         final float rectHeight = mdlInst.radius;
         final float rectDepth = mdlInst.radius;
         rect = new RectanglePlus(
-            getPositionX() - rectWidth / 2f, getPositionY() - rectHeight / 2f, getPositionZ() - rectDepth / 2f,
+            position.x - rectWidth / 2f,
+            position.y + rectHeight / 2f,
+            position.z - rectDepth / 2f,
             rectWidth, rectHeight, rectDepth, id, RectanglePlusFilter.ENTITY, screen.game.getRectMan()
         );
         rect.oldPosition.set(rect.getPosition());
@@ -81,7 +83,7 @@ public class Firefly extends Enemy {
     @Override
     public void render3D(final ModelBatch mdlBatch, final Environment env, final float delta) {
         mdlInst.transform.setToLookAt(screen.getCurrentCam().direction.cpy().rotate(Vector3.Z, 180f), Vector3.Y);
-        mdlInst.transform.setTranslation(getPositionImmutable().add(0, 0.5f, 0)); // FIXME
+        mdlInst.transform.setTranslation(getPositionImmutable());
 
         super.render3D(mdlBatch, env, delta);
     }

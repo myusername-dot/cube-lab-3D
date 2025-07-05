@@ -2,6 +2,7 @@ package io.github.labyrinthgenerator.pages.game3d.managers;
 
 import com.badlogic.gdx.math.Vector3;
 import io.github.labyrinthgenerator.pages.game3d.chunks.Chunk;
+import io.github.labyrinthgenerator.pages.game3d.vectors.Vector3f;
 import io.github.labyrinthgenerator.pages.game3d.vectors.Vector3i;
 
 import java.util.ArrayList;
@@ -31,13 +32,14 @@ public class ChunkManager {
     }
 
     private Chunk createChunk(Vector3i position) {
-        return new Chunk(position.x * CHUNK_SIZE - HALF_UNIT, -position.y * CHUNK_SIZE + HALF_UNIT, position.z * CHUNK_SIZE - HALF_UNIT); // -position.y!!!
+        return new Chunk(position.x * CHUNK_SIZE, -position.y * CHUNK_SIZE, position.z * CHUNK_SIZE); // -position.y!!!
     }
 
     public Chunk get(float x, float y, float z) {
         Vector3i position = getChunkPosition(x, y, z);
-        if (position.x >= size.x || position.y >= size.y || position.z >= size.z) {
-            throw new RuntimeException("position >= size: " + position + ", " + size + ".");
+        if (position.x >= size.x || position.y >= size.y || position.z >= size.z
+            || position.x < 0 || position.y < 0 || position.z < 0) {
+            throw new RuntimeException("position >= size || < 0: " + position + ", " + size + ", " + new Vector3f(x, y, z) + ".");
         }
         Chunk chunk = chunks[position.x][position.y][position.z];
         if (chunk == null) {
@@ -69,14 +71,14 @@ public class ChunkManager {
     }
 
     public Vector3 getWorldSize() {
-        return new Vector3(size.x * CHUNK_SIZE - HALF_UNIT, -size.y * CHUNK_SIZE + HALF_UNIT, size.z * CHUNK_SIZE - HALF_UNIT); // -size.y !!!
+        return new Vector3(size.x * CHUNK_SIZE, -size.y * CHUNK_SIZE, size.z * CHUNK_SIZE); // -size.y !!!
     }
 
     private Vector3i getChunkPosition(float x, float y, float z) {
         return new Vector3i(
-            (int) ((x + HALF_UNIT) / CHUNK_SIZE),
-            (int) ((-y - HALF_UNIT) / CHUNK_SIZE), // -y!!!
-            (int) ((z + HALF_UNIT) / CHUNK_SIZE)
+            (int) (x / CHUNK_SIZE),
+            (int) (-y / CHUNK_SIZE), // -y!!!
+            (int) (z / CHUNK_SIZE)
         );
     }
 

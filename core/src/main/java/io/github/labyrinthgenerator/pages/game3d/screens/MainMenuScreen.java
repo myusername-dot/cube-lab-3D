@@ -35,8 +35,8 @@ public class MainMenuScreen extends GameScreen {
     private boolean displayControls = false;
 
     private Color fogColor;
-    private final Sound sfxAmbient;
-    private final long sfxAmbientId;
+    //private final Sound sfxAmbient;
+    //private final long sfxAmbientId;
     private final Sound sfxChoice;
 
     public MainMenuScreen(final CubeLab3D game) {
@@ -65,9 +65,9 @@ public class MainMenuScreen extends GameScreen {
         };
         controlsGlyphLayouts = createGlyphLayouts(controlsOptions);
 
-        sfxAmbient = game.getAssMan().get(game.getAssMan().sfxAmbientDark);
+        //sfxAmbient = game.getAssMan().get(game.getAssMan().sfxAmbientDark);
         sfxChoice = game.getAssMan().get(game.getAssMan().sfxItem);
-        sfxAmbientId = playAmbientSound(game);
+        //sfxAmbientId = playAmbientSound(game);
 
         game.setScreen(this);
         game.getMapBuilder().buildMap(Labyrinth2D.txtFilename);
@@ -98,11 +98,11 @@ public class MainMenuScreen extends GameScreen {
         return layouts;
     }
 
-    private long playAmbientSound(final CubeLab3D game) {
+    /*private long playAmbientSound(final CubeLab3D game) {
         long ambientId = sfxAmbient.play(game.currentAmbientVolume);
         sfxAmbient.setLooping(ambientId, true);
         return ambientId;
-    }
+    }*/
 
     private void setupCamera(final CubeLab3D game) {
         currentCam = new PerspectiveCamera(70, 640, 480);
@@ -141,7 +141,7 @@ public class MainMenuScreen extends GameScreen {
         if (!displayControls) {
             switch (selectedOption) {
                 case 0:
-                    sfxAmbient.stop(sfxAmbientId);
+                    //sfxAmbient.stop(sfxAmbientId);
                     removeAllEntities();
                     game.setScreen(new PlayScreen(game));
                     break;
@@ -240,7 +240,7 @@ public class MainMenuScreen extends GameScreen {
     private void drawMainMenuOptions() {
         float baseY = 188;
         for (int i = 0; i < options.length; i++) {
-            drawOption(glyphLayouts[i], i,options, baseY - i * 32, selectedOption == i);
+            drawOption(glyphLayouts[i], i, options, baseY - i * 32, selectedOption == i);
         }
     }
 
