@@ -63,7 +63,8 @@ public class PlayScreen extends GameScreen {
         game.getMapBuilder().buildMap(Labyrinth2D.txtFilename);
 
         Vector3 playerSpawnPosition = getPlayerSpawnPosition();
-        player = new Player(playerSpawnPosition, HALF_UNIT / 2f, HALF_UNIT, HALF_UNIT / 2f, this);
+        //playerSpawnPosition.add(0, - HALF_UNIT / 2f, 0);
+        player = new Player(playerSpawnPosition, HALF_UNIT / 2f, HALF_UNIT * 2, HALF_UNIT / 2f, this);
         setCurrentCam(player.playerCam);
         viewport.setCamera(currentCam);
 

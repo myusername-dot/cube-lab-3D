@@ -105,7 +105,7 @@ public class LMapBuilder {
             game.getAssMan().get(game.getAssMan().atlas01), 6 * TEXTURE_SIZE, 0, TEXTURE_SIZE, TEXTURE_SIZE);
 
         // EDGES
-        for (int edge = 0; edge < 6; edge++) {
+        for (int edge = 0; edge < 1; edge++) {
             List<String> lines = edges.get(edge);
 
             assert width == lines.get(lines.size() - 1).length();
@@ -158,16 +158,11 @@ public class LMapBuilder {
                         currentCell3D.texRegSouth = texWall;
                         currentCell3D.texRegWest = texWall;
 
-                        final RectanglePlus rect = new RectanglePlus(
+                        new RectanglePlus(
                             cellPosition.x, cellPosition.y, cellPosition.z,
                             1, 1, 1,
                             currentCell3D.getId(), RectanglePlusFilter.WALL,
                             game.getRectMan());
-
-                        // Центровка в центр координат
-                        /*scl.set(-HALF_UNIT, 0, -HALF_UNIT);
-                        scl = Player.adjustVecForGravity(gravityDirections[edge], scl, true);
-                        rect.add(scl);*/
 
                         cell3DList.add(currentCell3D);
 
@@ -235,7 +230,7 @@ public class LMapBuilder {
                 int minFirefliesCount = 2, maxFirefliesCount = 5;
                 int firefliesC = MathUtils.random(minFirefliesCount, maxFirefliesCount);
                 for (int i = 0; i < firefliesC; i++) {
-                    scl.set(0, MathUtils.random(0f, 0.4f), 0);
+                    scl.set(HALF_UNIT, MathUtils.random(0.3f, 0.7f), HALF_UNIT); // FIXME
                     scl = Player.adjustVecForGravity(gravityDirections[edge], scl, true);
                     new Firefly(
                         new Vector3(cell3D.getPositionX(), 0, cell3D.getPositionZ()).add(scl),
