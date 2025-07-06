@@ -8,7 +8,8 @@ import io.github.labyrinthgenerator.pages.game3d.vectors.Vector3i;
 import java.util.ArrayList;
 import java.util.List;
 
-import static io.github.labyrinthgenerator.pages.game3d.constants.Constants.*;
+import static io.github.labyrinthgenerator.pages.game3d.constants.Constants.CHUNKS_RANGE_AROUND_CAM_CHUNK;
+import static io.github.labyrinthgenerator.pages.game3d.constants.Constants.CHUNK_SIZE;
 
 public class ChunkManager {
 

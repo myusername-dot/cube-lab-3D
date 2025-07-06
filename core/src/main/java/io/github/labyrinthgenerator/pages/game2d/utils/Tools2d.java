@@ -293,10 +293,12 @@ public class Tools2d {
         for (int i = 0; i < image.getWidth(); i++) {
             for (int j = 0; j < image.getHeight(); j++) {
                 int rgb = image.getRGB(i, j);
+                // @formatter:off
                 int a = (rgb >> 24) & (0xff & maskARGB >> 24);
                 int r = (rgb >> 16) & (0xff & maskARGB >> 16);
-                int g = (rgb >> 8) & (0xff & maskARGB >> 8);
-                int b = rgb & 0xff & maskARGB;
+                int g = (rgb >> 8 ) & (0xff & maskARGB >> 8);
+                int b =  rgb        &  0xff & maskARGB;
+                // @formatter:on
                 pixmap.drawPixel(i, j, (r << 24) | (g << 16) | (b << 8) | a);
             }
         }

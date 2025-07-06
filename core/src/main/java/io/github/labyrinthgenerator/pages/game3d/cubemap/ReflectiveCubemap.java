@@ -149,10 +149,12 @@ public class ReflectiveCubemap {
 
     public static NormalMappedMesh createSphereNormalMapMesh(float radius, int longitudeBands, int latitudeBands, boolean flipN) {
         int totalVertices = (longitudeBands + 1) * (latitudeBands + 1);
-        float[] vertices = new float[totalVertices * 8]; // x, y, z, nx, ny, nz, u, v
-        float[] normals = new float[totalVertices * 3]; // nx, ny, nz
+        // @formatter:off
+        float[] vertices  = new float[totalVertices * 8]; // x, y, z, nx, ny, nz, u, v
+        float[] normals   = new float[totalVertices * 3]; // nx, ny, nz
         float[] texCoords = new float[totalVertices * 2]; // u, v
-        short[] indices = new short[longitudeBands * latitudeBands * 6];
+        short[] indices   = new short[longitudeBands * latitudeBands * 6];
+        // @formatter:on
 
         // Создание вершин, нормалей и текстурных координат
         int vertexIndex = 0;

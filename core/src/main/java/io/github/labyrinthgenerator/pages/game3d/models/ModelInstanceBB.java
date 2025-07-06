@@ -32,7 +32,7 @@ public class ModelInstanceBB extends ModelInstance {
         updateTransforms();
     }
 
-    private void updateTransforms() {
+    public void updateTransforms() {
         // Обновите трансформацию
         calculateTransforms();
 

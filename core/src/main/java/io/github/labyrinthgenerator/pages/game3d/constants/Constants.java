@@ -7,8 +7,8 @@ public abstract class Constants {
 	private static final int VERSION_MINOR = 0;
 	private static final int VERSION_REVISION = 2;
 	private static final long VERSION_BUILD = 140220221956L;
-	public static final String VERSION = Integer.toString(VERSION_MAJOR) + "." + Integer.toString(VERSION_MINOR) + "."
-			+ Integer.toString(VERSION_REVISION) + " " + Long.toString(VERSION_BUILD);
+	public static final String VERSION = VERSION_MAJOR + "." + VERSION_MINOR + "."
+			+ VERSION_REVISION + " " + VERSION_BUILD;
 
     public static final int TEXTURE_SIZE = 256;
 	public static final float HALF_UNIT = 0.5f;

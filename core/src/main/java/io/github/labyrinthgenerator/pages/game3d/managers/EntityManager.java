@@ -140,7 +140,7 @@ public class EntityManager {
 
         for (Chunk chunk : nearestChunks) {
             if (!entitiesByChunks.containsKey(chunk)) {
-                //log.warn("Method getNearestEntities: !entitiesByChunks.containsKey(chunk).");
+                log.warn("Method getNearestEntities: !entitiesByChunks.containsKey(chunk).");
                 continue;
             }
             Set<Entity> entitiesByChunkClone = new HashSet<>(entitiesByChunks.get(chunk).keySet());

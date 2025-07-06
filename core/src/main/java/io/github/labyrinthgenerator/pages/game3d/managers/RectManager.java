@@ -115,12 +115,15 @@ public class RectManager {
 
     private boolean overlapsPlusDistance(RectanglePlus r1, RectanglePlus r2) {
         float distance = 0.1f;
-        return r1.getX() < r2.getX() + r2.getWidth() + distance &&
+        // @formatter:off
+        return
+            r1.getX() < r2.getX() + r2.getWidth() + distance &&
             r1.getX() + r1.getWidth() + distance > r2.getX() &&
             r1.getY() < r2.getY() + r2.getHeight() + distance &&
             r1.getY() + r1.getHeight() + distance > r2.getY() &&
             r1.getZ() < r2.getZ() + r2.getDepth() + distance &&
             r1.getZ() + r1.getDepth() + distance > r2.getZ();
+        // @formatter:on
     }
 
     public boolean checkCollisions(final RectanglePlus rect, final List<RectanglePlus> nearestRects) {

@@ -63,8 +63,11 @@ public class PlayScreen extends GameScreen {
         game.getMapBuilder().buildMap(Labyrinth2D.txtFilename);
 
         Vector3 playerSpawnPosition = getPlayerSpawnPosition();
-        //playerSpawnPosition.add(0, - HALF_UNIT / 2f, 0);
-        player = new Player(playerSpawnPosition, HALF_UNIT / 2f, HALF_UNIT * 2, HALF_UNIT / 2f, this);
+        player = new Player(
+            playerSpawnPosition,
+            HALF_UNIT / 2f, HALF_UNIT * 2, HALF_UNIT / 2f,
+            this
+        );
         setCurrentCam(player.playerCam);
         viewport.setCamera(currentCam);
 
@@ -217,13 +220,14 @@ public class PlayScreen extends GameScreen {
 
     private void renderDebugInfo() {
         if (showExitDistance && !showGuiMenu) {
-            guiFont32.draw(game.getBatch(), "position          : " + player.getPositionImmutable(), viewport.getWorldWidth() / 8f, viewport.getWorldHeight() - 32);
-            guiFont32.draw(game.getBatch(), "rectangle         : " + player.rect.getPosition(), viewport.getWorldWidth() / 8f, viewport.getWorldHeight() - 48);
-            guiFont32.draw(game.getBatch(), "movement dir      : " + player.getMovementDir(), viewport.getWorldWidth() / 8f, viewport.getWorldHeight() - 64);
-            guiFont32.draw(game.getBatch(), "cam dir           : " + player.getDirection(), viewport.getWorldWidth() / 8f, viewport.getWorldHeight() - 80);
-            guiFont32.draw(game.getBatch(), "velocity          : " + player.getHorizontalVelocity(), viewport.getWorldWidth() / 8f, viewport.getWorldHeight() - 96);
-            guiFont32.draw(game.getBatch(), "velocity forward  : " + player.getHorizontalVelocity(), viewport.getWorldWidth() / 8f, viewport.getWorldHeight() - 112);
-            guiFont32.draw(game.getBatch(), "Exit distance     : " + player.getExitDistance(), viewport.getWorldWidth() / 8f, viewport.getWorldHeight() - 128);
+            int screenYShift = 32;
+            guiFont32.draw(game.getBatch(), "position          : " + player.getPositionImmutable(), viewport.getWorldWidth() / 8f, viewport.getWorldHeight() - (screenYShift += 16));
+            guiFont32.draw(game.getBatch(), "rectangle         : " + player.rect.getPosition(), viewport.getWorldWidth() / 8f, viewport.getWorldHeight() - (screenYShift += 16));
+            guiFont32.draw(game.getBatch(), "movement dir      : " + player.getMovementDir(), viewport.getWorldWidth() / 8f, viewport.getWorldHeight() - (screenYShift += 16));
+            guiFont32.draw(game.getBatch(), "cam dir           : " + player.getDirection(), viewport.getWorldWidth() / 8f, viewport.getWorldHeight() - (screenYShift += 16));
+            guiFont32.draw(game.getBatch(), "velocity          : " + player.getHorizontalVelocity(), viewport.getWorldWidth() / 8f, viewport.getWorldHeight() - (screenYShift += 16));
+            guiFont32.draw(game.getBatch(), "velocity forward  : " + player.getHorizontalVelocity(), viewport.getWorldWidth() / 8f, viewport.getWorldHeight() - (screenYShift += 16));
+            guiFont32.draw(game.getBatch(), "Exit distance     : " + player.getExitDistance(), viewport.getWorldWidth() / 8f, viewport.getWorldHeight() - (screenYShift += 16));
         }
     }
 
