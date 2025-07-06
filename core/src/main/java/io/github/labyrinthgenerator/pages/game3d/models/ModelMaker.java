@@ -77,7 +77,7 @@ public class ModelMaker {
             1, 0, 0,
             1, 0, 1,
             material,
-            Usage.Position | Usage.Normal | Usage.TextureCoordinates
+            Usage.Position | Usage.Normal | Usage.TextureCoordinates // goto Cell3D cornerLength
         );
 
         switch (direction) {
@@ -110,7 +110,7 @@ public class ModelMaker {
             0, 0, 0,
             1, 0, 0,
             0, direction, 0,
-            material, Usage.Position | Usage.Normal | Usage.TextureCoordinates);
+            material, Usage.Position | Usage.Normal | Usage.TextureCoordinates);  // goto Cell3D cornerLength
 
         model.nodes.get(0).rotation.set(Vector3.X, direction == 1 ? 90f : -90f);
         if (direction == 1) model.nodes.get(0).translation.add(0, 1, 0);
@@ -122,7 +122,7 @@ public class ModelMaker {
                                          float y3, float z3, float x4, float y4, float z4, float nx, float ny,
                                          float nz, Material material) {
         return mdlBuilder.createRect(x1, y1, z1, x2, y2, z2, x3, y3, z3, x4, y4, z4, nx, ny, nz,
-            material, Usage.Position | Usage.Normal | Usage.TextureCoordinates);
+            material, Usage.Position | Usage.Normal | Usage.TextureCoordinates);  // goto Cell3D cornerLength
     }
 
     private Material getTextureMaterial(long attributeType) {

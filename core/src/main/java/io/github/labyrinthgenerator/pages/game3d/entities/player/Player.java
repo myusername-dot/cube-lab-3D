@@ -13,6 +13,7 @@ import io.github.labyrinthgenerator.pages.game3d.rect.RectanglePlus;
 import io.github.labyrinthgenerator.pages.game3d.rect.filters.RectanglePlusFilter;
 import io.github.labyrinthgenerator.pages.game3d.screens.GameScreen;
 import io.github.labyrinthgenerator.pages.game3d.vectors.Vector3f;
+import io.github.labyrinthgenerator.pages.game3d.vectors.Vector3i;
 import lombok.extern.slf4j.Slf4j;
 
 import static io.github.labyrinthgenerator.pages.game3d.constants.Constants.*;
@@ -75,7 +76,7 @@ public class Player extends Entity {
 
     private void setCamPosition() {
         playerCam.position.set(getPositionImmutable()
-            .add(adjustVecForGravity(gravityDirection, new Vector3(0f, camY, 0f), true)));
+            .add(adjustVecForGravity(gravityDirection, new Vector3(0f, camY, 0f))));
     }
 
     public void setGravityDirection(Vector3f newGravityDirection) {
@@ -225,7 +226,7 @@ public class Player extends Entity {
             headbob = false;
         }
 
-        Vector3 velocity = adjustVecForGravity(gravityDirection, new Vector3(horizontalVelocity.x, velocityY, horizontalVelocity.y), true);
+        Vector3 velocity = adjustVecForGravity(gravityDirection, new Vector3(horizontalVelocity.x, velocityY, horizontalVelocity.y));
 
         Vector3 newPosition = new Vector3(
             rect.getX() + velocity.x * delta,
@@ -242,30 +243,47 @@ public class Player extends Entity {
         rect.newPosition.set(newPosition.x, newPosition.y, newPosition.z);
     }
 
-    public static Vector3 adjustVecForGravity(Vector3f gravityDirection, Vector3 in, boolean invertY) {
+    public static Vector3 adjustVecForGravity(Vector3f gravityDirection, Vector3 in) {
+        return adjustVecForGravity(gravityDirection, in, null, 0);
+    }
+
+    public static Vector3 adjustVecForGravity(Vector3f gravityDirection, Vector3 in, Vector3i worldSize) {
+        return adjustVecForGravity(gravityDirection, in, worldSize, 0);
+    }
+
+    public static Vector3 adjustVecForGravity(Vector3f gravityDirection, Vector3 in, int layerH) {
+        return adjustVecForGravity(gravityDirection, in, null, layerH);
+    }
+
+    public static Vector3 adjustVecForGravity(Vector3f gravityDirection, Vector3 in, Vector3i worldSize, int layerH) {
         //int yScl = invertY ? 1 : -1; // swap new y coordinate by 0 - layer height
         Vector3 out;
+
         if (gravityDirection.equals(new Vector3(0, 1, 0))) {
             // Гравитация направлена вниз
             out = new Vector3(in.x, in.y, in.z);
         } else if (gravityDirection.equals(new Vector3(0, -1, 0))) {
             // Гравитация направлена вверх
-            out = new Vector3(in.x, -1 * in.y, in.z); // fixme
+            if (worldSize == null) out = new Vector3(in.z, -1 * in.y, in.x);
+            else out = new Vector3(in.x, worldSize.y - in.y, in.z);
         } else if (gravityDirection.equals(new Vector3(1, 0, 0))) {
             // Гравитация направлена вправо
-            out = new Vector3(-1 * in.y, -1 * in.x, in.z);
+            out = new Vector3(in.z, -1 * in.x, -1 * in.y); // maybe flip out x z
         } else if (gravityDirection.equals(new Vector3(-1, 0, 0))) {
             // Гравитация направлена влево
-            out = new Vector3(in.z, -1 * in.x, -1 * in.y);
+            if (worldSize == null) out = new Vector3(-in.z, -1 * in.x, in.y);
+            else out = new Vector3(worldSize.x - in.z, -1 * in.x, worldSize.z - -1 * in.y);
         } else if (gravityDirection.equals(new Vector3(0, 0, 1))) {
             // Гравитация направлена вперед
-            out = new Vector3(in.x, -1 * in.z, -1 * in.y);
+            out = new Vector3(-1 * in.y, -1 * in.z, in.x); // maybe flip out x z
         } else if (gravityDirection.equals(new Vector3(0, 0, -1))) {
             // Гравитация направлена назад
-            out = new Vector3(-1 * in.y, -1 * in.z, in.x);
+            if (worldSize == null) out = new Vector3(in.y, -1 * in.z, -in.x);
+            else out = new Vector3(worldSize.x - -1 * in.y, -1 * in.z, worldSize.x - in.x);
         } else {
             out = new Vector3(0, 0, 0);
         }
+
         return out;
     }
 

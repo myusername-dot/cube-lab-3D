@@ -13,12 +13,19 @@ import static io.github.labyrinthgenerator.pages.game3d.constants.Constants.CHUN
 
 public class ChunkManager {
 
-    private final Vector3i size;
+    private final Vector3i worldSize; // size.y < 0 !!!
+
+    private final Vector3i chunksSize;
     private final Chunk[][][] chunks;
 
-    public ChunkManager(Vector3i size) {
-        this.size = size;
-        this.chunks = new Chunk[size.x][size.y][size.z];
+    public ChunkManager(Vector3i worldSize) {
+        this.worldSize = worldSize;
+        this.chunksSize = new Vector3i(
+            worldSize.x / CHUNK_SIZE + 1,
+            -worldSize.y / CHUNK_SIZE + 1,
+            worldSize.z / CHUNK_SIZE + 1
+        );
+        this.chunks = new Chunk[chunksSize.x][chunksSize.y][chunksSize.z];
     }
 
     public Chunk add(float x, float y, float z) {
@@ -38,9 +45,9 @@ public class ChunkManager {
 
     public Chunk get(float x, float y, float z) {
         Vector3i position = getChunkPosition(x, y, z);
-        if (position.x >= size.x || position.y >= size.y || position.z >= size.z
+        if (position.x >= chunksSize.x || position.y >= chunksSize.y || position.z >= chunksSize.z
             || position.x < 0 || position.y < 0 || position.z < 0) {
-            throw new RuntimeException("position >= size || < 0: " + position + ", " + size + ", " + new Vector3f(x, y, z) + ".");
+            throw new RuntimeException("position >= size || < 0: " + position + ", " + chunksSize + ", " + new Vector3f(x, y, z) + ".");
         }
         Chunk chunk = chunks[position.x][position.y][position.z];
         if (chunk == null) {
@@ -59,9 +66,9 @@ public class ChunkManager {
         int x1 = Math.max(0, position.x - CHUNKS_RANGE_AROUND_CAM_CHUNK - offsetChunks);
         //int y1 = Math.max(0, position.y - CHUNKS_RANGE_AROUND_CAM_CHUNK - offsetChunks);
         int z1 = Math.max(0, position.z - CHUNKS_RANGE_AROUND_CAM_CHUNK - offsetChunks);
-        int x2 = Math.min(size.x - 1, position.x + CHUNKS_RANGE_AROUND_CAM_CHUNK + offsetChunks);
+        int x2 = Math.min(chunksSize.x - 1, position.x + CHUNKS_RANGE_AROUND_CAM_CHUNK + offsetChunks);
         //int y2 = Math.min(size.y - 1, position.y + CHUNKS_RANGE_AROUND_CAM_CHUNK + offsetChunks);
-        int z2 = Math.min(size.z - 1, position.z + CHUNKS_RANGE_AROUND_CAM_CHUNK + offsetChunks);
+        int z2 = Math.min(chunksSize.z - 1, position.z + CHUNKS_RANGE_AROUND_CAM_CHUNK + offsetChunks);
 
         for (int i = x1; i <= x2; i++)
             //for (int j = y1; j <= y2; j++)
@@ -71,8 +78,12 @@ public class ChunkManager {
         return nearestChunks;
     }
 
-    public Vector3 getWorldSize() {
-        return new Vector3(size.x * CHUNK_SIZE, -size.y * CHUNK_SIZE, size.z * CHUNK_SIZE); // -size.y !!!
+    public Vector3i getWorldSize() {
+        return worldSize; // size.y < 0 !!!
+    }
+
+    public Vector3i getChunksSize() {
+        return chunksSize;
     }
 
     private Vector3i getChunkPosition(float x, float y, float z) {
@@ -84,6 +95,6 @@ public class ChunkManager {
     }
 
     public void clear() {
-        for (int i = 0; i < size.x; i++) chunks[i] = null;
+        for (int i = 0; i < chunksSize.x; i++) chunks[i] = null;
     }
 }

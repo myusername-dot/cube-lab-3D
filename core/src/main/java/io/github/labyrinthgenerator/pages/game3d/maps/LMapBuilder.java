@@ -91,8 +91,8 @@ public class LMapBuilder {
         int width = edges.get(0).get(edges.get(0).size() - 1).length(), height = width, depth = edges.get(0).size();
 
         // CHUNKS
-        Vector3i chunksSize = new Vector3i(width / CHUNK_SIZE + 1, height / CHUNK_SIZE + 1, depth / CHUNK_SIZE + 1);
-        ChunkManager chunkMan = new ChunkManager(chunksSize);
+        ChunkManager chunkMan = new ChunkManager(new Vector3i(width, -height, depth));
+        Vector3i chunksSize = chunkMan.getChunksSize();
         game.setChunkMan(chunkMan);
 
         for (int i = 0; i < chunksSize.x; i++)
@@ -107,24 +107,11 @@ public class LMapBuilder {
             game.getAssMan().get(game.getAssMan().atlas01), 6 * TEXTURE_SIZE, 0, TEXTURE_SIZE, TEXTURE_SIZE);
 
         // EDGES
-        for (int edge = 0; edge < 5; edge++) {
+        for (int edge = 0; edge < 6; edge++) {
             List<String> lines = edges.get(edge);
 
             assert width == lines.get(lines.size() - 1).length();
             assert depth == lines.size();
-
-            // Сдвиги по осям в зависимости от направления гравитации
-            int offsetX = (int) (gravityDirections[edge].x * width);
-            if (offsetX <= 0) offsetX = 0;
-            else offsetX -= 1; // FIXME
-            int offsetZ = (int) (gravityDirections[edge].z * depth);
-            if (offsetZ <= 0) offsetZ = 0;
-            else offsetZ -= 1; // FIXME
-            int offsetY = (int) (gravityDirections[edge].y * height);
-            if (offsetY >= 0) offsetY = 0;
-            else offsetY += 1; // FIXME
-
-            //offsetX = offsetY = offsetZ = 0;
 
             Vector3 scl = new Vector3();
 
@@ -142,8 +129,8 @@ public class LMapBuilder {
                     Vector3 cellPosition = Player.adjustVecForGravity(
                         gravityDirections[edge],
                         new Vector3(i, 0, k),
-                        true
-                    ).add(offsetX, offsetY, offsetZ);
+                        game.getChunkMan().getWorldSize()
+                    );
                     Cell3D currentCell3D = new Cell3D(cellPosition, game.getScreen());
 
                     if (entity == Labyrinth.LEntity.EMPTY) {
@@ -173,8 +160,8 @@ public class LMapBuilder {
                             Player.adjustVecForGravity(
                                 gravityDirections[edge],
                                 new Vector3(i, -1, k),
-                                true
-                            ).add(offsetX, offsetY, offsetZ),
+                                game.getChunkMan().getWorldSize()
+                            ),
                             game.getScreen()
                         );
                         currentCell3D.hasFloor = true;
@@ -236,7 +223,7 @@ public class LMapBuilder {
                 int firefliesC = MathUtils.random(minFirefliesCount, maxFirefliesCount);
                 for (int i = 0; i < firefliesC; i++) {
                     scl.set(HALF_UNIT, MathUtils.random(0.3f, 0.7f), HALF_UNIT); // FIXME
-                    scl = Player.adjustVecForGravity(gravityDirections[edge], scl, true);
+                    scl = Player.adjustVecForGravity(gravityDirections[edge], scl);
                     new Firefly(
                         cell3D.getPositionImmutable().add(scl),
                         game.getScreen(),
