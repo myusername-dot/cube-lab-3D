@@ -244,18 +244,10 @@ public class Player extends Entity {
     }
 
     public static Vector3 adjustVecForGravity(Vector3f gravityDirection, Vector3 in) {
-        return adjustVecForGravity(gravityDirection, in, null, 0);
+        return adjustVecForGravity(gravityDirection, in, null);
     }
 
     public static Vector3 adjustVecForGravity(Vector3f gravityDirection, Vector3 in, Vector3i worldSize) {
-        return adjustVecForGravity(gravityDirection, in, worldSize, 0);
-    }
-
-    public static Vector3 adjustVecForGravity(Vector3f gravityDirection, Vector3 in, int layerH) {
-        return adjustVecForGravity(gravityDirection, in, null, layerH);
-    }
-
-    public static Vector3 adjustVecForGravity(Vector3f gravityDirection, Vector3 in, Vector3i worldSize, int layerH) {
         //int yScl = invertY ? 1 : -1; // swap new y coordinate by 0 - layer height
         Vector3 out;
 
