@@ -32,14 +32,16 @@ public class LMapBuilder {
 
     private final CubeLab3D game;
 
+    // @formatter:off
     private final Vector3f[] gravityDirections = new Vector3f[]{
-        new Vector3f(0f, 1, 0),   // Грань 1: вверх
-        new Vector3f(0, 0, 1),   // Грань 3: вперед
-        new Vector3f(0, -1, 0),  // Грань 2: вниз
-        new Vector3f(0, 0, -1),  // Грань 4: назад
-        new Vector3f(1, 0, 0),   // Грань 5: вправо
-        new Vector3f(-1, 0, 0)   // Грань 6: влево
+        new Vector3f( 0,  1,  0),  // Грань 1: вверх
+        new Vector3f( 0,  0,  1),  // Грань 3: вперед
+        new Vector3f( 0, -1,  0),  // Грань 2: вниз
+        new Vector3f( 0,  0, -1),  // Грань 4: назад
+        new Vector3f( 1,  0,  0),  // Грань 5: вправо
+        new Vector3f(-1,  0,  0)   // Грань 6: влево
     };
+    // @formatter:on
 
     public Vector2 mapLoadSpawnPosition = new Vector2();
     public Vector2 mapLoadExitPosition = new Vector2();
@@ -105,7 +107,7 @@ public class LMapBuilder {
             game.getAssMan().get(game.getAssMan().atlas01), 6 * TEXTURE_SIZE, 0, TEXTURE_SIZE, TEXTURE_SIZE);
 
         // EDGES
-        for (int edge = 0; edge < 1; edge++) {
+        for (int edge = 0; edge < 5; edge++) {
             List<String> lines = edges.get(edge);
 
             assert width == lines.get(lines.size() - 1).length();
@@ -146,17 +148,17 @@ public class LMapBuilder {
 
                     if (entity == Labyrinth.LEntity.EMPTY) {
                         currentCell3D.hasFloor = true;
-                        currentCell3D.texRegFloor = texFloor;
+                        //currentCell3D.texRegFloor = texFloor;
                         currentCell3D.mobSpawn = true;
                     } else {
                         currentCell3D.hasWallNorth = true;
                         currentCell3D.hasWallWest = true;
                         currentCell3D.hasWallSouth = true;
                         currentCell3D.hasWallEast = true;
-                        currentCell3D.texRegEast = texWall;
-                        currentCell3D.texRegNorth = texWall;
-                        currentCell3D.texRegSouth = texWall;
-                        currentCell3D.texRegWest = texWall;
+                        //currentCell3D.texRegEast = texWall;
+                        //currentCell3D.texRegNorth = texWall;
+                        //currentCell3D.texRegSouth = texWall;
+                        //currentCell3D.texRegWest = texWall;
 
                         new RectanglePlus(
                             cellPosition.x, cellPosition.y, cellPosition.z,
@@ -176,7 +178,7 @@ public class LMapBuilder {
                             game.getScreen()
                         );
                         currentCell3D.hasFloor = true;
-                        currentCell3D.texRegFloor = texFloor;
+                        //currentCell3D.texRegFloor = texFloor;
                         // FLOOR LAYER 2
                     }
                     cell3DList.add(currentCell3D);
@@ -194,31 +196,34 @@ public class LMapBuilder {
                         && otherPosition.x == currentPosition.x
                         && otherPosition.y == currentPosition.y
                         && otherPosition.z == currentPosition.z + 1) {
-                        currentCell3D.hasWallSouth = false;
+                        //currentCell3D.hasWallSouth = false;
                     }
                     if (otherCell3D.hasWallSouth
                         && otherPosition.x == currentPosition.x
                         && otherPosition.y == currentPosition.y
                         && otherPosition.z == currentPosition.z - 1) {
-                        currentCell3D.hasWallNorth = false;
+                        //currentCell3D.hasWallNorth = false;
                     }
                     if (otherCell3D.hasWallEast
                         && otherPosition.x == currentPosition.x + 1
                         && otherPosition.y == currentPosition.y
                         && otherPosition.z == currentPosition.z) {
-                        currentCell3D.hasWallWest = false;
+                        //currentCell3D.hasWallWest = false;
                     }
                     if (otherCell3D.hasWallWest
                         && otherPosition.x == currentPosition.x - 1
                         && otherPosition.y == currentPosition.y
                         && otherPosition.z == currentPosition.z) {
-                        currentCell3D.hasWallEast = false;
+                        //currentCell3D.hasWallEast = false;
                     }
                 }
             }
 
             for (Cell3D cell3D : cell3DList) {
-                cell3D.buildCell();
+                cell3D.buildCell(
+                    gravityDirections[edge]
+                    //rotations[edge] * gravityDirections[edge].sum()
+                );
             }
 
             // NONPOS
@@ -233,9 +238,10 @@ public class LMapBuilder {
                     scl.set(HALF_UNIT, MathUtils.random(0.3f, 0.7f), HALF_UNIT); // FIXME
                     scl = Player.adjustVecForGravity(gravityDirections[edge], scl, true);
                     new Firefly(
-                        new Vector3(cell3D.getPositionX(), 0, cell3D.getPositionZ()).add(scl),
+                        cell3D.getPositionImmutable().add(scl),
                         game.getScreen(),
-                        wave);
+                        wave
+                    );
                 }
             }
         }

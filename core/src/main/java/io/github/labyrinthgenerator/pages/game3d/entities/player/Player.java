@@ -26,14 +26,14 @@ public class Player extends Entity {
 
     private final float cameraRotationSpeed = 25f;
     boolean headbob = false;
-    boolean verticalCameraMovement = false;
+    boolean verticalCameraMovement = true;
     float camY = 0f;
 
     private final float playerMoveSpeed = 4f;
     private final float acceleration = 10f;
     private final float deceleration = 10f;
 
-    private final float jumpStrength = 5.0f;
+    private final float jumpStrength = 8.0f;
     private boolean isOnGround = true;
 
     private float velocityY = 0f;
@@ -78,10 +78,6 @@ public class Player extends Entity {
             .add(adjustVecForGravity(gravityDirection, new Vector3(0f, camY, 0f), true)));
     }
 
-    public float getGravityScl() {
-        return gravityDirection.x + gravityDirection.y + gravityDirection.z;
-    }
-
     public void setGravityDirection(Vector3f newGravityDirection) {
         this.gravityDirection = newGravityDirection;//.nor(); // Нормализуем вектор
         updateCameraRotation();
@@ -120,8 +116,7 @@ public class Player extends Entity {
             isOnGround = false;
         }
 
-        playerCam.rotate(adjustVecForGravity(gravityDirection, Vector3.Y, false),
-            Gdx.input.getDeltaX() * -cameraRotationSpeed * getGravityScl() * delta);
+        playerCam.rotate(Vector3.Y, Gdx.input.getDeltaX() * -cameraRotationSpeed * gravityDirection.sum() * delta);
 
         if (verticalCameraMovement) {
             playerCam.rotate(/*adjustVecForGravity(*/new Vector3(playerCam.direction.z, 0f, -playerCam.direction.x)/*, false)*/,
@@ -248,14 +243,14 @@ public class Player extends Entity {
     }
 
     public static Vector3 adjustVecForGravity(Vector3f gravityDirection, Vector3 in, boolean invertY) {
-        int yScl = invertY ? 1 : -1;
+        //int yScl = invertY ? 1 : -1; // swap new y coordinate by 0 - layer height
         Vector3 out;
         if (gravityDirection.equals(new Vector3(0, 1, 0))) {
             // Гравитация направлена вниз
             out = new Vector3(in.x, in.y, in.z);
         } else if (gravityDirection.equals(new Vector3(0, -1, 0))) {
             // Гравитация направлена вверх
-            out = new Vector3(in.x, -1 * yScl * in.y, in.z);
+            out = new Vector3(in.x, -1 * in.y, in.z); // fixme
         } else if (gravityDirection.equals(new Vector3(1, 0, 0))) {
             // Гравитация направлена вправо
             out = new Vector3(-1 * in.y, -1 * in.x, in.z);

@@ -37,6 +37,22 @@ public class Vector3f {
         return this.set(this.x * scalar, this.y * scalar, this.z * scalar);
     }
 
+    public Vector3f abs () {
+        return this.set(Math.abs(x), Math.abs(y), Math.abs(z));
+    }
+
+    public Vector3f back () {
+        return new Vector3f(z, y, x);
+    }
+
+    public Vector3 vec3 () {
+        return new Vector3(x, y, z);
+    }
+
+    public float sum () {
+        return x + y + z;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

@@ -64,10 +64,7 @@ public class MyShaderProvider extends Tickable implements ShaderProvider {
     }
 
     public Player getPlayer() {
-        if (game.getScreen() instanceof PlayScreen) {
-            return ((PlayScreen) game.getScreen()).getPlayer();
-        }
-        return null;
+        return game.getScreen().getPlayer();
     }
 
     public float getViewAngle(final PerspectiveCamera camera, final Vector3 point) {

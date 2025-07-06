@@ -2,7 +2,6 @@ package io.github.labyrinthgenerator.pages.game3d.entities;
 
 import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
-import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import io.github.labyrinthgenerator.pages.game3d.chunks.Chunk;
 import io.github.labyrinthgenerator.pages.game3d.managers.ChunkManager;

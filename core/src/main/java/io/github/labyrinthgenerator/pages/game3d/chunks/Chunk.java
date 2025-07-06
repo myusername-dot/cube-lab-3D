@@ -22,8 +22,7 @@ public class Chunk {
     }
 
     public boolean contains(float x, float y, float z) {
-        return
-            this.x <= x && this.x + this.width >= x && this.y >= y && this.y - this.height <= y && this.z <= z && this.z + this.depth >= z;
+        return this.x <= x && this.x + this.width >= x && this.y >= y && this.y - this.height <= y && this.z <= z && this.z + this.depth >= z;
     }
 
     @Override

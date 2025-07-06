@@ -37,19 +37,29 @@ public class ModelMaker {
     }
 
     private void buildModels() {
-        mdlGrid = mdlBuilder.createLineGrid(10, 10, 1, 1, new Material(), Usage.Position | Usage.Normal);
+        mdlGrid = mdlBuilder.createLineGrid(10, 10, 1, 1,
+            new Material(), Usage.Position | Usage.Normal);
 
-        mdlEnemy = createModelWithTexture(1, 1, 0, 0, 1, 0, 0,
-            0, 0, 1, 0, 0, 0, 0, -1, getTextureMaterial(TextureAttribute.Diffuse));
+        mdlEnemy = createModelWithTexture(
+            1, 1, 0,
+            0, 1, 0,
+            0, 0, 0,
+            1, 0, 0,
+            0, 0, -1,
+            getTextureMaterial(TextureAttribute.Diffuse));
 
-        mdlPoint = createModelWithTexture(HALF_UNIT / 6f, HALF_UNIT / 6f, 0, -HALF_UNIT / 6f,
-            HALF_UNIT / 6f, 0, -HALF_UNIT / 6f, -HALF_UNIT / 6f, 0, HALF_UNIT / 6f, -HALF_UNIT / 6f, 0,
-            0, 0, -1, getTextureMaterial(TextureAttribute.Diffuse));
+        mdlPoint = createModelWithTexture(
+            HALF_UNIT / 6f, HALF_UNIT / 6f, 0,
+            -HALF_UNIT / 6f, HALF_UNIT / 6f, 0,
+            -HALF_UNIT / 6f, -HALF_UNIT / 6f, 0,
+            HALF_UNIT / 6f, -HALF_UNIT / 6f, 0,
+            0, 0, -1,
+            getTextureMaterial(TextureAttribute.Diffuse));
 
         mdlWallNorth = createWallModel(0, TEXTURE_SIZE, "NORTH");
-        mdlWallSouth = createWallModel(TEXTURE_SIZE * 3, TEXTURE_SIZE, "SOUTH");
-        mdlWallWest = createWallModel(0, TEXTURE_SIZE, "WEST");
-        mdlWallEast = createWallModel(TEXTURE_SIZE * 2, TEXTURE_SIZE, "EAST");
+        mdlWallSouth = createWallModel(TEXTURE_SIZE * 2, TEXTURE_SIZE, "SOUTH");
+        mdlWallWest = createWallModel(TEXTURE_SIZE * 3, TEXTURE_SIZE, "WEST");
+        mdlWallEast = createWallModel(TEXTURE_SIZE, TEXTURE_SIZE, "EAST");
 
         mdlFloor = createFloorOrCeilingModel(TEXTURE_SIZE, TEXTURE_SIZE * 2, 1);
         mdlCeiling = createFloorOrCeilingModel(TEXTURE_SIZE, 0, -1);
@@ -77,10 +87,11 @@ public class ModelMaker {
                 break;
             case "SOUTH":
                 wallModel.nodes.get(0).rotation.set(Vector3.Y, 0f);
+                wallModel.nodes.get(0).translation.add(0, 0, 1);
                 break;
             case "WEST":
                 wallModel.nodes.get(0).rotation.set(Vector3.Y, 90f);
-                wallModel.nodes.get(0).translation.add(0, 0, 1);
+                wallModel.nodes.get(0).translation.add(1, 0, 1);
                 break;
             case "EAST":
                 wallModel.nodes.get(0).rotation.set(Vector3.Y, -90f);
@@ -94,20 +105,24 @@ public class ModelMaker {
             textureX, textureY, TEXTURE_SIZE, TEXTURE_SIZE);
         Material material = getTextureMaterial(TextureAttribute.Diffuse, texture);
         Model model = mdlBuilder.createRect(
-            1, 1, 0, 0,
-            1, 0, 0, 0,
-            0, 1, 0, 0,
-            0, direction, 0, material, Usage.Position | Usage.Normal | Usage.TextureCoordinates);
+            1, 1, 0,
+            0, 1, 0,
+            0, 0, 0,
+            1, 0, 0,
+            0, direction, 0,
+            material, Usage.Position | Usage.Normal | Usage.TextureCoordinates);
 
         model.nodes.get(0).rotation.set(Vector3.X, direction == 1 ? 90f : -90f);
+        if (direction == 1) model.nodes.get(0).translation.add(0, 1, 0);
+
         return model;
     }
 
     private Model createModelWithTexture(float x1, float y1, float z1, float x2, float y2, float z2, float x3,
                                          float y3, float z3, float x4, float y4, float z4, float nx, float ny,
                                          float nz, Material material) {
-        return mdlBuilder.createRect(x1, y1, z1, x2, y2, z2, x3, y3, z3, x4, y4, z4, nx, ny, nz, material,
-            Usage.Position | Usage.Normal | Usage.TextureCoordinates);
+        return mdlBuilder.createRect(x1, y1, z1, x2, y2, z2, x3, y3, z3, x4, y4, z4, nx, ny, nz,
+            material, Usage.Position | Usage.Normal | Usage.TextureCoordinates);
     }
 
     private Material getTextureMaterial(long attributeType) {

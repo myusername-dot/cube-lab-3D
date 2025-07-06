@@ -68,22 +68,11 @@ public class SkyBoxShaderProgram implements Disposable {
         textures[1] = new Texture(negativeZ);
 
         positiveX.dispose();
-        positiveX = null;
-
         negativeX.dispose();
-        negativeX = null;
-
         positiveY.dispose();
-        positiveY = null;
-
         negativeY.dispose();
-        negativeY = null;
-
         positiveZ.dispose();
-        positiveZ = null;
-
         negativeZ.dispose();
-        negativeZ = null;
 
         init();
     }
@@ -150,12 +139,16 @@ public class SkyBoxShaderProgram implements Disposable {
     }
 
     private Mesh createTexturedQuad() {
-        Mesh quad = new Mesh(true, 4, 6, VertexAttribute.Position(), new VertexAttribute(VertexAttributes.Usage.TextureCoordinates, 2, "a_texCoord0"));
-        quad.setVertices(new float[]
-            {-1f, -1f, 0, 0, 1,
-                1f, -1f, 0, 1, 1,
-                1f, 1f, 0, 1, 0,
-                -1f, 1f, 0, 0, 0});
+        Mesh quad = new Mesh(true, 4, 6, VertexAttribute.Position(),
+            new VertexAttribute(VertexAttributes.Usage.TextureCoordinates, 2, "a_texCoord0"));
+        // @formatter:off
+        quad.setVertices(new float[]{
+            -1f, -1f, 0, 0, 1,
+             1f, -1f, 0, 1, 1,
+             1f,  1f, 0, 1, 0,
+            -1f,  1f, 0, 0, 0
+        });
+        // @formatter:on
         quad.setIndices(new short[]{0, 1, 2, 2, 3, 0});
         return quad;
     }

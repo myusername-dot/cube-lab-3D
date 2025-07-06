@@ -225,7 +225,7 @@ public class FogFreeShader extends SpotLightFreeShader {
         program.setUniform3fv("u_cameraPosition", cameraPosition, 0, 3);
         context.begin();
         context.setDepthTest(GL20.GL_LEQUAL);
-        context.setCullFace(GL20.GL_BACK);
+        context.setCullFace(GL20.GL_NONE);
     }
 
     private void setDefaultLightUniforms() {
@@ -258,7 +258,7 @@ public class FogFreeShader extends SpotLightFreeShader {
                 new float[]{light.position.x, light.position.y, light.position.z}, 0, 3);
             program.setUniformf("u_pointLightsDistance[" + i + "]", light.camDistance);
             program.setUniform3fv("u_pointLightsScreen[" + i + "]",
-            new float[]{light.screenPosition.x, light.screenPosition.y, light.screenPosition.z}, 0, 3);
+                new float[]{light.screenPosition.x, light.screenPosition.y, light.screenPosition.z}, 0, 3);
             program.setUniform4fv("u_pointLightColors[" + i + "]",
                 new float[]{light.color.r, light.color.g, light.color.b, light.color.a}, 0, 4);
         }
