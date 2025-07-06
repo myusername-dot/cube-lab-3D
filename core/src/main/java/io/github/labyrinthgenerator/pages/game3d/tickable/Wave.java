@@ -1,7 +1,7 @@
 package io.github.labyrinthgenerator.pages.game3d.tickable;
 
-import com.badlogic.gdx.math.Vector3;
 import io.github.labyrinthgenerator.pages.game3d.CubeLab3D;
+import io.github.labyrinthgenerator.pages.game3d.vectors.Vector3i;
 
 public class Wave extends Tickable {
 
@@ -15,7 +15,7 @@ public class Wave extends Tickable {
 
     public Wave(CubeLab3D game) {
         super(game);
-        Vector3 worldSize = game.getChunkMan().getWorldSize();
+        Vector3i worldSize = game.getChunkMan().getWorldSize();
         startX = -size - Math.max(worldSize.x, worldSize.z);
         endX = size + worldSize.x;
         waveX = new float[count];

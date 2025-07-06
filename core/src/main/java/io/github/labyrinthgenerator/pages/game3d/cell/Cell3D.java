@@ -2,7 +2,10 @@ package io.github.labyrinthgenerator.pages.game3d.cell;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.graphics.g3d.*;
+import com.badlogic.gdx.graphics.g3d.Environment;
+import com.badlogic.gdx.graphics.g3d.Model;
+import com.badlogic.gdx.graphics.g3d.ModelBatch;
+import com.badlogic.gdx.graphics.g3d.Shader;
 import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
 import com.badlogic.gdx.graphics.g3d.model.MeshPart;
 import com.badlogic.gdx.graphics.g3d.model.Node;
@@ -105,10 +108,10 @@ public class Cell3D extends Entity {
         // @formatter:off
         if (hasWallNorth) mdlInstWallNorth = createWallInstance(mdlWallNorth, texRegNorth, gravityDirection, getPositionImmutable());
         if (hasWallSouth) mdlInstWallSouth = createWallInstance(mdlWallSouth, texRegSouth, gravityDirection, getPositionImmutable());
-        if (hasWallWest) mdlInstWallWest = createWallInstance(mdlWallWest, texRegWest, gravityDirection, getPositionImmutable());
-        if (hasWallEast) mdlInstWallEast = createWallInstance(mdlWallEast, texRegEast, gravityDirection, getPositionImmutable());
-        if (hasFloor) mdlInstFloor = createFloorOrCeilingInstance(mdlFloor, texRegFloor, gravityDirection, getPositionImmutable());
-        if (hasCeiling) mdlInstCeiling = createFloorOrCeilingInstance(mdlCeiling, texRegCeiling, gravityDirection, getPositionImmutable());
+        if (hasWallWest ) mdlInstWallWest  = createWallInstance(mdlWallWest, texRegWest, gravityDirection, getPositionImmutable());
+        if (hasWallEast ) mdlInstWallEast  = createWallInstance(mdlWallEast, texRegEast, gravityDirection, getPositionImmutable());
+        if (hasFloor    ) mdlInstFloor     = createFloorOrCeilingInstance(mdlFloor, texRegFloor, gravityDirection, getPositionImmutable());
+        if (hasCeiling  ) mdlInstCeiling   = createFloorOrCeilingInstance(mdlCeiling, texRegCeiling, gravityDirection, getPositionImmutable());
         // @formatter:on
     }
 
@@ -137,15 +140,13 @@ public class Cell3D extends Entity {
 
         node.translation.set(Player.adjustVecForGravity(
             gravityDirection,
-            node.translation,
-            false
+            node.translation
         ));
         Quaternion rotation = node.rotation;
         Vector3 rotationVec = new Vector3(rotation.x, rotation.y, rotation.z);
         rotationVec = Player.adjustVecForGravity(
             gravityDirection,
-            rotationVec,
-            false
+            rotationVec
         );
         rotation.set(rotationVec.x, rotationVec.y, rotationVec.z, rotation.w);
 
@@ -160,12 +161,13 @@ public class Cell3D extends Entity {
             int corner = i * cornerLength;
             Vector3 localVertOrNormal = Player.adjustVecForGravity(
                 gravityDirection,
-                new Vector3(vertices[corner], vertices[corner + 1], vertices[corner + 2]),
-                false
+                new Vector3(vertices[corner], vertices[corner + 1], vertices[corner + 2])
             );
-            vertices[corner] = localVertOrNormal.x;
+            // @formatter:off
+            vertices[corner    ] = localVertOrNormal.x;
             vertices[corner + 1] = localVertOrNormal.y;
             vertices[corner + 2] = localVertOrNormal.z;
+            // @formatter:on
         }
         meshPart.mesh.setVertices(vertices);
         //instance.calculateTransforms();
