@@ -180,29 +180,21 @@ public class LMapBuilder {
                 for (final Cell3D otherCell3D : cell3DList) {
                     Vector3 otherPosition = otherCell3D.getPositionImmutable();
 
-                    if (otherCell3D.hasWallNorth
-                        && otherPosition.x == currentPosition.x
-                        && otherPosition.y == currentPosition.y
-                        && otherPosition.z == currentPosition.z + 1) {
-                        //currentCell3D.hasWallSouth = false;
+                    scl = Player.adjustVecForGravity(gravityDirections[edge], new Vector3(0, 0, 1));
+                    if (otherCell3D.hasWallNorth && otherPosition.equals(currentPosition.cpy().add(scl))) {
+                        currentCell3D.hasWallSouth = false;
                     }
-                    if (otherCell3D.hasWallSouth
-                        && otherPosition.x == currentPosition.x
-                        && otherPosition.y == currentPosition.y
-                        && otherPosition.z == currentPosition.z - 1) {
-                        //currentCell3D.hasWallNorth = false;
+                    scl = Player.adjustVecForGravity(gravityDirections[edge], new Vector3(0, 0, -1));
+                    if (otherCell3D.hasWallSouth && otherPosition.equals(currentPosition.cpy().add(scl))) {
+                        currentCell3D.hasWallNorth = false;
                     }
-                    if (otherCell3D.hasWallEast
-                        && otherPosition.x == currentPosition.x + 1
-                        && otherPosition.y == currentPosition.y
-                        && otherPosition.z == currentPosition.z) {
-                        //currentCell3D.hasWallWest = false;
+                    scl = Player.adjustVecForGravity(gravityDirections[edge], new Vector3(1, 0, 0));
+                    if (otherCell3D.hasWallEast && otherPosition.equals(currentPosition.cpy().add(scl))) {
+                        currentCell3D.hasWallWest = false;
                     }
-                    if (otherCell3D.hasWallWest
-                        && otherPosition.x == currentPosition.x - 1
-                        && otherPosition.y == currentPosition.y
-                        && otherPosition.z == currentPosition.z) {
-                        //currentCell3D.hasWallEast = false;
+                    scl = Player.adjustVecForGravity(gravityDirections[edge], new Vector3(-1, 0, 0));
+                    if (otherCell3D.hasWallWest && otherPosition.equals(currentPosition.cpy().add(scl))) {
+                        currentCell3D.hasWallEast = false;
                     }
                 }
             }

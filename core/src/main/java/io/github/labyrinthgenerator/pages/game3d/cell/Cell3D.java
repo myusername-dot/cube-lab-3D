@@ -56,41 +56,6 @@ public class Cell3D extends Entity {
     }
     // @formatter:on
 
-    private void adjustModelsForGravity(Vector3 gravityDirection) {
-        Model tmp1, tmp2;
-        if (gravityDirection.equals(new Vector3(0, 1, 0))) {
-            // Гравитация направлена вниз
-        } else if (gravityDirection.equals(new Vector3(0, -1, 0))) {
-            // Гравитация направлена вверх
-            tmp1 = mdlFloor;
-            mdlFloor = mdlCeiling;
-            mdlCeiling = tmp1;
-        } else if (gravityDirection.equals(new Vector3(1, 0, 0))) {
-            // Гравитация направлена вправо
-            tmp1 = mdlCeiling;
-            tmp2 = mdlWallEast;
-            mdlWallWest = tmp1;
-            mdlWallEast = mdlFloor;
-            mdlFloor = tmp2;
-            mdlCeiling = mdlWallEast;
-            /*tmp1 = mdlWallNorth;
-            mdlWallNorth = mdlWallSouth;
-            mdlWallSouth = tmp1;*/
-        } else if (gravityDirection.equals(new Vector3(-1, 0, 0))) {
-            // Гравитация направлена влево
-            tmp1 = mdlFloor;
-            tmp2 = mdlWallEast;
-            mdlWallWest = tmp1;
-            mdlWallEast = mdlCeiling;
-            mdlCeiling = tmp2;
-            mdlFloor = mdlWallEast;
-        } else if (gravityDirection.equals(new Vector3(0, 0, 1))) {
-            // Гравитация направлена вперед
-        } else if (gravityDirection.equals(new Vector3(0, 0, -1))) {
-            // Гравитация направлена назад
-        }
-    }
-
     private ModelInstanceBB createModelInstanceBB(Model model, Texture texture, Vector3 positionImmutable) {
         ModelInstanceBB modelInstanceBB = new ModelInstanceBB(model, positionImmutable);
         if (texture != null) {
@@ -102,9 +67,6 @@ public class Cell3D extends Entity {
     }
 
     public void buildCell(Vector3f gravityDirection) {
-        //Vector3f axis = gravityDirection.cpy().abs();
-        //adjustModelsForGravity(gravityDirection.vec3());
-
         // @formatter:off
         if (hasWallNorth) mdlInstWallNorth = createWallInstance(mdlWallNorth, texRegNorth, gravityDirection, getPositionImmutable());
         if (hasWallSouth) mdlInstWallSouth = createWallInstance(mdlWallSouth, texRegSouth, gravityDirection, getPositionImmutable());
@@ -119,6 +81,7 @@ public class Cell3D extends Entity {
         Model model, Texture texture,
         Vector3f gravityDirection,
         Vector3 position) {
+
         ModelInstanceBB instance = createModelInstanceBB(model, texture, position);
         transformMdlInstVertsAndNormal(instance, gravityDirection);
         instance.transform.setToTranslation(position);
@@ -129,6 +92,7 @@ public class Cell3D extends Entity {
         Model model, Texture texture,
         Vector3f gravityDirection,
         Vector3 position) {
+
         ModelInstanceBB instance = createModelInstanceBB(model, texture, position);
         transformMdlInstVertsAndNormal(instance, gravityDirection);
         instance.transform.setToTranslation(position);
