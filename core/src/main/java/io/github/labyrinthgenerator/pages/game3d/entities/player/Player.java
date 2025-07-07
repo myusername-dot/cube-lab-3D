@@ -54,8 +54,8 @@ public class Player extends Entity {
     public Player(Vector3 position, float rectWidth, float rectHeight, float rectDepth, final GameScreen screen) {
         super(position, screen);
         playerCam = new PerspectiveCamera(70, WINDOW_WIDTH, WINDOW_HEIGHT);
-        playerCam.position.set(new Vector3(0, position.y + camY, 0));
-        playerCam.lookAt(new Vector3(0, position.y + camY, -HALF_UNIT * 2));
+        setCamPosition();
+        playerCam.lookAt(new Vector3(playerCam.position.x, playerCam.position.y, playerCam.position.z - HALF_UNIT * 2));
         playerCam.near = 0.01f;
         playerCam.far = 100f;
         playerCam.update();
@@ -70,8 +70,6 @@ public class Player extends Entity {
         );
         rect.oldPosition.set(rect.getPosition());
         rect.newPosition.set(rect.getPosition());
-
-        setCamPosition();
     }
 
     private void setCamPosition() {
