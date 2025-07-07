@@ -179,27 +179,26 @@ public class LMapBuilder {
                 Vector3 currentPosition = currentCell3D.getPositionImmutable();
 
                 for (final Cell3D otherCell3D : cell3DList) {
-                    Vector3 otherPosition = otherCell3D.getPositionImmutable();
+                    if (currentCell3D.hasWalls && otherCell3D.hasWalls) {
 
-                    scl = Player.adjustVecForGravity(gravityDirections[edge], new Vector3(0, 0, 1));
-                    if (currentCell3D.hasWalls && otherCell3D.hasWalls
-                        && otherPosition.equals(currentPosition.cpy().add(scl))) {
-                        currentCell3D.hasWallSouth = false;
-                    }
-                    scl = Player.adjustVecForGravity(gravityDirections[edge], new Vector3(0, 0, -1));
-                    if (currentCell3D.hasWalls && otherCell3D.hasWalls
-                        && otherPosition.equals(currentPosition.cpy().add(scl))) {
-                        currentCell3D.hasWallNorth = false;
-                    }
-                    scl = Player.adjustVecForGravity(gravityDirections[edge], new Vector3(1, 0, 0));
-                    if (currentCell3D.hasWalls && otherCell3D.hasWalls
-                        && otherPosition.equals(currentPosition.cpy().add(scl))) {
-                        currentCell3D.hasWallWest = false;
-                    }
-                    scl = Player.adjustVecForGravity(gravityDirections[edge], new Vector3(-1, 0, 0));
-                    if (currentCell3D.hasWalls && otherCell3D.hasWalls
-                        && otherPosition.equals(currentPosition.cpy().add(scl))) {
-                        currentCell3D.hasWallEast = false;
+                        Vector3 otherPosition = otherCell3D.getPositionImmutable();
+
+                        scl = Player.adjustVecForGravity(gravityDirections[edge], new Vector3(0, 0, 1));
+                        if (otherPosition.equals(currentPosition.cpy().add(scl))) {
+                            currentCell3D.hasWallSouth = false;
+                        }
+                        scl = Player.adjustVecForGravity(gravityDirections[edge], new Vector3(0, 0, -1));
+                        if (otherPosition.equals(currentPosition.cpy().add(scl))) {
+                            currentCell3D.hasWallNorth = false;
+                        }
+                        scl = Player.adjustVecForGravity(gravityDirections[edge], new Vector3(1, 0, 0));
+                        if (otherPosition.equals(currentPosition.cpy().add(scl))) {
+                            currentCell3D.hasWallWest = false;
+                        }
+                        scl = Player.adjustVecForGravity(gravityDirections[edge], new Vector3(-1, 0, 0));
+                        if (otherPosition.equals(currentPosition.cpy().add(scl))) {
+                            currentCell3D.hasWallEast = false;
+                        }
                     }
                 }
             }
