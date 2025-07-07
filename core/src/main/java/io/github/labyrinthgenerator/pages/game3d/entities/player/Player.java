@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
+import io.github.labyrinthgenerator.pages.game3d.debug.MyDebugRenderer;
 import io.github.labyrinthgenerator.pages.game3d.entities.Entity;
 import io.github.labyrinthgenerator.pages.game3d.entities.Firefly;
 import io.github.labyrinthgenerator.pages.game3d.rect.RectanglePlus;
@@ -24,11 +25,14 @@ public class Player extends Entity {
 
     public final RectanglePlus rect;
     public final PerspectiveCamera playerCam;
+    private final PerspectiveCamera debugCam;
+
+    private final MyDebugRenderer debugger;
 
     private final float cameraRotationSpeed = 25f;
-    boolean headbob = false;
-    boolean verticalCameraMovement = true;
-    float camY = 0f;
+    private boolean headbob = false;
+    private boolean verticalCameraMovement = false;
+    private float camY = 0f;
 
     private final float playerMoveSpeed = 4f;
     private final float acceleration = 10f;
@@ -53,16 +57,19 @@ public class Player extends Entity {
 
     public Player(Vector3 position, float rectWidth, float rectHeight, float rectDepth, final GameScreen screen) {
         super(position, screen);
+        this.debugger = screen.game.getDebugger();
+
+        Vector3 lookAt = new Vector3(0, 0, -1);
         playerCam = new PerspectiveCamera(70, WINDOW_WIDTH, WINDOW_HEIGHT);
-        setCamPosition();
-        playerCam.lookAt(new Vector3(playerCam.position.x, playerCam.position.y, playerCam.position.z - HALF_UNIT * 2));
-        playerCam.near = 0.01f;
-        playerCam.far = 100f;
-        playerCam.update();
+        GameScreen.setupCamera(playerCam, getPositionImmutable(), lookAt);
+
+        debugCam = new PerspectiveCamera(70, WINDOW_WIDTH, WINDOW_HEIGHT);
+        GameScreen.setupCamera(debugCam, getPositionImmutable().scl(1, -1, 1), lookAt.scl(-1));
+        screen.setDebugCam(debugCam);
 
         rect = new RectanglePlus(
             position.x - rectWidth / 2f,
-            position.y + rectHeight / 2f, // FIXME world position bug h > 0
+            position.y + rectHeight / 2f,
             position.z - rectDepth / 2f,
             rectWidth, rectHeight, rectDepth,
             id, RectanglePlusFilter.PLAYER,
@@ -75,6 +82,23 @@ public class Player extends Entity {
     private void setCamPosition() {
         playerCam.position.set(getPositionImmutable()
             .add(adjustVecForGravity(gravityDirection, new Vector3(0f, camY, 0f))));
+
+        debugCam.position.set(playerCam.position.x, -playerCam.position.y, playerCam.position.z);
+    }
+
+    private void rotateCamHorizontal(float delta) {
+        float angle = Gdx.input.getDeltaX() * -cameraRotationSpeed * gravityDirection.sum() * delta;
+        playerCam.rotate(Vector3.Y, angle);
+
+        debugCam.rotate(Vector3.Y, angle);
+    }
+
+    private void rotateCamVertical(float delta) {
+        float angle = Gdx.input.getDeltaY() * -cameraRotationSpeed * delta;
+        Vector3 axis = new Vector3(playerCam.direction.z, 0f, -playerCam.direction.x);
+        playerCam.rotate(axis, angle);
+
+        debugCam.rotate(axis, -angle);
     }
 
     public void setGravityDirection(Vector3f newGravityDirection) {
@@ -102,6 +126,11 @@ public class Player extends Entity {
     public void handleInput(final float delta) {
         movementDir.setZero();
 
+        if (Gdx.input.isKeyJustPressed(Input.Keys.J)) {
+            debugger.debugMode = MyDebugRenderer.DebugMode.values()[
+                (debugger.debugMode.ordinal() + 1) % MyDebugRenderer.DebugMode.values().length];
+        }
+
         if (screen.game.getGameInput().scrolledYDown) {
             currentInventorySlot++;
             currentInventorySlot = currentInventorySlot > 6 ? 1 : currentInventorySlot;
@@ -110,16 +139,30 @@ public class Player extends Entity {
             currentInventorySlot = currentInventorySlot < 1 ? 6 : currentInventorySlot;
         }
 
+        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_1)) currentInventorySlot = 1;
+        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_2)) currentInventorySlot = 2;
+        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_3)) currentInventorySlot = 3;
+        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_4)) currentInventorySlot = 4;
+        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_5)) currentInventorySlot = 5;
+        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_6)) currentInventorySlot = 6;
+
         if (Gdx.input.isKeyJustPressed(Input.Keys.SHIFT_LEFT)) {
             setGravityDirection(gravityDirection.cpy().scl(-1));
             isOnGround = false;
         }
 
-        playerCam.rotate(Vector3.Y, Gdx.input.getDeltaX() * -cameraRotationSpeed * gravityDirection.sum() * delta);
+        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_0)) {
+            verticalCameraMovement = !verticalCameraMovement;
+        }
+
+        if (Gdx.input.isKeyJustPressed(Input.Keys.L)) {
+            cheats = !cheats;
+        }
+
+        rotateCamHorizontal(delta);
 
         if (verticalCameraMovement) {
-            playerCam.rotate(/*adjustVecForGravity(*/new Vector3(playerCam.direction.z, 0f, -playerCam.direction.x)/*, false)*/,
-                Gdx.input.getDeltaY() * -cameraRotationSpeed * delta);
+            rotateCamVertical(delta);
         }
 
         if (!isOnGround) {
@@ -178,41 +221,10 @@ public class Player extends Entity {
             horizontalForwardVelocity.nor().scl(playerMoveSpeed);
         }
 
-        if (!horizontalMovement) horizontalVelocity.set(horizontalForwardVelocity);
-        else if (horizontalVelocity.len() > playerMoveSpeed) {
+        if (!horizontalMovement) {
+            horizontalVelocity.set(horizontalForwardVelocity);
+        } else if (horizontalVelocity.len() > playerMoveSpeed) {
             horizontalVelocity.nor().scl(playerMoveSpeed);
-        }
-
-        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_1)) {
-            currentInventorySlot = 1;
-        }
-
-        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_2)) {
-            currentInventorySlot = 2;
-        }
-
-        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_3)) {
-            currentInventorySlot = 3;
-        }
-
-        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_4)) {
-            currentInventorySlot = 4;
-        }
-
-        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_5)) {
-            currentInventorySlot = 5;
-        }
-
-        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_6)) {
-            currentInventorySlot = 6;
-        }
-
-        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_0)) {
-            verticalCameraMovement = !verticalCameraMovement;
-        }
-
-        if (Gdx.input.isKeyJustPressed(Input.Keys.L)) {
-            cheats = !cheats;
         }
 
         if (headbob) {

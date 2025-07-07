@@ -3,10 +3,7 @@ package io.github.labyrinthgenerator.pages.game3d.screens;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.audio.Sound;
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.PerspectiveCamera;
-import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -18,7 +15,7 @@ import io.github.labyrinthgenerator.pages.game2d.Labyrinth2D;
 import io.github.labyrinthgenerator.pages.game3d.CubeLab3D;
 import io.github.labyrinthgenerator.pages.game3d.constants.Constants;
 
-import static io.github.labyrinthgenerator.pages.game3d.constants.Constants.HALF_UNIT;
+import static io.github.labyrinthgenerator.pages.game3d.constants.Constants.*;
 
 public class MainMenuScreen extends GameScreen {
 
@@ -106,13 +103,14 @@ public class MainMenuScreen extends GameScreen {
 
     private void setupCamera() {
         Vector3 pos = getPlayerSpawnPosition();
-        currentCam = new PerspectiveCamera(70, 640, 480);
-        currentCam.position.set(new Vector3(pos.x, pos.y, pos.z));
-        currentCam.lookAt(new Vector3(pos.x, pos.y, pos.z -HALF_UNIT * 2));
-        currentCam.near = 0.01f;
-        currentCam.far = 100f;
-        currentCam.update();
+        Vector3 lookAt = new Vector3(0, 0, -1);
+        currentCam = new PerspectiveCamera(70, WINDOW_WIDTH, WINDOW_HEIGHT);
+        setupCamera(currentCam, pos, lookAt);
         viewport.setCamera(currentCam);
+
+        debugCam = new PerspectiveCamera(70, WINDOW_WIDTH, WINDOW_HEIGHT);
+        setupCamera(debugCam, pos, lookAt);
+        debugCam.update();
     }
 
     @Override
@@ -196,6 +194,8 @@ public class MainMenuScreen extends GameScreen {
 
         currentCam.rotate(Vector3.Y, -6f * delta);
         currentCam.update();
+        debugCam.rotate(Vector3.Y, 6f * delta);
+        debugCam.update();
 
         game.getFbo().begin();
         clearScreen();

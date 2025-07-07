@@ -18,6 +18,7 @@ import io.github.labyrinthgenerator.pages.game2d.Labyrinth2D;
 import io.github.labyrinthgenerator.pages.game3d.CubeLab3D;
 import io.github.labyrinthgenerator.pages.game3d.constants.Constants;
 import io.github.labyrinthgenerator.pages.game3d.cubemap.ReflectiveCubemap;
+import io.github.labyrinthgenerator.pages.game3d.debug.MyDebugRenderer;
 import io.github.labyrinthgenerator.pages.game3d.entities.player.Player;
 import io.github.labyrinthgenerator.pages.game3d.shaders.SkyBoxShaderProgram;
 
@@ -181,6 +182,10 @@ public class PlayScreen extends GameScreen {
         super.render(delta);
 
         currentCam.update();
+        debugCam.update();
+
+        if (game.getDebugger().debugMode == MyDebugRenderer.DebugMode.DEBUG_ONLY) return;
+
         exitCubemap.updateCubemap(game.getMdlBatch(), env, envCubeMap, delta);
 
         game.getFbo().begin();

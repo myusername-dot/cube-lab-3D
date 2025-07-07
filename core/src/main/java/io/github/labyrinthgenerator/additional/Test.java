@@ -10,6 +10,8 @@ import java.util.List;
 public class Test {
 
     public static void main(String[] args) {
+        System.out.println(0 % 3);
+        System.exit(0);
         String fileName = "C:\\Users\\andre\\Documents\\log.txt";
         List<String> lines = new ArrayList<>();
         File txtFile = new File(fileName);

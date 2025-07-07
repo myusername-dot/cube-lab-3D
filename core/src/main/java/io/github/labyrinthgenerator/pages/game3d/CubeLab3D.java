@@ -11,6 +11,7 @@ import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 import io.github.labyrinthgenerator.pages.Page;
 import io.github.labyrinthgenerator.pages.game3d.constants.Constants;
+import io.github.labyrinthgenerator.pages.game3d.debug.MyDebugRenderer;
 import io.github.labyrinthgenerator.pages.game3d.filters.OverlapFilterManager;
 import io.github.labyrinthgenerator.pages.game3d.input.GameInputProcessor;
 import io.github.labyrinthgenerator.pages.game3d.managers.*;
@@ -34,6 +35,8 @@ public class CubeLab3D extends Game implements Page {
 	private LMapBuilder mapBuilder;
     private MyShaderProvider shaderProvider;
     private GameInputProcessor gameInput;
+
+	private MyDebugRenderer debugger;
 
 	public boolean gameIsPaused = false;
 
@@ -74,6 +77,8 @@ public class CubeLab3D extends Game implements Page {
 
         batch = new SpriteBatch();
         mdlBatch = new ModelBatch(shaderProvider);
+
+		debugger = new MyDebugRenderer(this);
 	}
 
     @Override
@@ -181,6 +186,10 @@ public class CubeLab3D extends Game implements Page {
         return shaderProvider;
     }
 
+	public MyDebugRenderer getDebugger() {
+		return debugger;
+	}
+
     @Override
     public GameScreen getScreen() {
         return (GameScreen) screen;
@@ -194,6 +203,10 @@ public class CubeLab3D extends Game implements Page {
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
 		getScreen().render(Gdx.graphics.getDeltaTime());
+
+		if (debugger.debugMode != MyDebugRenderer.DebugMode.DISABLE) {
+			debugger.render(getScreen().getDebugCam().combined);
+		}
 
 		gameInput.resetScrolled();
 	}

@@ -22,6 +22,7 @@ public abstract class GameScreen implements Screen {
 
     protected Viewport viewport;
     protected Camera currentCam;
+    protected Camera debugCam;
     protected Environment env;
 
     protected Player player;
@@ -39,53 +40,62 @@ public abstract class GameScreen implements Screen {
     public void checkOverlaps(final RectanglePlus rect, final float delta) {
         List<RectanglePlus> nearestRects = game.getRectMan().getNearestRectsByFilters(currentCam.position, rect);
 
-        checkOverlapX(rect, nearestRects, delta);
-        checkOverlapY(rect, nearestRects, delta);
-        checkOverlapZ(rect, nearestRects, delta);
+        boolean overlaps = checkOverlapX(rect, nearestRects, delta);
+        overlaps = overlaps || checkOverlapY(rect, nearestRects, delta);
+        overlaps = overlaps || checkOverlapZ(rect, nearestRects, delta);
+
+        rect.overlaps = overlaps;
     }
 
     /**
      * Check for overlap in angle X.
      */
-    private void checkOverlapX(final RectanglePlus rect, List<RectanglePlus> nearestRects, final float delta) {
+    private boolean checkOverlapX(final RectanglePlus rect, List<RectanglePlus> nearestRects, final float delta) {
+        boolean overlaps = false;
         rect.setX(rect.newPosition.x);
 
         // остановка у стен
         if (game.getRectMan().checkCollisions(rect, nearestRects)) {
+            overlaps = true;
             rect.newPosition.x = rect.oldPosition.x;
         }
 
         rect.setX(rect.newPosition.x);
+        return overlaps;
     }
 
     /**
      * Check for overlap in angle X.
      */
-    private void checkOverlapY(final RectanglePlus rect, List<RectanglePlus> nearestRects, final float delta) {
-        //if (rect.newPosition.y > 0.5f) rect.newPosition.y = 0.5f; // FIXME
-
+    private boolean checkOverlapY(final RectanglePlus rect, List<RectanglePlus> nearestRects, final float delta) {
+        boolean overlaps = false;
         rect.setY(rect.newPosition.y);
 
         // остановка у стен
         if (game.getRectMan().checkCollisions(rect, nearestRects)) {
+            overlaps = true;
             rect.newPosition.y = rect.oldPosition.y;
         }
 
         rect.setY(rect.newPosition.y);
+        return overlaps;
     }
 
     /**
      * Check for overlap in angle Z.
      */
-    private void checkOverlapZ(final RectanglePlus rect, List<RectanglePlus> nearestRects, final float delta) {
+    private boolean checkOverlapZ(final RectanglePlus rect, List<RectanglePlus> nearestRects, final float delta) {
+        boolean overlaps = false;
         rect.setZ(rect.newPosition.z);
 
         // остановка у стен
         if (game.getRectMan().checkCollisions(rect, nearestRects)) {
+            overlaps = true;
             rect.newPosition.z = rect.oldPosition.z;
         }
 
         rect.setZ(rect.newPosition.z);
+        return overlaps;
     }
 
     @Override
@@ -104,8 +114,20 @@ public abstract class GameScreen implements Screen {
         return cam.frustum.sphereInFrustum(currentSpherePos, modelInst.radius);
     }
 
+    public static void setupCamera(Camera cam, Vector3 pos, Vector3 lookAt) {
+        cam.position.set(pos.x, pos.y, pos.z);
+        cam.lookAt(lookAt.add(pos));
+        cam.near = 0.01f;
+        cam.far = 100f;
+        cam.update();
+    }
+
     public Camera getCurrentCam() {
         return currentCam;
+    }
+
+    public Camera getDebugCam() {
+        return debugCam;
     }
 
     public Player getPlayer() {
@@ -180,6 +202,10 @@ public abstract class GameScreen implements Screen {
 
     public void setCurrentCam(final Camera currentCam) {
         this.currentCam = currentCam;
+    }
+
+    public void setDebugCam(final Camera debugCam) {
+        this.debugCam = debugCam;
     }
 
     @Override
