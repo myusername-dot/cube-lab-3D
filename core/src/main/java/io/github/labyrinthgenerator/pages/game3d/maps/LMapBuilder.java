@@ -76,8 +76,9 @@ public class LMapBuilder {
             log.error("Error reading file: " + e.getMessage());
         }
         assert edges.size() != 0;
+        edges.remove(edges.get(edges.size() - 1));
         assert edgesCount == 6;
-        assert edges.size() == edgesCount;
+        assert edges.size() == edgesCount; // ????
         edges.forEach(e -> {
             assert e.get(e.size() - 1).length() != 0;
         });
@@ -135,17 +136,17 @@ public class LMapBuilder {
 
                     if (entity == Labyrinth.LEntity.EMPTY) {
                         currentCell3D.hasFloor = true;
-                        //currentCell3D.texRegFloor = texFloor;
+                        currentCell3D.texRegFloor = texFloor;
                         currentCell3D.mobSpawn = true;
                     } else {
                         currentCell3D.hasWallNorth = true;
                         currentCell3D.hasWallWest = true;
                         currentCell3D.hasWallSouth = true;
                         currentCell3D.hasWallEast = true;
-                        //currentCell3D.texRegEast = texWall;
-                        //currentCell3D.texRegNorth = texWall;
-                        //currentCell3D.texRegSouth = texWall;
-                        //currentCell3D.texRegWest = texWall;
+                        currentCell3D.texRegEast = texWall;
+                        currentCell3D.texRegNorth = texWall;
+                        currentCell3D.texRegSouth = texWall;
+                        currentCell3D.texRegWest = texWall;
 
                         new RectanglePlus(
                             cellPosition.x, cellPosition.y, cellPosition.z,
@@ -165,7 +166,7 @@ public class LMapBuilder {
                             game.getScreen()
                         );
                         currentCell3D.hasFloor = true;
-                        //currentCell3D.texRegFloor = texFloor;
+                        currentCell3D.texRegFloor = texFloor;
                         // FLOOR LAYER 2
                     }
                     cell3DList.add(currentCell3D);

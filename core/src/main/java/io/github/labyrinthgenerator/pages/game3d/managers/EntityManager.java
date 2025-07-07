@@ -49,19 +49,12 @@ public class EntityManager {
     }
 
     public void updateEntityChunk(final Chunk oldChunk, final Chunk newChunk, final Entity ent) {
-        logEntityMovement(ent);
+        logEntityStartChunkMovement(oldChunk, newChunk, ent);
 
         entitiesByChunks.get(oldChunk).remove(ent);
         entitiesByChunks.computeIfAbsent(newChunk, k -> new ConcurrentHashMap<>()).put(ent, justObject);
-    }
 
-    private void logEntityMovement(Entity ent) {
-        Player player = screen.getPlayer();
-        if (player != null && player.getId() == ent.getId()) {
-            log.debug("Player is moving to the other chunk.");
-        } else {
-            log.debug("Entity id: " + ent.getId() + " is moving to the other chunk!");
-        }
+        logEntityEndChunkMovement(ent);
     }
 
     public List<Entity> getNearestEntities(Vector3 playersPos) {
@@ -73,7 +66,7 @@ public class EntityManager {
         List<Entity> nearestEntities = new ArrayList<>();
         for (Chunk chunk : nearestChunks) {
             if (!entitiesByChunks.containsKey(chunk)) {
-                //log.warn("Method getNearestEntities: !entitiesByChunks.containsKey(chunk).");
+                log.warn("Method getNearestEntities: !entitiesByChunks.containsKey(chunk).");
                 continue;
             }
             nearestEntities.addAll(entitiesByChunks.get(chunk).keySet());
@@ -100,9 +93,9 @@ public class EntityManager {
     }
 
     public void render3DAllEntities(final ModelBatch mdlBatch, final Environment env, final float delta, final Vector3 pos) {
-        for (Chunk chunk : chunkMan.getNearestChunks(pos)) {
+        for (Chunk chunk : entitiesByChunks.keySet()) {
             if (!entitiesByChunks.containsKey(chunk)) {
-                //log.warn("Method render3DAllEntities: !entitiesByChunks.containsKey(chunk).");
+                log.warn("Method render3DAllEntities: !entitiesByChunks.containsKey(chunk).");
                 continue;
             }
             for (final Entity ent : entitiesByChunks.get(chunk).keySet()) {
@@ -181,6 +174,23 @@ public class EntityManager {
 
     public long getTransactionId() {
         return transactionId;
+    }
+
+    private void logEntityStartChunkMovement(final Chunk oldChunk, final Chunk newChunk, final Entity ent) {
+        Player player = screen.getPlayer();
+        if (player != null && player.getId() == ent.getId()) log.debug("Try to move the Player from: " + oldChunk + " to: " + newChunk + ".");
+        else log.debug("Entity id: " + ent.getId() + " is trying to move from: " + oldChunk + " to: " + newChunk + ".");
+
+        if (!entitiesByChunks.get(oldChunk).containsKey(ent)) {
+            if (player != null && player.getId() == ent.getId()) log.error("Player: !entitiesByChunks.get(oldChunk).containsKey(ent).");
+            else log.error("Entity id: " + ent.getId() + " !entitiesByChunks.get(oldChunk).containsKey(ent).");
+        }
+    }
+
+    private void logEntityEndChunkMovement(final Entity ent) {
+        Player player = screen.getPlayer();
+        if (player != null && player.getId() == ent.getId()) log.debug("Player is moving to the other chunk!");
+        else log.debug("Entity id: " + ent.getId() + " is moving to the other chunk!");
     }
 
     private void logTickDuration(long tickTime) {
