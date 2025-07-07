@@ -188,8 +188,10 @@ public abstract class GameScreen implements Screen {
     }
 
     public void tick(final float delta) {
+        Player player = getPlayer();
+        Vector3 pos = player == null ? currentCam.position.cpy() : player.getPositionImmutable();
         if (!game.gameIsPaused) {
-            game.getEntMan().tickAllEntities(delta, currentCam.position.cpy());
+            game.getEntMan().tickAllEntities(delta, pos);
             game.getTickMan().tickAllEntities(delta);
         }
     }

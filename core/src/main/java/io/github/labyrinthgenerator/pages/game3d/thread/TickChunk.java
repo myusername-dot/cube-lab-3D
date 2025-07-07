@@ -21,7 +21,7 @@ public class TickChunk implements Callable<Boolean> {
 
     @Override
     public Boolean call() {
-        log.debug("TickChunk thread id: " + Thread.currentThread().getId() + " begin.");
+        //log.debug("TickChunk thread id: " + Thread.currentThread().getId() + " begin.");
         for (Entity ent : entitiesByChunkClone) {
             try {
                 if (ent.shouldTick()) {
@@ -33,7 +33,7 @@ public class TickChunk implements Callable<Boolean> {
                 log.warn("Entity id: " + ent.getId() + " has already been ticked in this transaction.");
             }
         }
-        log.debug("TickChunk thread id: " + Thread.currentThread().getId() + " end.");
+        //log.debug("TickChunk thread id: " + Thread.currentThread().getId() + " end.");
         return true;
     }
 

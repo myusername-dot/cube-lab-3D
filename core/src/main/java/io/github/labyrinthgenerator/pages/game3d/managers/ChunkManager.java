@@ -73,7 +73,7 @@ public class ChunkManager {
         for (int i = x1; i <= x2; i++)
             //for (int j = y1; j <= y2; j++)
             for (int k = z1; k <= z2; k++)
-                nearestChunks.add(chunks[i][0][k]);
+                nearestChunks.add(chunks[i][position.y][k]);
 
         return nearestChunks;
     }

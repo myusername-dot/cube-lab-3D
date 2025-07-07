@@ -47,10 +47,7 @@ public class RectManager {
     }
 
     public void updateEntityChunkIfExistsRect(final Chunk oldChunk, final Chunk newChunk, final Entity ent) {
-        Player player = game.getScreen().getPlayer();
-        log.debug(player != null && player.getId() == ent.getId() ?
-            "Try to move the Player's rectangle to the other chunk." :
-            "Entity id: " + ent.getId() + " is trying to move.");
+        logRectStartChunkMovement(ent);
 
         RectanglePlus rect = rectsByConnectedEntityId.get(ent.getId());
         if (rect == null) {
@@ -65,24 +62,7 @@ public class RectManager {
             .computeIfAbsent(rect.filter, k -> new ConcurrentHashMap<>())
             .put(rect, justObject);
 
-        log.debug(player != null && player.getId() == ent.getId() ?
-            "The Player's rectangle has been moved to the other chunk!" :
-            "Entity id: " + ent.getId() + " rectangle has been moved to the other chunk!");
-    }
-
-    private void handleEntityNotFound(Entity ent) {
-        if (this.rectsByConnectedEntityId.get(ent.getId()) != null) {
-            throw new RuntimeException("Entity id: " + ent.getId() + " rect == null && this.rectsByConnectedEntIdDoNotTouch.get(ent.getId()) != null");
-        }
-    }
-
-    private void validateOldChunkContainsRect(Chunk oldChunk, Chunk newChunk, RectanglePlus rect, Entity ent) {
-        if (!rects.get(oldChunk).containsKey(rect.filter)) {
-            throw new RuntimeException("Entity id: " + ent.getId() + " !rects.get(oldChunk).containsKey(rect.filter)");
-        }
-        if (!rects.get(oldChunk).get(rect.filter).containsKey(rect)) {
-            throwWhyChunkDoesNotContainRect(ent.getId(), oldChunk, newChunk, rect);
-        }
+        logRectEndChunkMovement(ent);
     }
 
     public List<RectanglePlus> getNearestRectsByFilters(final Vector3 pos, final RectanglePlus rect) {
@@ -117,11 +97,11 @@ public class RectManager {
         float distance = 0.1f;
         // @formatter:off
         return
-            r1.getX() < r2.getX() + r2.getWidth() + distance &&
-            r1.getX() + r1.getWidth() + distance > r2.getX() &&
+            r1.getX() < r2.getX() + r2.getWidth() + distance  &&
+            r1.getX() + r1.getWidth() + distance > r2.getX()  &&
             r1.getY() < r2.getY() + r2.getHeight() + distance &&
             r1.getY() + r1.getHeight() + distance > r2.getY() &&
-            r1.getZ() < r2.getZ() + r2.getDepth() + distance &&
+            r1.getZ() < r2.getZ() + r2.getDepth() + distance  &&
             r1.getZ() + r1.getDepth() + distance > r2.getZ();
         // @formatter:on
     }
@@ -193,6 +173,28 @@ public class RectManager {
         isTransaction = false;
     }
 
+    private void logRectStartChunkMovement(final Entity ent) {
+        Player player = game.getScreen().getPlayer();
+        log.debug(player != null && player.getId() == ent.getId() ?
+            "Try to move the Player's rectangle to the other chunk." :
+            "Entity id: " + ent.getId() + " rectangle is trying to move to the other chunk.");
+    }
+
+    private void handleEntityNotFound(Entity ent) {
+        if (this.rectsByConnectedEntityId.get(ent.getId()) != null) {
+            throw new RuntimeException("Entity id: " + ent.getId() + " rect == null && this.rectsByConnectedEntIdDoNotTouch.get(ent.getId()) != null");
+        }
+    }
+
+    private void validateOldChunkContainsRect(Chunk oldChunk, Chunk newChunk, RectanglePlus rect, Entity ent) {
+        if (!rects.get(oldChunk).containsKey(rect.filter)) {
+            throw new RuntimeException("Entity id: " + ent.getId() + " !rects.get(oldChunk).containsKey(rect.filter)");
+        }
+        if (!rects.get(oldChunk).get(rect.filter).containsKey(rect)) {
+            throwWhyChunkDoesNotContainRect(ent.getId(), oldChunk, newChunk, rect);
+        }
+    }
+
     private void throwWhyChunkDoesNotContainRect(int entId, Chunk oldChunk, Chunk newChunk, RectanglePlus rect) {
         Optional<Chunk> chunk = this.rects.entrySet()
             .stream()
@@ -204,5 +206,12 @@ public class RectManager {
                 "Old is: " + oldChunk + ", new is: " + newChunk +
                 ", is: " + chunk.orElse(null)
         );
+    }
+
+    private void logRectEndChunkMovement(final Entity ent) {
+        Player player = game.getScreen().getPlayer();
+        log.debug(player != null && player.getId() == ent.getId() ?
+            "The Player's rectangle has been moved to the other chunk!" :
+            "Entity id: " + ent.getId() + " rectangle has been moved to the other chunk!");
     }
 }
