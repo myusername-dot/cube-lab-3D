@@ -199,7 +199,7 @@ public class CubeLab3D extends Game implements Page {
 	public void render() {
 		timeSinceLaunch += Gdx.graphics.getDeltaTime();
 
-		Gdx.gl.glClearColor(1, 0, 0, 1);
+		Gdx.gl.glClearColor(0, 0, 0, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
 		getScreen().render(Gdx.graphics.getDeltaTime());

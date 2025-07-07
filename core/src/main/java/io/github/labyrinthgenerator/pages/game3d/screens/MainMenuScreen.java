@@ -110,7 +110,6 @@ public class MainMenuScreen extends GameScreen {
 
         debugCam = new PerspectiveCamera(70, WINDOW_WIDTH, WINDOW_HEIGHT);
         setupCamera(debugCam, pos, lookAt);
-        debugCam.update();
     }
 
     @Override
@@ -194,7 +193,7 @@ public class MainMenuScreen extends GameScreen {
 
         currentCam.rotate(Vector3.Y, -6f * delta);
         currentCam.update();
-        debugCam.rotate(Vector3.Y, 6f * delta);
+        debugCam.rotate(Vector3.Y, -6f * delta);
         debugCam.update();
 
         game.getFbo().begin();

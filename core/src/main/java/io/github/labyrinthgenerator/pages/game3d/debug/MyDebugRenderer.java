@@ -56,6 +56,7 @@ public class MyDebugRenderer {
         float depth = rectanglePlus.getDepth();
 
         y = -y;
+        height = -height;
 
         // Рендеринг 3D прямоугольника в виде линий (по периметру)
         renderer.line(x, y, z, x + width, y, z); // Front bottom
