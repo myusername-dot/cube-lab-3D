@@ -71,7 +71,7 @@ public class MainMenuScreen extends GameScreen {
 
         game.setScreen(this);
         game.getMapBuilder().buildMap(Labyrinth2D.txtFilename);
-        setupCamera(game);
+        setupCamera();
 
         Gdx.input.setCursorCatched(false);
     }
@@ -104,14 +104,14 @@ public class MainMenuScreen extends GameScreen {
         return ambientId;
     }*/
 
-    private void setupCamera(final CubeLab3D game) {
+    private void setupCamera() {
+        Vector3 pos = getPlayerSpawnPosition();
         currentCam = new PerspectiveCamera(70, 640, 480);
-        currentCam.position.set(new Vector3(0, HALF_UNIT, 0));
-        currentCam.lookAt(new Vector3(0, HALF_UNIT, -HALF_UNIT * 2));
+        currentCam.position.set(new Vector3(pos.x, pos.y, pos.z));
+        currentCam.lookAt(new Vector3(pos.x, pos.y, pos.z -HALF_UNIT * 2));
         currentCam.near = 0.01f;
-        currentCam.far = 10f;
+        currentCam.far = 100f;
         currentCam.update();
-        currentCam.position.set(getPlayerSpawnPosition().add(0, HALF_UNIT, 0));
         viewport.setCamera(currentCam);
     }
 
