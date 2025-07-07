@@ -109,7 +109,7 @@ public class MainMenuScreen extends GameScreen {
         viewport.setCamera(currentCam);
 
         debugCam = new PerspectiveCamera(70, WINDOW_WIDTH, WINDOW_HEIGHT);
-        setupCamera(debugCam, pos, lookAt);
+        setupCamera(debugCam, pos.scl(1, -1, 1), lookAt.scl(-1));
     }
 
     @Override
