@@ -3,11 +3,11 @@ package io.github.labyrinthgenerator.pages.game3d.managers;
 import com.badlogic.gdx.math.Vector3;
 import io.github.labyrinthgenerator.pages.game3d.CubeLab3D;
 import io.github.labyrinthgenerator.pages.game3d.chunks.Chunk;
+import io.github.labyrinthgenerator.pages.game3d.debug.MyDebugRenderer;
 import io.github.labyrinthgenerator.pages.game3d.entities.Entity;
 import io.github.labyrinthgenerator.pages.game3d.entities.player.Player;
 import io.github.labyrinthgenerator.pages.game3d.rect.RectanglePlus;
 import io.github.labyrinthgenerator.pages.game3d.rect.filters.RectanglePlusFilter;
-import io.github.labyrinthgenerator.pages.game3d.screens.GameScreen;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
@@ -44,6 +44,7 @@ public class RectManager {
         if (rect.getConnectedEntityId() >= 0) {
             rectsByConnectedEntityId.put(rect.getConnectedEntityId(), rect);
         }
+        MyDebugRenderer.shapes.add(rect);
     }
 
     public void updateEntityChunkIfExistsRect(final Chunk oldChunk, final Chunk newChunk, final Entity ent) {
@@ -119,6 +120,8 @@ public class RectManager {
     }
 
     private void handleCollision(final RectanglePlus rect, final RectanglePlus otherRect) {
+        otherRect.overlaps = true;
+
         if (game.getEntMan().getEntityById(rect.getConnectedEntityId()) != null) {
             game.getEntMan().getEntityById(rect.getConnectedEntityId()).onCollision(otherRect);
         }
@@ -131,6 +134,7 @@ public class RectManager {
     public void removeRect(final RectanglePlus rect) {
         rects.values().forEach(c -> c.values().forEach(l -> l.remove(rect)));
         rectsByConnectedEntityId.remove(rect.getConnectedEntityId());
+        MyDebugRenderer.shapes.remove(rect);
     }
 
     public int rectsCountAndCheck() {
@@ -149,6 +153,7 @@ public class RectManager {
     public void clear() {
         rects.clear();
         rectsByConnectedEntityId.clear();
+        MyDebugRenderer.shapes.clear();
     }
 
     public synchronized void joinTransaction(long transactionId) {

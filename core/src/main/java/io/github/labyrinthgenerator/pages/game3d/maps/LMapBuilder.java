@@ -149,9 +149,11 @@ public class LMapBuilder {
                         currentCell3D.texRegSouth = texWall;
                         currentCell3D.texRegWest = texWall;
 
+                        Vector3 rectDims = new Vector3(1, 1, 1);
+                        //scl.set(rectDims.cpy().sub(Player.adjustVecForGravity(gravityDirections[edge], rectDims))/*.sub(rectDims)*/);
                         new RectanglePlus(
-                            cellPosition.x, cellPosition.y, cellPosition.z,
-                            1, 1, 1,
+                            cellPosition.x/* - scl.x*/, cellPosition.y/* + scl.y*/, cellPosition.z/* - scl.z*/,
+                            rectDims.x, rectDims.y, rectDims.z,
                             currentCell3D.getId(), RectanglePlusFilter.WALL,
                             game.getRectMan());
 

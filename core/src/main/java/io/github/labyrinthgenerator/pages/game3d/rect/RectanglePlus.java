@@ -24,6 +24,8 @@ public class RectanglePlus {
     private final int connectedEntityId;
     public final RectanglePlusFilter filter;
 
+    public boolean overlaps = false;
+
     public RectanglePlus(float x, float y, float z, float width, float height, float depth,
                          int connectedEntityId, RectanglePlusFilter filter, RectManager rectMan) {
         this.id = maxId.getAndIncrement();
