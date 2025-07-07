@@ -139,6 +139,7 @@ public class LMapBuilder {
                         currentCell3D.texRegFloor = texFloor;
                         currentCell3D.mobSpawn = true;
                     } else {
+                        currentCell3D.hasWalls = true;
                         currentCell3D.hasWallNorth = true;
                         currentCell3D.hasWallWest = true;
                         currentCell3D.hasWallSouth = true;
@@ -181,19 +182,23 @@ public class LMapBuilder {
                     Vector3 otherPosition = otherCell3D.getPositionImmutable();
 
                     scl = Player.adjustVecForGravity(gravityDirections[edge], new Vector3(0, 0, 1));
-                    if (otherCell3D.hasWallNorth && otherPosition.equals(currentPosition.cpy().add(scl))) {
+                    if (currentCell3D.hasWalls && otherCell3D.hasWalls
+                        && otherPosition.equals(currentPosition.cpy().add(scl))) {
                         currentCell3D.hasWallSouth = false;
                     }
                     scl = Player.adjustVecForGravity(gravityDirections[edge], new Vector3(0, 0, -1));
-                    if (otherCell3D.hasWallSouth && otherPosition.equals(currentPosition.cpy().add(scl))) {
+                    if (currentCell3D.hasWalls && otherCell3D.hasWalls
+                        && otherPosition.equals(currentPosition.cpy().add(scl))) {
                         currentCell3D.hasWallNorth = false;
                     }
                     scl = Player.adjustVecForGravity(gravityDirections[edge], new Vector3(1, 0, 0));
-                    if (otherCell3D.hasWallEast && otherPosition.equals(currentPosition.cpy().add(scl))) {
+                    if (currentCell3D.hasWalls && otherCell3D.hasWalls
+                        && otherPosition.equals(currentPosition.cpy().add(scl))) {
                         currentCell3D.hasWallWest = false;
                     }
                     scl = Player.adjustVecForGravity(gravityDirections[edge], new Vector3(-1, 0, 0));
-                    if (otherCell3D.hasWallWest && otherPosition.equals(currentPosition.cpy().add(scl))) {
+                    if (currentCell3D.hasWalls && otherCell3D.hasWalls
+                        && otherPosition.equals(currentPosition.cpy().add(scl))) {
                         currentCell3D.hasWallEast = false;
                     }
                 }

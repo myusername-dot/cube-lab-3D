@@ -40,6 +40,7 @@ public class Cell3D extends Entity {
     public boolean hasFloor     = false;
     public boolean hasCeiling   = false;
 
+    public boolean hasWalls     = false;
     public boolean mobSpawn     = false;
 
     public Texture texRegNorth, texRegSouth, texRegWest, texRegEast, texRegFloor, texRegCeiling;
