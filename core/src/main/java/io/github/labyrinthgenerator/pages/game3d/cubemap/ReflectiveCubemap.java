@@ -48,7 +48,7 @@ public class ReflectiveCubemap {
 
         cubemap = fb.getColorBufferTexture();
 
-        Model sphereModel = createCustomSphere(radius, false);
+        Model sphereModel = createSphereWithModelBuilder(radius);
 
         reflectiveSphereMdlInst = new ModelInstanceBB(sphereModel, position);
         log.info("sphere model loaded successfully, radius: " + reflectiveSphereMdlInst.radius);
