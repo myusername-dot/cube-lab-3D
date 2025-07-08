@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.g3d.Shader;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import io.github.labyrinthgenerator.pages.game3d.CubeLab3D;
+import io.github.labyrinthgenerator.pages.game3d.constants.Constants;
 import io.github.labyrinthgenerator.pages.game3d.entities.player.Player;
 import io.github.labyrinthgenerator.pages.game3d.models.ModelInstanceBB;
 import io.github.labyrinthgenerator.pages.game3d.rect.RectanglePlus;
@@ -126,7 +127,7 @@ public abstract class GameScreen implements Screen {
         cam.position.set(pos.x, pos.y, pos.z);
         cam.lookAt(lookAt.add(pos));
         cam.near = 0.01f;
-        cam.far = 10f;
+        cam.far = Constants.CAMERA_FAR;
         cam.update();
     }
 
