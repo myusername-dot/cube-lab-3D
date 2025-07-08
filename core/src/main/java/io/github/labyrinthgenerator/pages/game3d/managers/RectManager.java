@@ -36,7 +36,11 @@ public class RectManager {
     }
 
     public void addRect(final RectanglePlus rect) {
-        Chunk chunk = chunkMan.get(rect.getX() + rect.getWidth() / 2f, rect.getY(), rect.getZ() + rect.getDepth() / 2f);
+        Chunk chunk = chunkMan.get(
+            rect.getX() + rect.getWidth() / 2f,
+            rect.getY() - rect.getHeight() / 2f,
+            rect.getZ() + rect.getDepth() / 2f
+        );
         rects.computeIfAbsent(chunk, k -> new ConcurrentHashMap<>())
             .computeIfAbsent(rect.filter, k -> new ConcurrentHashMap<>())
             .put(rect, justObject);
@@ -66,13 +70,13 @@ public class RectManager {
         logRectEndChunkMovement(ent);
     }
 
-    public List<RectanglePlus> getNearestRectsByFilters(final Vector3 pos, final RectanglePlus rect) {
+    public List<RectanglePlus> getNearestRectsByFilters(final Vector3 camPos, final RectanglePlus rect) {
         List<RectanglePlusFilter> filters = game.getOverlapFilterMan().getFiltersOverlap(rect.filter);
         if (filters.isEmpty()) return Collections.emptyList();
 
-        List<Chunk> nearestChunks = chunkMan.getNearestChunks(pos);
+        List<Chunk> nearestChunks = chunkMan.getNearestChunks(camPos);
         if (nearestChunks == null || nearestChunks.isEmpty()) {
-            throw new NullPointerException("nearestChunks == null || nearestChunks.isEmpty() at position " + pos + ".");
+            throw new NullPointerException("nearestChunks == null || nearestChunks.isEmpty() at position " + camPos + ".");
         }
 
         List<RectanglePlus> nearestRects = new ArrayList<>();
@@ -85,7 +89,7 @@ public class RectManager {
                 Map<RectanglePlus, Object> otherRects = rects.get(chunk).get(filter);
                 if (otherRects == null) continue;
                 for (final RectanglePlus otherRect : otherRects.keySet()) {
-                    if (newPositionOverlaps(rect, otherRect)) {
+                    if (overlapsPlusDistance(rect, otherRect)) {
                         nearestRects.add(otherRect);
                     }
                 }
@@ -94,14 +98,14 @@ public class RectManager {
         return nearestRects;
     }
 
-    private boolean newPositionOverlaps(RectanglePlus r1, RectanglePlus r2) {
-        Vector3 newPos1 = r1.newPosition;
-        return newPos1.x < r2.getX() + r2.getWidth()
-            && newPos1.x + r1.getWidth() > r2.getX()
-            && newPos1.y < r2.getY() + r2.getHeight()
-            && newPos1.y + r1.getHeight() > r2.getY()
-            && newPos1.z < r2.getZ() + r2.getDepth()
-            && newPos1.z + r1.getDepth() > r2.getZ();
+    private boolean overlapsPlusDistance(final RectanglePlus r1, final RectanglePlus r2) {
+        float distance = 0.5f;
+        return r1.getX() - distance < r2.getX() + r2.getWidth() + distance
+            && r1.getX() + distance + r1.getWidth() > r2.getX() - distance
+            && r1.getY() - distance < r2.getY() + r2.getHeight() + distance
+            && r1.getY() + distance + r1.getHeight() > r2.getY() - distance
+            && r1.getZ() - distance < r2.getZ() + r2.getDepth() + distance
+            && r1.getZ() + distance + r1.getDepth() > r2.getZ() - distance;
     }
 
     public boolean checkCollisions(final RectanglePlus rect, final List<RectanglePlus> nearestRects) {
