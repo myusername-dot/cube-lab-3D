@@ -4,6 +4,7 @@ import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.math.Vector3;
 import io.github.labyrinthgenerator.pages.game3d.chunks.Chunk;
+import io.github.labyrinthgenerator.pages.game3d.constants.Constants;
 import io.github.labyrinthgenerator.pages.game3d.entities.Entity;
 import io.github.labyrinthgenerator.pages.game3d.entities.player.Player;
 import io.github.labyrinthgenerator.pages.game3d.screens.GameScreen;
@@ -58,7 +59,7 @@ public class EntityManager {
     }
 
     public List<Entity> getNearestEntities(Vector3 playersPos) {
-        List<Chunk> nearestChunks = chunkMan.getNearestChunks(playersPos);
+        List<Chunk> nearestChunks = chunkMan.getNearestChunks(playersPos, Constants.CHUNKS_UPDATE_RANGE_AROUND_CAM);
         if (nearestChunks == null || nearestChunks.isEmpty()) {
             throw new NullPointerException("nearestChunks == null || nearestChunks.isEmpty() at position " + playersPos + ".");
         }
@@ -93,7 +94,7 @@ public class EntityManager {
     }
 
     public void render3DAllEntities(final ModelBatch mdlBatch, final Environment env, final float delta, final Vector3 pos, boolean nearest) {
-        Collection<Chunk> chunks = nearest ? chunkMan.getNearestChunks(pos) : entitiesByChunks.keySet();
+        Collection<Chunk> chunks = nearest ? chunkMan.getNearestChunks(pos, Constants.CHUNKS_RANGE_AROUND_CAM) : entitiesByChunks.keySet();
         for (Chunk chunk : chunks) {
             if (!entitiesByChunks.containsKey(chunk)) {
                 //log.warn("Method render3DAllEntities: !entitiesByChunks.containsKey(chunk).");
@@ -113,7 +114,7 @@ public class EntityManager {
             startTransaction();
             screen.game.getRectMan().joinTransaction(transactionId);
 
-            List<Chunk> nearestChunks = chunkMan.getNearestChunks(pos);
+            List<Chunk> nearestChunks = chunkMan.getNearestChunks(pos, Constants.CHUNKS_UPDATE_RANGE_AROUND_CAM);
             executeTickInParallel(nearestChunks, delta);
 
             screen.game.getRectMan().commitTransaction();
