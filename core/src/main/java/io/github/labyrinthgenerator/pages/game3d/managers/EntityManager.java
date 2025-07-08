@@ -93,9 +93,9 @@ public class EntityManager {
     }
 
     public void render3DAllEntities(final ModelBatch mdlBatch, final Environment env, final float delta, final Vector3 pos) {
-        for (Chunk chunk : entitiesByChunks.keySet()) {
+        for (Chunk chunk : chunkMan.getNearestChunks(pos)) {
             if (!entitiesByChunks.containsKey(chunk)) {
-                log.warn("Method render3DAllEntities: !entitiesByChunks.containsKey(chunk).");
+                //log.warn("Method render3DAllEntities: !entitiesByChunks.containsKey(chunk).");
                 continue;
             }
             for (final Entity ent : entitiesByChunks.get(chunk).keySet()) {

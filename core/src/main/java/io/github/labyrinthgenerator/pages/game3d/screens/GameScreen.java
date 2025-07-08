@@ -121,7 +121,7 @@ public abstract class GameScreen implements Screen {
         cam.position.set(pos.x, pos.y, pos.z);
         cam.lookAt(lookAt.add(pos));
         cam.near = 0.01f;
-        cam.far = 100f;
+        cam.far = 10f;
         cam.update();
     }
 

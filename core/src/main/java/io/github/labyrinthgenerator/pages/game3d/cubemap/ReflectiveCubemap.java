@@ -42,7 +42,7 @@ public class ReflectiveCubemap {
         camFb.position.set(0, HALF_UNIT, 0);
         camFb.lookAt(0, HALF_UNIT, 1);
         camFb.near = 0.01f;
-        camFb.far = 10f;
+        camFb.far = 5f;
         camFb.update();
 
         fb = new FrameBufferCubemap(Pixmap.Format.RGB888, fboWidth, fboHeight, true);
