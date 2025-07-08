@@ -32,13 +32,14 @@ public class Player extends Entity {
     private final float cameraRotationSpeed = 25f;
     private boolean headbob = false;
     private boolean verticalCameraMovement = false;
-    private float camY = 0f;
+    private float camY = HALF_UNIT; // camera y bug, should be -HALF_UNIT
 
     private final float playerMoveSpeed = 4f;
     private final float acceleration = 10f;
     private final float deceleration = 10f;
 
     private final float jumpStrength = 8.0f;
+
     private boolean isOnGround = true;
 
     private float velocityY = 0f;
@@ -236,7 +237,10 @@ public class Player extends Entity {
             headbob = false;
         }
 
-        Vector3 velocity = adjustVecForGravity(gravityDirection, new Vector3(horizontalVelocity.x, velocityY, horizontalVelocity.y));
+        Vector3 velocity = adjustVecForGravity(
+            gravityDirection,
+            new Vector3(horizontalVelocity.x, velocityY, horizontalVelocity.y)
+        );
 
         Vector3 newPosition = new Vector3(
             rect.getX() + velocity.x * delta,
@@ -244,13 +248,68 @@ public class Player extends Entity {
             rect.getZ() + velocity.z * delta
         );
 
-        if (newPosition.y > rect.getHeight() / 2f) { // fixme
+        if (newPosition.y >= rect.getHeight() / 2f) { // fixme
             newPosition.y = rect.getHeight() / 2f;
             isOnGround = true;
             velocityY = 0f;
         }
 
         rect.newPosition.set(newPosition.x, newPosition.y, newPosition.z);
+    }
+
+    @Override
+    public void tick(final float delta) {
+
+        if (!cheats) {
+            screen.checkOverlaps(rect);
+        } else {
+            rect.setX(rect.newPosition.x);
+            rect.setY(rect.newPosition.y);
+            rect.setZ(rect.newPosition.z);
+        }
+
+        setPosition(
+            rect.getX() + rect.getWidth() / 2f,
+            rect.getY() - rect.getHeight() / 2f,
+            rect.getZ() + rect.getDepth() / 2f
+        );
+        setCamPosition();
+
+        rect.oldPosition.set(rect.getPosition());
+    }
+
+    @Override
+    public void onCollision(final RectanglePlus otherRect) {
+        super.onCollision(otherRect);
+
+        if (collidedEntity instanceof Firefly) {
+            ((Firefly) collidedEntity).switchTexture(Firefly.Color.GREEN);
+        }
+
+		/*if (otherRect.filter == RectanglePlusFilter.ITEM) {
+			((PlayScreen) screen).playItemSound();
+		}*/
+    }
+
+    @Override
+    public void render3D(final ModelBatch mdlBatch, final Environment env, final float delta) {
+        super.render3D(mdlBatch, env, delta);
+    }
+
+    @Override
+    public void beforeTick() {
+        log.debug("Start tick player thread id: " + Thread.currentThread().getId() + ".");
+        super.beforeTick();
+    }
+
+    @Override
+    public void afterTick() {
+        super.afterTick();
+        log.debug("End tick player thread id: " + Thread.currentThread().getId() + ".");
+    }
+
+    private float round(float v, int dims) {
+        return (int) (v * dims) / (float) dims;
     }
 
     public static Vector3 adjustVecForGravity(Vector3f gravityDirection, Vector3 in) {
@@ -309,51 +368,12 @@ public class Player extends Entity {
         return horizontalForwardVelocity.cpy();
     }
 
-    @Override
-    public void onCollision(final RectanglePlus otherRect) {
-        super.onCollision(otherRect);
-
-        if (collidedEntity instanceof Firefly) {
-            ((Firefly) collidedEntity).switchTexture(Firefly.Color.GREEN);
-        }
-
-		/*if (otherRect.filter == RectanglePlusFilter.ITEM) {
-			((PlayScreen) screen).playItemSound();
-		}*/
+    public float getVerticalVelocity() {
+        return velocityY;
     }
 
-    @Override
-    public void render3D(final ModelBatch mdlBatch, final Environment env, final float delta) {
-        super.render3D(mdlBatch, env, delta);
-    }
-
-    @Override
-    public void tick(final float delta) {
-
-        if (!cheats) {
-            screen.checkOverlaps(rect, delta);
-        } else {
-            rect.setX(rect.newPosition.x);
-            rect.setY(rect.newPosition.y);
-            rect.setZ(rect.newPosition.z);
-        }
-
-        setPosition(rect.getX() + rect.getWidth() / 2f, rect.getY() - rect.getHeight() / 2f, rect.getZ() + rect.getDepth() / 2f);
-        setCamPosition();
-
-        rect.oldPosition.set(rect.getPosition());
-    }
-
-    @Override
-    public void beforeTick() {
-        log.debug("Start tick player thread id: " + Thread.currentThread().getId() + ".");
-        super.beforeTick();
-    }
-
-    @Override
-    public void afterTick() {
-        super.afterTick();
-        log.debug("End tick player thread id: " + Thread.currentThread().getId() + ".");
+    public boolean isOnGround() {
+        return isOnGround;
     }
 
 	/*private void useUsableInterface(final IUsable usableInterface) {

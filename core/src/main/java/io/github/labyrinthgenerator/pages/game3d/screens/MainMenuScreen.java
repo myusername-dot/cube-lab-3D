@@ -102,7 +102,7 @@ public class MainMenuScreen extends GameScreen {
     }*/
 
     private void setupCamera() {
-        Vector3 pos = getPlayerSpawnPosition();
+        Vector3 pos = getPlayerSpawnPosition().add(0, HALF_UNIT, 0);
         Vector3 lookAt = new Vector3(0, 0, -1);
         currentCam = new PerspectiveCamera(70, WINDOW_WIDTH, WINDOW_HEIGHT);
         setupCamera(currentCam, pos, lookAt);

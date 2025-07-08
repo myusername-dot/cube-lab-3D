@@ -1,6 +1,5 @@
 package io.github.labyrinthgenerator.pages.game3d.rect;
 
-import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
 import io.github.labyrinthgenerator.pages.game3d.managers.RectManager;
 import io.github.labyrinthgenerator.pages.game3d.rect.filters.RectanglePlusFilter;
@@ -12,8 +11,6 @@ public class RectanglePlus {
     private static final AtomicInteger maxId = new AtomicInteger(0);
     public final int id;
     private static final long serialVersionUID = 6589196508238637331L;
-
-    public Rectangle rectangle;
 
     private float x, y, z;
     private final float width, height, depth;
@@ -35,7 +32,6 @@ public class RectanglePlus {
         this.width = width;
         this.height = height;
         this.depth = depth;
-        rectangle = new Rectangle(x, z, width, depth);
 
         this.connectedEntityId = connectedEntityId;
         this.filter = filter;
@@ -55,7 +51,6 @@ public class RectanglePlus {
         this.x = x;
         this.y = y;
         this.z = z;
-        rectangle.setPosition(x, z);
 
         return this;
     }
@@ -64,7 +59,6 @@ public class RectanglePlus {
         x += v.x;
         y += v.y;
         z += v.z;
-        rectangle.setPosition(x, z);
 
         return this;
     }
@@ -91,12 +85,10 @@ public class RectanglePlus {
 
     public void setX(float x) {
         this.x = x;
-        rectangle.x = x;
     }
 
     public void setZ(float z) {
         this.z = z;
-        rectangle.y = z;
     }
 
     public float getWidth() {

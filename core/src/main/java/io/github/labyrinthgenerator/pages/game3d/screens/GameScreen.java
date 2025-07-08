@@ -37,12 +37,12 @@ public abstract class GameScreen implements Screen {
         game.getEntMan().setScreen(this);
     }
 
-    public void checkOverlaps(final RectanglePlus rect, final float delta) {
+    public void checkOverlaps(final RectanglePlus rect) {
         List<RectanglePlus> nearestRects = game.getRectMan().getNearestRectsByFilters(currentCam.position, rect);
 
-        boolean overlaps = checkOverlapX(rect, nearestRects, delta);
-        overlaps = overlaps || checkOverlapY(rect, nearestRects, delta);
-        overlaps = overlaps || checkOverlapZ(rect, nearestRects, delta);
+        boolean overlaps = checkOverlapX(rect, nearestRects);
+        overlaps = overlaps || checkOverlapY(rect, nearestRects);
+        overlaps = overlaps || checkOverlapZ(rect, nearestRects);
 
         rect.overlaps = overlaps;
     }
@@ -50,7 +50,7 @@ public abstract class GameScreen implements Screen {
     /**
      * Check for overlap in angle X.
      */
-    private boolean checkOverlapX(final RectanglePlus rect, List<RectanglePlus> nearestRects, final float delta) {
+    private boolean checkOverlapX(final RectanglePlus rect, List<RectanglePlus> nearestRects) {
         boolean overlaps = false;
         rect.setX(rect.newPosition.x);
 
@@ -67,7 +67,7 @@ public abstract class GameScreen implements Screen {
     /**
      * Check for overlap in angle X.
      */
-    private boolean checkOverlapY(final RectanglePlus rect, List<RectanglePlus> nearestRects, final float delta) {
+    private boolean checkOverlapY(final RectanglePlus rect, List<RectanglePlus> nearestRects) {
         boolean overlaps = false;
         rect.setY(rect.newPosition.y);
 
@@ -84,7 +84,7 @@ public abstract class GameScreen implements Screen {
     /**
      * Check for overlap in angle Z.
      */
-    private boolean checkOverlapZ(final RectanglePlus rect, List<RectanglePlus> nearestRects, final float delta) {
+    private boolean checkOverlapZ(final RectanglePlus rect, List<RectanglePlus> nearestRects) {
         boolean overlaps = false;
         rect.setZ(rect.newPosition.z);
 
@@ -137,7 +137,7 @@ public abstract class GameScreen implements Screen {
     public Vector3 getPlayerSpawnPosition() {
         return new Vector3(
             game.getMapBuilder().mapLoadSpawnPosition.x + HALF_UNIT - (HALF_UNIT / 2f) / 2f,
-            HALF_UNIT,
+            0,
             game.getMapBuilder().mapLoadSpawnPosition.y + HALF_UNIT - (HALF_UNIT / 2f) / 2f
         );
     }

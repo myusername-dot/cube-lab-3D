@@ -92,7 +92,7 @@ public class Firefly extends Enemy {
     public void tick(final float delta) {
         ai.tick(delta);
 
-        screen.checkOverlaps(rect, delta);
+        screen.checkOverlaps(rect);
 
         setPosition(
             rect.getX() + rect.getWidth() / 2f,
