@@ -33,6 +33,8 @@ public class ReflectiveCubemap {
 
     private final CubeLab3D game;
 
+    private final int fboWidth = 256, fboHeight = 256;
+
     public ReflectiveCubemap(final Vector3 position, float radius, CubeLab3D game) {
         this.game = game;
 
@@ -43,7 +45,7 @@ public class ReflectiveCubemap {
         camFb.far = 10f;
         camFb.update();
 
-        fb = new FrameBufferCubemap(Pixmap.Format.RGB888, 256, 256, true);
+        fb = new FrameBufferCubemap(Pixmap.Format.RGB888, fboWidth, fboHeight, true);
         fb.getColorBufferTexture().setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
 
         cubemap = fb.getColorBufferTexture();
@@ -118,7 +120,7 @@ public class ReflectiveCubemap {
 
         game.getScreen().setCurrentCam(camFb);
 
-        Gdx.gl.glViewport(0, 0, Gdx.graphics.getBackBufferWidth(), Gdx.graphics.getBackBufferHeight());
+        Gdx.gl.glViewport(0, 0, fboWidth, fboHeight);
         Gdx.gl.glDisable(GL20.GL_SCISSOR_TEST);
 
         fb.begin();
