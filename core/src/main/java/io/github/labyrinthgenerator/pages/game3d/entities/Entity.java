@@ -49,33 +49,37 @@ public abstract class Entity {
 
     public void setPosition(Vector3 newPosition) {
         position.set(newPosition);
-        if (!chunk.contains(position.x, position.y, position.z)) {
+        if (!chunk.contains(position.x, position.y, position.z) && canUpdateChunk()) {
             updateChunk();
         }
     }
 
     public void setPosition(float x, float y, float z) {
         position.set(x, y, z);
-        if (!chunk.contains(position.x, position.y, position.z)) {
+        if (!chunk.contains(position.x, position.y, position.z) && canUpdateChunk()) {
             updateChunk();
         }
     }
 
     public void addToPosition(float x, float y, float z) {
         position.add(x, y, z);
-        if (!chunk.contains(position.x, position.y, position.z)) {
+        if (!chunk.contains(position.x, position.y, position.z) && canUpdateChunk()) {
             updateChunk();
         }
     }
 
-    public synchronized void updateChunk() {
-        if (isDestroyed) return;
+    public boolean canUpdateChunk() {
+        if (isDestroyed) return false;
         Vector3i worldSize = chunkMan.getWorldSize();
         if (position.x < 0 || position.y > 0 || position.z < 0 ||
             position.x > worldSize.x || position.y < worldSize.y || position.z > worldSize.z) {
             //log.warn("Entity id: " + id + " position " + position + " out of bounds.");
-            return;
+            return false;
         }
+        return true;
+    }
+
+    public synchronized void updateChunk() {
         if (chunk != chunkMan.get(chunk.x, chunk.y, chunk.z)) {
             throw new RuntimeException("Entity id: " + id + ", method updateChunk(), " + chunk + " is invalid.");
         }
