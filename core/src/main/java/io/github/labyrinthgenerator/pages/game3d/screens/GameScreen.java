@@ -40,11 +40,17 @@ public abstract class GameScreen implements Screen {
     public void checkOverlaps(final RectanglePlus rect) {
         List<RectanglePlus> nearestRects = game.getRectMan().getNearestRectsByFilters(currentCam.position, rect);
 
-        boolean overlaps = checkOverlapX(rect, nearestRects);
-        overlaps = overlaps || checkOverlapY(rect, nearestRects);
-        overlaps = overlaps || checkOverlapZ(rect, nearestRects);
+        boolean overlapsX = checkOverlapX(rect, nearestRects);
+        boolean overlapsY = checkOverlapY(rect, nearestRects);
+        boolean overlapsZ = checkOverlapZ(rect, nearestRects);
 
-        rect.overlaps = overlaps;
+        if (overlapsX) rect.newPosition.x = rect.oldPosition.x;
+        if (overlapsY) rect.newPosition.y = rect.oldPosition.y;
+        if (overlapsZ) rect.newPosition.z = rect.oldPosition.z;
+
+        rect.set(rect.newPosition);
+
+        rect.overlaps = overlapsX || overlapsY || overlapsZ;
     }
 
     /**
@@ -57,15 +63,14 @@ public abstract class GameScreen implements Screen {
         // остановка у стен
         if (game.getRectMan().checkCollisions(rect, nearestRects)) {
             overlaps = true;
-            rect.newPosition.x = rect.oldPosition.x;
         }
 
-        rect.setX(rect.newPosition.x);
+        rect.setX(rect.oldPosition.x);
         return overlaps;
     }
 
     /**
-     * Check for overlap in angle X.
+     * Check for overlap in angle Y.
      */
     private boolean checkOverlapY(final RectanglePlus rect, List<RectanglePlus> nearestRects) {
         boolean overlaps = false;
@@ -74,10 +79,9 @@ public abstract class GameScreen implements Screen {
         // остановка у стен
         if (game.getRectMan().checkCollisions(rect, nearestRects)) {
             overlaps = true;
-            rect.newPosition.y = rect.oldPosition.y;
         }
 
-        rect.setY(rect.newPosition.y);
+        rect.setY(rect.oldPosition.y);
         return overlaps;
     }
 
@@ -91,10 +95,9 @@ public abstract class GameScreen implements Screen {
         // остановка у стен
         if (game.getRectMan().checkCollisions(rect, nearestRects)) {
             overlaps = true;
-            rect.newPosition.z = rect.oldPosition.z;
         }
 
-        rect.setZ(rect.newPosition.z);
+        rect.setZ(rect.oldPosition.z);
         return overlaps;
     }
 

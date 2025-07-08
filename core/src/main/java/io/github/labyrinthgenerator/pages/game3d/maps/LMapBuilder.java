@@ -108,7 +108,7 @@ public class LMapBuilder {
             game.getAssMan().get(game.getAssMan().atlas01), 6 * TEXTURE_SIZE, 0, TEXTURE_SIZE, TEXTURE_SIZE);
 
         // EDGES
-        for (int edge = 0; edge < 6; edge++) {
+        for (int edge = 0; edge < 1; edge++) {
             List<String> lines = edges.get(edge);
 
             assert width == lines.get(lines.size() - 1).length();

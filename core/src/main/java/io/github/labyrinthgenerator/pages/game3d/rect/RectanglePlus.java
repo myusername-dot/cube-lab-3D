@@ -55,6 +55,14 @@ public class RectanglePlus {
         return this;
     }
 
+    public RectanglePlus set(Vector3 pos) {
+        this.x = pos.x;
+        this.y = pos.y;
+        this.z = pos.z;
+
+        return this;
+    }
+
     public RectanglePlus add(Vector3 v) {
         x += v.x;
         y += v.y;
