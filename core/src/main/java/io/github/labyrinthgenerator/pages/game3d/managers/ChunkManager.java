@@ -8,7 +8,6 @@ import io.github.labyrinthgenerator.pages.game3d.vectors.Vector3i;
 import java.util.ArrayList;
 import java.util.List;
 
-import static io.github.labyrinthgenerator.pages.game3d.constants.Constants.CHUNKS_RANGE_AROUND_CAM_CHUNK;
 import static io.github.labyrinthgenerator.pages.game3d.constants.Constants.CHUNK_SIZE;
 
 public class ChunkManager {
@@ -56,24 +55,20 @@ public class ChunkManager {
         return chunk;
     }
 
-    public List<Chunk> getNearestChunks(final Vector3 pos) {
-        return getNearestChunksInBox(pos, 0);
-    }
-
-    public List<Chunk> getNearestChunksInBox(final Vector3 pos, int offsetChunks) {
+    public List<Chunk> getNearestChunks(final Vector3 pos, int offsetChunks) {
         List<Chunk> nearestChunks = new ArrayList<>();
         Vector3i position = getChunkPosition(pos.x, pos.y, pos.z);
-        int x1 = Math.max(0, position.x - CHUNKS_RANGE_AROUND_CAM_CHUNK - offsetChunks);
-        //int y1 = Math.max(0, position.y - CHUNKS_RANGE_AROUND_CAM_CHUNK - offsetChunks);
-        int z1 = Math.max(0, position.z - CHUNKS_RANGE_AROUND_CAM_CHUNK - offsetChunks);
-        int x2 = Math.min(chunksSize.x - 1, position.x + CHUNKS_RANGE_AROUND_CAM_CHUNK + offsetChunks);
-        //int y2 = Math.min(size.y - 1, position.y + CHUNKS_RANGE_AROUND_CAM_CHUNK + offsetChunks);
-        int z2 = Math.min(chunksSize.z - 1, position.z + CHUNKS_RANGE_AROUND_CAM_CHUNK + offsetChunks);
+        int x1 = Math.max(0, position.x - offsetChunks);
+        int y1 = Math.max(0, position.y - offsetChunks / 2);
+        int z1 = Math.max(0, position.z - offsetChunks);
+        int x2 = Math.min(chunksSize.x - 1, position.x + offsetChunks);
+        int y2 = Math.min(chunksSize.y - 1, position.y + offsetChunks / 2);
+        int z2 = Math.min(chunksSize.z - 1, position.z + offsetChunks);
 
         for (int i = x1; i <= x2; i++)
-            //for (int j = y1; j <= y2; j++)
-            for (int k = z1; k <= z2; k++)
-                nearestChunks.add(chunks[i][position.y][k]);
+            for (int j = y1; j <= y2; j++)
+                for (int k = z1; k <= z2; k++)
+                    nearestChunks.add(chunks[i][j][k]);
 
         return nearestChunks;
     }

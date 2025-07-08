@@ -3,6 +3,7 @@ package io.github.labyrinthgenerator.pages.game3d.managers;
 import com.badlogic.gdx.math.Vector3;
 import io.github.labyrinthgenerator.pages.game3d.CubeLab3D;
 import io.github.labyrinthgenerator.pages.game3d.chunks.Chunk;
+import io.github.labyrinthgenerator.pages.game3d.constants.Constants;
 import io.github.labyrinthgenerator.pages.game3d.debug.MyDebugRenderer;
 import io.github.labyrinthgenerator.pages.game3d.entities.Entity;
 import io.github.labyrinthgenerator.pages.game3d.entities.player.Player;
@@ -74,7 +75,7 @@ public class RectManager {
         List<RectanglePlusFilter> filters = game.getOverlapFilterMan().getFiltersOverlap(rect.filter);
         if (filters.isEmpty()) return Collections.emptyList();
 
-        List<Chunk> nearestChunks = chunkMan.getNearestChunks(camPos);
+        List<Chunk> nearestChunks = chunkMan.getNearestChunks(camPos, Constants.CHUNKS_UPDATE_RANGE_AROUND_CAM);
         if (nearestChunks == null || nearestChunks.isEmpty()) {
             throw new NullPointerException("nearestChunks == null || nearestChunks.isEmpty() at position " + camPos + ".");
         }

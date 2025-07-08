@@ -14,10 +14,11 @@ public abstract class Constants {
     public static final int TEXTURE_SIZE = 256;
     public static final float HALF_UNIT = 0.5f;
 
-    public static final float CAMERA_FAR = 20;
+    public static final float CAMERA_FAR = 100f;
 
     public static final int CHUNK_SIZE = 10;
-    public static final int CHUNKS_RANGE_AROUND_CAM_CHUNK = MathUtils.ceil(CAMERA_FAR / CHUNK_SIZE);
+    public static final int CHUNKS_UPDATE_RANGE_AROUND_CAM = 1;
+    public static final int CHUNKS_RANGE_AROUND_CAM = MathUtils.ceil(CAMERA_FAR / CHUNK_SIZE);
 
     // FIXME this should be a constant, but when resizing the window, the transition to a new page does not work correctly
     public static int WINDOW_WIDTH;
