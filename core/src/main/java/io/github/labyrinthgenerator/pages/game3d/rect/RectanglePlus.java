@@ -118,6 +118,6 @@ public class RectanglePlus {
 
     @Override
     public String toString() {
-        return "[" + x + "," + y + "," + z + ";" + width + "," + height + "," + depth + ']';
+        return "[" + x + "," + y + "," + z + "; " + width + "," + height + "," + depth + ']';
     }
 }
