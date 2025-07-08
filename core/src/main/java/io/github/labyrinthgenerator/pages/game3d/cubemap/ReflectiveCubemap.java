@@ -49,7 +49,7 @@ public class ReflectiveCubemap {
         camFb.position.set(0, HALF_UNIT, 0);
         camFb.lookAt(0, HALF_UNIT, 1);
         camFb.near = 0.01f;
-        camFb.far = 5f;
+        camFb.far = 100f;
         camFb.update();
 
         fb = new FrameBufferCubemap(Pixmap.Format.RGB888, fboWidth, fboHeight, true);
@@ -118,9 +118,11 @@ public class ReflectiveCubemap {
     }
 
     public void updateCubemap(final ModelBatch modelBatch, final Environment env, final SkyBoxShaderProgram envCubeMap, float delta) {
+        if (renderedFirst) return; // comment this
+
         Camera currentCam = game.getScreen().getCurrentCam();
         //if (!game.getScreen().frustumCull(currentCam, reflectiveSphereMdlInst)) return;
-        if (!game.getScreen().frustumCull(currentCam, position, radius)) return;
+        if (!game.getScreen().frustumCull(currentCam, position, radius * 2)) return;
 
         MyShaderProvider myShaderProvider = game.getShaderProvider();
         Shader currentShader = myShaderProvider.currentShader;
@@ -136,14 +138,14 @@ public class ReflectiveCubemap {
             fb.getSide().getUp(camFb.up);
             fb.getSide().getDirection(camFb.direction);
             camFb.update();
-            if (/*renderedFirst && */!game.getScreen().frustumCull(camFb, currentCam.position, radius)) continue;
+            //if (renderedFirst && !game.getScreen().frustumCull(camFb, currentCam.position, radius)) continue;
 
             ScreenUtils.clear(1, 1, 1, 1, true);
 
             envCubeMap.render(camFb);
 
             modelBatch.begin(camFb);
-            game.getEntMan().render3DAllEntities(modelBatch, env, delta, camFb.position.cpy());
+            game.getEntMan().render3DAllEntities(modelBatch, env, delta, camFb.position.cpy(), false); // true
             modelBatch.end();
         }
         fb.end();
@@ -155,7 +157,7 @@ public class ReflectiveCubemap {
 
     public void render(ModelBatch modelBatch, Environment env, Camera cam) {
         // game.getScreen().frustumCull(cam, reflectiveSphereMdlInst)
-        if (game.getScreen().frustumCull(cam, position, radius)) {
+        if (game.getScreen().frustumCull(cam, position, radius * 2)) {
             modelBatch.render(reflectiveSphereMdlInst, env, game.getShaderProvider().getShader());
         }
     }
