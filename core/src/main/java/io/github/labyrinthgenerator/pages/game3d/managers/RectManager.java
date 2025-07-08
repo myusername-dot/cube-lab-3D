@@ -77,15 +77,15 @@ public class RectManager {
 
         List<RectanglePlus> nearestRects = new ArrayList<>();
         for (Chunk chunk : nearestChunks) {
+            if (!rects.containsKey(chunk)) {
+                //log.warn("Method getNearestRectsByFilters: !rects.containsKey(chunk).");
+                continue;
+            }
             for (RectanglePlusFilter filter : filters) {
-                if (!rects.containsKey(chunk)) {
-                    //log.warn("Method getNearestRectsByFilters: !rects.containsKey(chunk).");
-                    continue;
-                }
                 Map<RectanglePlus, Object> otherRects = rects.get(chunk).get(filter);
                 if (otherRects == null) continue;
                 for (final RectanglePlus otherRect : otherRects.keySet()) {
-                    if (overlapsPlusDistance(rect, otherRect)) {
+                    if (newPositionOverlaps(rect, otherRect)) {
                         nearestRects.add(otherRect);
                     }
                 }
@@ -94,17 +94,14 @@ public class RectManager {
         return nearestRects;
     }
 
-    private boolean overlapsPlusDistance(RectanglePlus r1, RectanglePlus r2) {
-        float distance = 0.1f;
-        // @formatter:off
-        return
-            r1.getX() < r2.getX() + r2.getWidth() + distance  &&
-            r1.getX() + r1.getWidth() + distance > r2.getX()  &&
-            r1.getY() < r2.getY() + r2.getHeight() + distance &&
-            r1.getY() + r1.getHeight() + distance > r2.getY() &&
-            r1.getZ() < r2.getZ() + r2.getDepth() + distance  &&
-            r1.getZ() + r1.getDepth() + distance > r2.getZ();
-        // @formatter:on
+    private boolean newPositionOverlaps(RectanglePlus r1, RectanglePlus r2) {
+        Vector3 newPos1 = r1.newPosition;
+        return newPos1.x < r2.getX() + r2.getWidth()
+            && newPos1.x + r1.getWidth() > r2.getX()
+            && newPos1.y < r2.getY() + r2.getHeight()
+            && newPos1.y + r1.getHeight() > r2.getY()
+            && newPos1.z < r2.getZ() + r2.getDepth()
+            && newPos1.z + r1.getDepth() > r2.getZ();
     }
 
     public boolean checkCollisions(final RectanglePlus rect, final List<RectanglePlus> nearestRects) {
@@ -112,7 +109,7 @@ public class RectManager {
     }
 
     private boolean checkCollision(final RectanglePlus rect, final RectanglePlus otherRect) {
-        if (otherRect != rect && rect.overlaps(otherRect)) {
+        if (!otherRect.equals(rect) && rect.overlaps(otherRect)) {
             handleCollision(rect, otherRect);
             return true;
         }
