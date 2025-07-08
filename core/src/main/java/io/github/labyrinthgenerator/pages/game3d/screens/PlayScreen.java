@@ -211,7 +211,7 @@ public class PlayScreen extends GameScreen {
     }
 
     private void renderEntities(float delta) {
-        game.getEntMan().render3DAllEntities(game.getMdlBatch(), env, delta, currentCam.position.cpy());
+        game.getEntMan().render3DAllEntities(game.getMdlBatch(), env, delta, currentCam.position.cpy(), true);
     }
 
     private void renderFinalFbo() {

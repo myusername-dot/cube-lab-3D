@@ -92,8 +92,9 @@ public class EntityManager {
         entitiesById.clear();
     }
 
-    public void render3DAllEntities(final ModelBatch mdlBatch, final Environment env, final float delta, final Vector3 pos) {
-        for (Chunk chunk : chunkMan.getNearestChunks(pos)) {
+    public void render3DAllEntities(final ModelBatch mdlBatch, final Environment env, final float delta, final Vector3 pos, boolean nearest) {
+        Collection<Chunk> chunks = nearest ? chunkMan.getNearestChunks(pos) : entitiesByChunks.keySet();
+        for (Chunk chunk : chunks) {
             if (!entitiesByChunks.containsKey(chunk)) {
                 //log.warn("Method render3DAllEntities: !entitiesByChunks.containsKey(chunk).");
                 continue;
