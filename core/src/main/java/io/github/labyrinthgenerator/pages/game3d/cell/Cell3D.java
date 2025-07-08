@@ -140,7 +140,8 @@ public class Cell3D extends Entity {
     }
 
     private void setInFrustum(final ModelInstanceBB model, final ModelBatch mdlBatch, final Environment env, final Shader shader) {
-        model.setInFrustum(screen.frustumCull(screen.getCurrentCam(), model));
+        //model.setInFrustum(screen.frustumCull(screen.getCurrentCam(), model));
+        model.setInFrustum(screen.frustumCull(screen.getCurrentCam(), getPositionImmutable(), model.radius * 2));
         if (model.isInFrustum()) {
             mdlBatch.render(model, env, shader);
         }

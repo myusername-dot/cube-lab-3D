@@ -117,6 +117,11 @@ public abstract class GameScreen implements Screen {
         return cam.frustum.sphereInFrustum(currentSpherePos, modelInst.radius);
     }
 
+    public boolean frustumCull(final Camera cam, final Vector3 pos, float radius) {
+
+        return cam.frustum.sphereInFrustum(pos, radius);
+    }
+
     public static void setupCamera(Camera cam, Vector3 pos, Vector3 lookAt) {
         cam.position.set(pos.x, pos.y, pos.z);
         cam.lookAt(lookAt.add(pos));

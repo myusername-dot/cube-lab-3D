@@ -67,7 +67,8 @@ public abstract class Enemy extends Entity {
     @Override
     public void render3D(final ModelBatch mdlBatch, final Environment env, final float delta) {
         if (mdlInst != null) {
-            mdlInst.setInFrustum(screen.frustumCull(screen.getCurrentCam(), mdlInst));
+            //mdlInst.setInFrustum(screen.frustumCull(screen.getCurrentCam(), mdlInst));
+            mdlInst.setInFrustum(screen.frustumCull(screen.getCurrentCam(), getPositionImmutable(), mdlInst.radius));
             if (mdlInst.isInFrustum()) {
                 mdlBatch.render(mdlInst, env);
             }
