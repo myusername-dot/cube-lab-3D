@@ -69,7 +69,6 @@ public class PlayScreen extends GameScreen {
             HALF_UNIT / 2f, HALF_UNIT * 2f, HALF_UNIT / 2f,
             this
         );
-        setCurrentCam(player.playerCam);
         viewport.setCamera(currentCam);
 
         Gdx.input.setCursorCatched(true);
