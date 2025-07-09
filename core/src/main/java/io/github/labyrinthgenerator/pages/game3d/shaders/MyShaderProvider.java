@@ -61,6 +61,10 @@ public class MyShaderProvider extends Tickable implements ShaderProvider {
         currentShader = fogFreeLightShader;
     }
 
+    public CubeLab3D getGame() {
+        return game;
+    }
+
     public Player getPlayer() {
         return game.getScreen().getPlayer();
     }

@@ -12,6 +12,7 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 import io.github.labyrinthgenerator.pages.game3d.entities.player.Player;
 import io.github.labyrinthgenerator.pages.game3d.mesh.NormalMapAttribute;
+import io.github.labyrinthgenerator.pages.game3d.vectors.Vector3i;
 import io.github.labyrinthgenerator.pages.light.PointLightPlus;
 import lombok.extern.slf4j.Slf4j;
 
@@ -55,6 +56,7 @@ public class FogFreeShader extends SpotLightFreeShader {
             "    aPosition = a_position;\n" +
             "    v_normal = a_normal;\n" +
             "    worldPosition = (u_worldTrans * a_position).xyz;\n" +
+            "    worldPosition.y -= 1.0;\n" +
             "\n" +
             "\n" + // Вычисляем расстояние до камеры
             "    clip2Distance = length(vec3(position.x, min(0.0, position.y * 4.0), position.z));\n" + // todo FIXME
@@ -93,6 +95,7 @@ public class FogFreeShader extends SpotLightFreeShader {
             "uniform vec3 u_cameraPosition;\n" +
             "uniform vec4 u_fogColor;\n" +
             "uniform vec2 u_fogVelocity;\n" +
+            "uniform vec3 u_worldSize;\n" +
             "uniform float u_time;\n" +
             "\n" +
             "varying vec4 position;\n" + // Передаем gl_Position
@@ -125,7 +128,13 @@ public class FogFreeShader extends SpotLightFreeShader {
             "       c = texture2D(u_texture, v_texCoords0);" +
             "    }\n" +
             "\n" +
-            "    float heightFactor = max(0.0, (worldPosition.y - 0.5) * 1.6);\n" + // 0..1 -> 0..0.5 * 1.6
+            "    float heightFactor = max(0.5 + worldPosition.y, 0.0);\n" + // bottom
+            "    heightFactor = max(0.5 + u_worldSize.y - worldPosition.y, heightFactor);\n" + // top
+            "    heightFactor = max(0.5 - worldPosition.x - 1.0, heightFactor);\n" + // forward
+            "    heightFactor = max(0.5 + worldPosition.x - u_worldSize.x, heightFactor);\n" + // back
+            "    heightFactor = max(0.5 - worldPosition.z - 1.0, heightFactor);\n" + // left
+            "    heightFactor = max(0.5 + worldPosition.z - u_worldSize.z, heightFactor);\n" + // right
+            "    heightFactor *= 1.6;\n" +
             "\n" +
             "    float longWave = clamp(\n" +
             "        sin(aPosition.x + aPosition.z + u_time) * sqrt(heightFactor) * 0.5, \n" +
@@ -218,6 +227,9 @@ public class FogFreeShader extends SpotLightFreeShader {
         //program.setUniformi("u_normalMap", 2);
         program.setUniformf("u_spotCutoff", cutoffAngle);
         setFogUniforms(playerVelocity);
+        Vector3i worldSize = myShaderProvider.getGame().getChunkMan().getWorldSize();
+        float[] worldSizeF = new float[]{worldSize.x + 1f, worldSize.y + 1f, worldSize.z + 1f};
+        program.setUniform3fv("u_worldSize", worldSizeF, 0, 3);
         float[] cameraPosition = new float[]{camera.position.x, camera.position.y, camera.position.z};
         program.setUniform3fv("u_cameraPosition", cameraPosition, 0, 3);
         context.begin();
