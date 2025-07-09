@@ -144,6 +144,7 @@ public class Cell3D extends Entity {
     private void setInFrustum(final ModelInstanceBB model, final ModelBatch mdlBatch, final Environment env, final Shader shader) {
         //model.setInFrustum(screen.frustumCull(screen.getCurrentCam(), model));
         model.setInFrustum(screen.frustumCull(screen.getCurrentCam(), getPositionImmutable(), model.radius * 3));
+        isInFrustum = isInFrustum || model.isInFrustum();
         if (model.isInFrustum()) {
             mdlBatch.render(model, env, shader);
         }
@@ -152,6 +153,7 @@ public class Cell3D extends Entity {
     @Override
     public void render3D(final ModelBatch mdlBatch, final Environment env, final float delta) {
         Shader shader = screen.game.getShaderProvider().getShader();
+        isInFrustum = false;
 
         // @formatter:off
         if (hasWallNorth) setInFrustum(mdlInstWallNorth, mdlBatch, env, shader);

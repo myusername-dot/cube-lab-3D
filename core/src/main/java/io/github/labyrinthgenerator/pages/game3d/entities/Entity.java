@@ -28,6 +28,7 @@ public abstract class Entity {
 
     protected boolean shouldTick = true;
     protected boolean render3D = true;
+    protected boolean isInFrustum = false;
 
     protected volatile boolean isTick = false;
     protected volatile long transactionId = -1;
@@ -136,6 +137,10 @@ public abstract class Entity {
 
     public boolean shouldRender3D() {
         return render3D;
+    }
+
+    public boolean isInFrustum() {
+        return isInFrustum;
     }
 
     public boolean shouldTick() {

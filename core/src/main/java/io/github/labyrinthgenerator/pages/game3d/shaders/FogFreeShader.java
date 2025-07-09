@@ -24,7 +24,6 @@ import static io.github.labyrinthgenerator.pages.game3d.shaders.MyShaderProvider
 public class FogFreeShader extends SpotLightFreeShader {
 
     public float fogBaseDensity = 1.0f;
-    public float fogDistance = 1.0f;
     private float timer;
 
     private final boolean lightingFlag;
@@ -60,7 +59,7 @@ public class FogFreeShader extends SpotLightFreeShader {
             "\n" + // Вычисляем расстояние до камеры
             "    clip2Distance = length(vec3(position.x, min(0.0, position.y * 4.0), position.z));\n" + // todo FIXME
             "\n" + // Вычисляем фактор плотности тумана
-            "    fogClipDistanceFactor = (u_fogDensity * length(position) / 16);\n" +
+            "    fogClipDistanceFactor = (u_fogDensity * length(position) / 50.0);\n" +
             "\n" +
             "    vec3 lightPosition  = (position).xyz;\n" +
             "    vec3 spotDirection  = normalize(lightPosition + vec3(0,0,1));\n" +
@@ -105,11 +104,11 @@ public class FogFreeShader extends SpotLightFreeShader {
             "varying float fogClipDistanceFactor;\n" +
             "\n" +
             "#if defined(lightingFlag)\n" +
-            "uniform vec3 u_pointLights[NUM_LIGHTS];\n" +
-            "uniform float u_pointLightsDistance[NUM_LIGHTS];\n" +
-            "uniform vec3 u_pointLightsScreen[NUM_LIGHTS];\n" +
-            "uniform vec4 u_pointLightColors[NUM_LIGHTS];\n" +
-            "uniform int u_pointLightsSize;\n" +
+            "    uniform vec3 u_pointLights[NUM_LIGHTS];\n" +
+            "    uniform float u_pointLightsDistance[NUM_LIGHTS];\n" +
+            "    uniform vec3 u_pointLightsScreen[NUM_LIGHTS];\n" +
+            "    uniform vec4 u_pointLightColors[NUM_LIGHTS];\n" +
+            "    uniform int u_pointLightsSize;\n" +
             "#endif\n" +
             "\n" +
             "void main(void)\n" +
@@ -132,7 +131,7 @@ public class FogFreeShader extends SpotLightFreeShader {
             "        sin(aPosition.x + aPosition.z + u_time) * sqrt(heightFactor) * 0.5, \n" +
             "    0.0, 1.0);\n" +
             "\n" +
-            "    float fogFactor = clamp((fogClipDistanceFactor * sqrt(heightFactor) + heightFactor + longWave), 0.0, 0.8);\n" +
+            "    float fogFactor = clamp(fogClipDistanceFactor + heightFactor + longWave, 0.0, 0.8);\n" +
             "\n" +
             "\n" + // Логика для смещения радиуса тумана
             "    float radius = length(u_fogVelocity / 2.0);\n" +
@@ -318,8 +317,8 @@ public class FogFreeShader extends SpotLightFreeShader {
                 Vector3 playerPos = player.getPositionImmutable();
                 float distance = rendPos.dst(playerPos);
                 if (distance < MAX_LIGHT_RENDERING_DISTANCE) {
-                    float angle = myShaderProvider.getViewAngle(player.playerCam, rendPos);
-                    pointLights = myShaderProvider.getPointLightsByPlayerDistAndCamAngle(distance, angle);
+                    //float angle = myShaderProvider.getViewAngle(player.playerCam, rendPos);
+                    pointLights = myShaderProvider.getPointLightsByPlayerDistAndCamAngle(distance, 0);
                 }
             }
         }
