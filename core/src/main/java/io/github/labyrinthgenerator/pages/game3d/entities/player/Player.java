@@ -5,6 +5,8 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
+import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import io.github.labyrinthgenerator.pages.game3d.debug.MyDebugRenderer;
@@ -38,6 +40,9 @@ public class Player extends Entity {
     private boolean verticalCameraMovement = false;
     private boolean jumping = false;
     private boolean cheats = false;
+
+    private float currentVerticalAngle = 0f;
+    private static final float MAX_VERTICAL_ANGLE = 80f;
 
     private final float playerMoveSpeed = 4f;
     private final float acceleration = 10f;
@@ -100,9 +105,21 @@ public class Player extends Entity {
 
     private void rotateCamVertical(float delta) {
         float angle = Gdx.input.getDeltaY() * -cameraRotationSpeed * delta;
+
+        float newVerticalAngle = currentVerticalAngle + angle;
+
+        if (newVerticalAngle > MAX_VERTICAL_ANGLE) {
+            newVerticalAngle = MAX_VERTICAL_ANGLE;
+        } else if (newVerticalAngle < -MAX_VERTICAL_ANGLE) {
+            newVerticalAngle = -MAX_VERTICAL_ANGLE;
+        }
+
+        // Вычисляем угол, который необходимо применить
+        angle = newVerticalAngle - currentVerticalAngle;
+        currentVerticalAngle = newVerticalAngle;
+
         Vector3 axis = new Vector3(playerCam.direction.z, 0f, -playerCam.direction.x);
         playerCam.rotate(axis, angle);
-
         debugCam.rotate(axis, -angle);
     }
 
