@@ -27,9 +27,9 @@ public class GravityControl {
         new Vector3( -1, -1,  1),  // left
     };
 
-    public static final Vector3[] sclMask = new Vector3[]{
+    public static final Vector3[] sclAddMask = new Vector3[]{
         new Vector3( -1, -1, -1),  // down
-        new Vector3( -1,  0, -1),  // up
+        new Vector3( -1,  2, -1),  // up
         new Vector3( -1,  0,  0),  // forward
         new Vector3(  0,  0, -1),  // back
         new Vector3( -1,  0,  0),  // right
