@@ -12,12 +12,9 @@ import com.badlogic.gdx.graphics.g3d.model.Node;
 import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
 import io.github.labyrinthgenerator.pages.game3d.entities.Entity;
-import io.github.labyrinthgenerator.pages.game3d.entities.player.Player;
-import io.github.labyrinthgenerator.pages.game3d.gravity.GravityControl;
-import io.github.labyrinthgenerator.pages.game3d.gravity.GravityDir;
+import io.github.labyrinthgenerator.pages.game3d.gravity.GravityControls;
 import io.github.labyrinthgenerator.pages.game3d.models.ModelInstanceBB;
 import io.github.labyrinthgenerator.pages.game3d.screens.GameScreen;
-import io.github.labyrinthgenerator.pages.game3d.vectors.Vector3f;
 
 public class Cell3D extends Entity {
     private Model mdlWallNorth;
@@ -69,52 +66,40 @@ public class Cell3D extends Entity {
         return modelInstanceBB;
     }
 
-    public void buildCell(GravityDir gravityDirection) {
+    public void buildCell() {
         // @formatter:off
-        if (hasWallNorth) mdlInstWallNorth = createWallInstance(mdlWallNorth, texRegNorth, gravityDirection, getPositionImmutable());
-        if (hasWallSouth) mdlInstWallSouth = createWallInstance(mdlWallSouth, texRegSouth, gravityDirection, getPositionImmutable());
-        if (hasWallWest ) mdlInstWallWest  = createWallInstance(mdlWallWest, texRegWest, gravityDirection, getPositionImmutable());
-        if (hasWallEast ) mdlInstWallEast  = createWallInstance(mdlWallEast, texRegEast, gravityDirection, getPositionImmutable());
-        if (hasFloor    ) mdlInstFloor     = createFloorOrCeilingInstance(mdlFloor, texRegFloor, gravityDirection, getPositionImmutable());
-        if (hasCeiling  ) mdlInstCeiling   = createFloorOrCeilingInstance(mdlCeiling, texRegCeiling, gravityDirection, getPositionImmutable());
+        if (hasWallNorth) mdlInstWallNorth = createWallInstance(mdlWallNorth, texRegNorth, getPositionImmutable());
+        if (hasWallSouth) mdlInstWallSouth = createWallInstance(mdlWallSouth, texRegSouth, getPositionImmutable());
+        if (hasWallWest ) mdlInstWallWest  = createWallInstance(mdlWallWest, texRegWest, getPositionImmutable());
+        if (hasWallEast ) mdlInstWallEast  = createWallInstance(mdlWallEast, texRegEast, getPositionImmutable());
+        if (hasFloor    ) mdlInstFloor     = createFloorOrCeilingInstance(mdlFloor, texRegFloor, getPositionImmutable());
+        if (hasCeiling  ) mdlInstCeiling   = createFloorOrCeilingInstance(mdlCeiling, texRegCeiling, getPositionImmutable());
         // @formatter:on
     }
 
-    private ModelInstanceBB createWallInstance(
-        Model model, Texture texture,
-        GravityDir gravityDirection,
-        Vector3 position) {
+    private ModelInstanceBB createWallInstance(Model model, Texture texture, Vector3 position) {
 
         ModelInstanceBB instance = createModelInstanceBB(model, texture, position);
-        transformMdlInstVertsAndNormal(instance, gravityDirection);
+        transformMdlInstVertsAndNormal(instance);
         instance.transform.setToTranslation(position);
         return instance;
     }
 
-    private ModelInstanceBB createFloorOrCeilingInstance(
-        Model model, Texture texture,
-        GravityDir gravityDirection,
-        Vector3 position) {
+    private ModelInstanceBB createFloorOrCeilingInstance(Model model, Texture texture, Vector3 position) {
 
         ModelInstanceBB instance = createModelInstanceBB(model, texture, position);
-        transformMdlInstVertsAndNormal(instance, gravityDirection);
+        transformMdlInstVertsAndNormal(instance);
         instance.transform.setToTranslation(position);
         return instance;
     }
 
-    private void transformMdlInstVertsAndNormal(ModelInstanceBB instance, GravityDir gravityDirection) {
+    private void transformMdlInstVertsAndNormal(ModelInstanceBB instance) {
         Node node = instance.nodes.get(0);
 
-        node.translation.set(GravityControl.adjustVecForGravity(
-            gravityDirection,
-            node.translation
-        ));
+        node.translation.set(GravityControls.adjustVecForGravity(node.translation));
         Quaternion rotation = node.rotation;
         Vector3 rotationVec = new Vector3(rotation.x, rotation.y, rotation.z);
-        rotationVec = GravityControl.adjustVecForGravity(
-            gravityDirection,
-            rotationVec
-        );
+        rotationVec = GravityControls.adjustVecForGravity(rotationVec);
         rotation.set(rotationVec.x, rotationVec.y, rotationVec.z, rotation.w);
 
         MeshPart meshPart = node.parts.get(0).meshPart;
@@ -126,8 +111,7 @@ public class Cell3D extends Entity {
         // set 4 vertices // and normal
         for (int i = 0; i < meshPart.mesh.getNumVertices(); i++) {
             int corner = i * cornerLength;
-            Vector3 localVertOrNormal = GravityControl.adjustVecForGravity(
-                gravityDirection,
+            Vector3 localVertOrNormal = GravityControls.adjustVecForGravity(
                 new Vector3(vertices[corner], vertices[corner + 1], vertices[corner + 2])
             );
             // @formatter:off

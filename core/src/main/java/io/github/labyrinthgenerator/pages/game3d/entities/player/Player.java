@@ -6,13 +6,12 @@ import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import io.github.labyrinthgenerator.pages.game3d.debug.MyDebugRenderer;
 import io.github.labyrinthgenerator.pages.game3d.entities.Entity;
 import io.github.labyrinthgenerator.pages.game3d.entities.Firefly;
-import io.github.labyrinthgenerator.pages.game3d.gravity.GravityControl;
+import io.github.labyrinthgenerator.pages.game3d.gravity.GravityControls;
 import io.github.labyrinthgenerator.pages.game3d.gravity.GravityDir;
 import io.github.labyrinthgenerator.pages.game3d.rect.RectanglePlus;
 import io.github.labyrinthgenerator.pages.game3d.rect.filters.RectanglePlusFilter;
@@ -21,7 +20,8 @@ import io.github.labyrinthgenerator.pages.game3d.vectors.Vector3i;
 import lombok.extern.slf4j.Slf4j;
 
 import static io.github.labyrinthgenerator.pages.game3d.constants.Constants.*;
-import static io.github.labyrinthgenerator.pages.game3d.gravity.GravityControl.gravity;
+import static io.github.labyrinthgenerator.pages.game3d.gravity.GravityControls.currentGravity;
+import static io.github.labyrinthgenerator.pages.game3d.gravity.GravityControls.gravity;
 
 @Slf4j
 public class Player extends Entity {
@@ -56,8 +56,6 @@ public class Player extends Entity {
     private final Vector2 horizontalVelocity = new Vector2();
     private final Vector2 horizontalForwardVelocity = new Vector2();
 
-    private GravityDir gravityDir = GravityDir.DOWN;
-
     private int currentHP = 100;
     public boolean isDead = false;
     public boolean gotHit = false;
@@ -67,6 +65,8 @@ public class Player extends Entity {
     public Player(Vector3 position, float rectWidth, float rectHeight, float rectDepth, final GameScreen screen) {
         super(position, screen);
         this.debugger = screen.game.getDebugger();
+
+        currentGravity = GravityDir.DOWN;
 
         Vector3 lookAt = new Vector3(0, 0, -1);
         playerCam = new PerspectiveCamera(70, WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -90,21 +90,23 @@ public class Player extends Entity {
     }
 
     private void setCamPosition() {
-        playerCam.position.set(getPositionImmutable()
-            .add(GravityControl.adjustVecForGravity(gravityDir, new Vector3(0f, camY, 0f))));
+        playerCam.position.set(getPositionImmutable());
+            //.add(GravityControls.adjustVecForGravity(new Vector3(0f, camY, 0f))));
 
         debugCam.position.set(playerCam.position.x, -playerCam.position.y, playerCam.position.z);
     }
 
     private void rotateCamHorizontal(float delta) {
-        float angle = Gdx.input.getDeltaX() * -cameraRotationSpeed * GravityControl.getYScl(gravityDir) * delta;
-        playerCam.rotate(Vector3.Y, angle);
+        float angle = Gdx.input.getDeltaX() * -cameraRotationSpeed * GravityControls.getYScl() * delta;
+        Vector3 axis = Vector3.Y;
+        axis = GravityControls.swap(axis, false, false);
+        playerCam.rotate(axis, angle);
 
-        debugCam.rotate(Vector3.Y, angle);
+        debugCam.rotate(axis, angle);
     }
 
     private void rotateCamVertical(float delta) {
-        float angle = Gdx.input.getDeltaY() * -cameraRotationSpeed * GravityControl.getYScl(gravityDir) * delta;
+        float angle = Gdx.input.getDeltaY() * -cameraRotationSpeed * GravityControls.getYScl() * delta;
 
         float newVerticalAngle = currentVerticalAngle + angle;
 
@@ -119,30 +121,20 @@ public class Player extends Entity {
         currentVerticalAngle = newVerticalAngle;
 
         Vector3 axis = new Vector3(playerCam.direction.z, 0f, -playerCam.direction.x);
+        axis = GravityControls.swap(axis, true, true);
         playerCam.rotate(axis, angle);
         debugCam.rotate(axis, -angle);
     }
 
-    public void setGravityDirection(GravityDir gravityDir) {
-        this.gravityDir = gravityDir;//.nor(); // Нормализуем вектор
-        updateCameraRotation();
-    }
-
     private void updateCameraRotation() {
         // Поворачиваем камеру так, чтобы пол был под ногами
-        playerCam.up.set(
-            gravity[gravityDir.ord].x,
-            gravity[gravityDir.ord].y,
-            gravity[gravityDir.ord].z
-        );
-        //playerCam.direction.set(gravityDirection); // Направление камеры
+        playerCam.up.set(gravity[currentGravity.ord].vec3());
+        //playerCam.direction.set(gravity[gravityDir.ord].vec3()); // Направление камеры
+        //playerCam.direction.set(GravityControls.swap(playerCam.direction, true, true));
         playerCam.update();
 
-        debugCam.up.set(
-            gravity[gravityDir.ord].x,
-            gravity[gravityDir.ord].y,
-            gravity[gravityDir.ord].z
-        );
+        debugCam.up.set(gravity[currentGravity.ord].vec3());
+        //debugCam.direction.set(GravityControl.swap(gravityDir, debugCam.direction));
         debugCam.update();
     }
 
@@ -169,7 +161,14 @@ public class Player extends Entity {
         }
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.SHIFT_LEFT)) {
-            setGravityDirection(gravityDir == GravityDir.DOWN ? GravityDir.UP : GravityDir.DOWN);
+            GravityControls.swapYDir();
+            updateCameraRotation();
+            isOnGround = false;
+        }
+
+        if (Gdx.input.isKeyJustPressed(Input.Keys.G)) {
+            GravityControls.swapXDir();
+            updateCameraRotation();
             isOnGround = false;
         }
 
@@ -204,7 +203,7 @@ public class Player extends Entity {
 
         if (!isOnGround) {
             velocityY -= 9.81f * delta;
-            velocityY = Math.max(velocityY, -9.81f);
+            velocityY = MathUtils.clamp(velocityY, -9.81f, 9.81f);
         }
 
         if (jumping && Gdx.input.isKeyJustPressed(Input.Keys.SPACE) && isOnGround) {
@@ -212,27 +211,31 @@ public class Player extends Entity {
             isOnGround = false;
         }
 
+        // local gravity x z, inv -y
+        Vector3 localCamDir = GravityControls.swap(playerCam.direction, false, true);
+        Vector3 localUp = GravityControls.swap(playerCam.up, false, false);
+
         if (Gdx.input.isKeyPressed(Input.Keys.W)) {
-            movementDir.add(playerCam.direction.x, playerCam.direction.z);
+            movementDir.add(localCamDir.x, localCamDir.z);
             headbob = true;
         }
 
         if (Gdx.input.isKeyPressed(Input.Keys.S)) {
-            movementDir.sub(playerCam.direction.x, playerCam.direction.z);
+            movementDir.sub(localCamDir.x, localCamDir.z);
             headbob = true;
         }
 
         boolean horizontalMovement = false;
 
         if (Gdx.input.isKeyPressed(Input.Keys.A)) {
-            Vector3 rightDir = playerCam.direction.cpy().crs(playerCam.up);
+            Vector3 rightDir = localCamDir.cpy().crs(localUp);
             movementDir.sub(rightDir.x, rightDir.z);
             horizontalMovement = true;
             headbob = true;
         }
 
         if (Gdx.input.isKeyPressed(Input.Keys.D)) {
-            Vector3 rightDir = playerCam.direction.cpy().crs(playerCam.up);
+            Vector3 rightDir = localCamDir.cpy().crs(localUp);
             movementDir.add(rightDir.x, rightDir.z);
             horizontalMovement = true;
             headbob = true;
@@ -248,7 +251,7 @@ public class Player extends Entity {
         }
 
         // Ограничиваем скорость только в направлении камеры, чтобы игрока не заносило на поворотах
-        Vector3 cameraForward = playerCam.direction.cpy().nor();
+        Vector3 cameraForward = localCamDir.cpy().nor();//playerCam.direction.cpy().nor();
         float forwardVelocityScl = horizontalVelocity.cpy().dot(cameraForward.x, cameraForward.z); // Получаем скорость в направлении камеры
         cameraForward.scl(forwardVelocityScl);
         horizontalForwardVelocity.set(cameraForward.x, cameraForward.z); // Устанавливаем скорость только в направлении
@@ -266,26 +269,30 @@ public class Player extends Entity {
         }
 
         if (headbob) {
-            camY = HALF_UNIT;
+            //camY = HALF_UNIT;
             final float sinOffset = (float) (Math.sin(screen.game.getTimeSinceLaunch() * playerMoveSpeed * 4f)
                 * 0.01875f);
-            camY += sinOffset;
+            //camY += sinOffset;
 
             headbob = false;
         }
 
-        Vector3 velocity = new Vector3(horizontalVelocity.x, velocityY * GravityControl.getYScl(gravityDir), horizontalVelocity.y);
+        Vector3 velocity = GravityControls.reSwap(
+            new Vector3(horizontalVelocity.x, velocityY * GravityControls.getYScl(), horizontalVelocity.y),
+            false, true);
 
         Vector3 newPosition = new Vector3(
             rect.getX() + velocity.x * delta,
-            rect.getY() - velocity.y * delta,
+            rect.getY() + velocity.y * delta,
             rect.getZ() + velocity.z * delta
         );
 
         Vector3i worldSize = screen.game.getChunkMan().getWorldSize();
+        float clampX = MathUtils.clamp(newPosition.x, -rect.getWidth() / 2f, worldSize.x - rect.getWidth() / 2f);
         float clampY = MathUtils.clamp(newPosition.y, worldSize.y + rect.getHeight() / 2f, rect.getHeight() / 2f);
-        if (newPosition.y != clampY) {
-            newPosition.y = clampY;
+        float clampZ = MathUtils.clamp(newPosition.z, -rect.getDepth() / 2f, worldSize.z - rect.getDepth() / 2f);
+        if (newPosition.x != clampX || newPosition.y != clampY || newPosition.z != clampZ) {
+            newPosition.set(clampX, clampY, clampZ);
             isOnGround = true;
             velocityY = 0f;
         }

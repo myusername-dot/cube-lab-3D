@@ -8,7 +8,7 @@ import io.github.labyrinthgenerator.labyrinth.Labyrinth;
 import io.github.labyrinthgenerator.pages.game3d.CubeLab3D;
 import io.github.labyrinthgenerator.pages.game3d.cell.Cell3D;
 import io.github.labyrinthgenerator.pages.game3d.entities.Firefly;
-import io.github.labyrinthgenerator.pages.game3d.gravity.GravityControl;
+import io.github.labyrinthgenerator.pages.game3d.gravity.GravityControls;
 import io.github.labyrinthgenerator.pages.game3d.gravity.GravityDir;
 import io.github.labyrinthgenerator.pages.game3d.managers.ChunkManager;
 import io.github.labyrinthgenerator.pages.game3d.models.ModelMaker;
@@ -108,6 +108,8 @@ public class LMapBuilder {
             assert width == lines.get(lines.size() - 1).length();
             assert depth == lines.size();
 
+            GravityControls.currentGravity = gravityDirections[edge];
+
             Vector3 scl = new Vector3();
 
             // WALLS
@@ -121,8 +123,7 @@ public class LMapBuilder {
                     Labyrinth.LEntity entity = Labyrinth.LEntity.values()[id];
 
                     // Применяем сдвиги к координатам
-                    Vector3 cellPosition = GravityControl.adjustVecForGravity(
-                        gravityDirections[edge],
+                    Vector3 cellPosition = GravityControls.adjustVecForGravity(
                         new Vector3(i, 0, k),
                         game.getChunkMan().getWorldSize()
                     );
@@ -144,8 +145,8 @@ public class LMapBuilder {
                         currentCell3D.texRegWest = texWall;
 
                         scl.set(cellPosition);
-                        scl.add(GravityControl.sclAddMask[gravityDirections[edge].ord]);
-                        scl.add(GravityControl.scl[gravityDirections[edge].ord]);
+                        scl.add(GravityControls.sclAddMask[gravityDirections[edge].ord]);
+                        scl.add(GravityControls.scl[gravityDirections[edge].ord]);
                         new RectanglePlus(
                             scl.x, scl.y, scl.z,
                             1, 1, 1,
@@ -156,8 +157,7 @@ public class LMapBuilder {
 
                         // FLOOR LAYER 2
                         currentCell3D = new Cell3D(
-                            GravityControl.adjustVecForGravity(
-                                gravityDirections[edge],
+                            GravityControls.adjustVecForGravity(
                                 new Vector3(i, -1, k),
                                 game.getChunkMan().getWorldSize()
                             ),
@@ -180,19 +180,19 @@ public class LMapBuilder {
 
                         Vector3 otherPosition = otherCell3D.getPositionImmutable();
 
-                        scl = GravityControl.adjustVecForGravity(gravityDirections[edge], new Vector3(0, 0, 1));
+                        scl = GravityControls.adjustVecForGravity(new Vector3(0, 0, 1));
                         if (otherPosition.equals(currentPosition.cpy().add(scl))) {
                             currentCell3D.hasWallSouth = false;
                         }
-                        scl = GravityControl.adjustVecForGravity(gravityDirections[edge], new Vector3(0, 0, -1));
+                        scl = GravityControls.adjustVecForGravity(new Vector3(0, 0, -1));
                         if (otherPosition.equals(currentPosition.cpy().add(scl))) {
                             currentCell3D.hasWallNorth = false;
                         }
-                        scl = GravityControl.adjustVecForGravity(gravityDirections[edge], new Vector3(1, 0, 0));
+                        scl = GravityControls.adjustVecForGravity(new Vector3(1, 0, 0));
                         if (otherPosition.equals(currentPosition.cpy().add(scl))) {
                             currentCell3D.hasWallWest = false;
                         }
-                        scl = GravityControl.adjustVecForGravity(gravityDirections[edge], new Vector3(-1, 0, 0));
+                        scl = GravityControls.adjustVecForGravity(new Vector3(-1, 0, 0));
                         if (otherPosition.equals(currentPosition.cpy().add(scl))) {
                             currentCell3D.hasWallEast = false;
                         }
@@ -201,10 +201,7 @@ public class LMapBuilder {
             }
 
             for (Cell3D cell3D : cell3DList) {
-                cell3D.buildCell(
-                    gravityDirections[edge]
-                    //rotations[edge] * gravityDirections[edge].sum()
-                );
+                cell3D.buildCell();
             }
 
             // NONPOS
@@ -217,7 +214,7 @@ public class LMapBuilder {
                 int firefliesC = MathUtils.random(minFirefliesCount, maxFirefliesCount);
                 for (int i = 0; i < firefliesC; i++) {
                     scl.set(HALF_UNIT, MathUtils.random(0.3f, 0.7f), HALF_UNIT); // FIXME
-                    scl = GravityControl.adjustVecForGravity(gravityDirections[edge], scl);
+                    scl = GravityControls.adjustVecForGravity(scl);
                     new Firefly(
                         cell3D.getPositionImmutable().add(scl),
                         game.getScreen(),
