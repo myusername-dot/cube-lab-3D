@@ -17,6 +17,7 @@ import io.github.labyrinthgenerator.pages.game3d.gravity.GravityDir;
 import io.github.labyrinthgenerator.pages.game3d.rect.RectanglePlus;
 import io.github.labyrinthgenerator.pages.game3d.rect.filters.RectanglePlusFilter;
 import io.github.labyrinthgenerator.pages.game3d.screens.GameScreen;
+import io.github.labyrinthgenerator.pages.game3d.vectors.Vector3i;
 import lombok.extern.slf4j.Slf4j;
 
 import static io.github.labyrinthgenerator.pages.game3d.constants.Constants.*;
@@ -104,7 +105,7 @@ public class Player extends Entity {
     }
 
     private void rotateCamVertical(float delta) {
-        float angle = Gdx.input.getDeltaY() * -cameraRotationSpeed * delta;
+        float angle = Gdx.input.getDeltaY() * -cameraRotationSpeed * gravity[gravityDir.ord].sum() * delta;
 
         float newVerticalAngle = currentVerticalAngle + angle;
 
@@ -204,6 +205,7 @@ public class Player extends Entity {
 
         if (!isOnGround) {
             velocityY -= 9.81f * delta;
+            velocityY = Math.max(velocityY, -9.81f);
         }
 
         if (jumping && Gdx.input.isKeyJustPressed(Input.Keys.SPACE) && isOnGround) {
@@ -284,8 +286,10 @@ public class Player extends Entity {
             rect.getZ() + velocity.z * delta
         );
 
-        if (newPosition.y >= rect.getHeight() / 2f) { // fixme
-            newPosition.y = rect.getHeight() / 2f;
+        Vector3i worldSize = screen.game.getChunkMan().getWorldSize();
+        float clampY = MathUtils.clamp(newPosition.y, worldSize.y + rect.getHeight() / 2f, rect.getHeight() / 2f);
+        if (newPosition.y != clampY) {
+            newPosition.y = clampY;
             isOnGround = true;
             velocityY = 0f;
         }
