@@ -69,6 +69,7 @@ public abstract class Enemy extends Entity {
         if (mdlInst != null) {
             //mdlInst.setInFrustum(screen.frustumCull(screen.getCurrentCam(), mdlInst));
             mdlInst.setInFrustum(screen.frustumCull(screen.getCurrentCam(), getPositionImmutable(), mdlInst.radius));
+            isInFrustum = mdlInst.isInFrustum();
             if (mdlInst.isInFrustum()) {
                 mdlBatch.render(mdlInst, env);
             }

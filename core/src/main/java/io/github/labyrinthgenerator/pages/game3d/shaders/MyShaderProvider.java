@@ -7,13 +7,11 @@ import com.badlogic.gdx.graphics.g3d.Shader;
 import com.badlogic.gdx.graphics.g3d.shaders.DefaultShader;
 import com.badlogic.gdx.graphics.g3d.utils.DefaultShaderProvider;
 import com.badlogic.gdx.graphics.g3d.utils.ShaderProvider;
-import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import io.github.labyrinthgenerator.labyrinth.Pair;
 import io.github.labyrinthgenerator.pages.game3d.CubeLab3D;
 import io.github.labyrinthgenerator.pages.game3d.entities.Entity;
 import io.github.labyrinthgenerator.pages.game3d.entities.player.Player;
-import io.github.labyrinthgenerator.pages.game3d.screens.PlayScreen;
 import io.github.labyrinthgenerator.pages.game3d.tickable.Tickable;
 import io.github.labyrinthgenerator.pages.light.PointLightPlus;
 
@@ -85,13 +83,14 @@ public class MyShaderProvider extends Tickable implements ShaderProvider {
         Vector3 playerPos = player.getPositionImmutable();
         List<Entity> nearestEntities = game.getEntMan().getNearestEntities(player.getPositionImmutable());
         List<PointLightPlus> pointLights = nearestEntities.stream()
+            .filter(Entity::isInFrustum)
             .map(Entity::getPointLight)
             .filter(Objects::nonNull)
             .collect(Collectors.toList());
         for (PointLightPlus pointLight : pointLights) {
             float distance = pointLight.position.dst(playerPos);
             if (distance < MAX_LIGHT_RENDERING_DISTANCE) {
-                // Угол между направлением камеры и точкой
+                /*// Угол между направлением камеры и точкой
                 float angle = getViewAngle(player.playerCam, pointLight.position);
                 // Угол обзора камеры в радианах
                 float fov = player.playerCam.fieldOfView * 0.5f; // делим на 2, чтобы получить половину угла
@@ -99,11 +98,11 @@ public class MyShaderProvider extends Tickable implements ShaderProvider {
                 float cosFov = (float) Math.cos(Math.toRadians(fov));
 
                 // Проверяем, находится ли точка в пределах угла обзора
-                if (angle > cosFov) {
-                    pointLight.camDistance = distance;
-                    pointLight.calculateScreenTransforms(player.playerCam);
-                    pointLightsByPlayerDistAndCamAngle.put(distance, new Pair<>(pointLight, angle));
-                }
+                if (angle > cosFov) {*/
+                pointLight.camDistance = distance;
+                pointLight.calculateScreenTransforms(player.playerCam);
+                pointLightsByPlayerDistAndCamAngle.put(distance, new Pair<>(pointLight, 0f));
+                //}
             }
         }
     }
@@ -112,7 +111,7 @@ public class MyShaderProvider extends Tickable implements ShaderProvider {
 
         return pointLightsByPlayerDistAndCamAngle.subMap(/*distance - HALF_UNIT * 3*/0f, distance + HALF_UNIT * 3).values()
             .stream()
-            .filter(p -> Math.abs(angle - p.snd) < 0.8)
+            //.filter(p -> Math.abs(angle - p.snd) < 0.8)
             //.sorted((e1, e2) -> Float.compare(Math.abs(angle - e1.snd), Math.abs(angle - e2.snd)))
             .limit(MAX_NUM_LIGHTS)
             .map(p -> p.fst)
