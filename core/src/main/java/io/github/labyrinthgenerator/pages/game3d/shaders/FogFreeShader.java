@@ -131,7 +131,7 @@ public class FogFreeShader extends SpotLightFreeShader {
             "\n" +
             "    float longWave = clamp(\n" +
             //"        sin(aPosition.x + aPosition.z + u_time) * (max(-0.5, position.y) + 0.5) * 0.4, \n" + // 0.5..-0.5
-            "        sin(aPosition.x + aPosition.z + u_time) * worldPosition.y * 0.5, \n" +
+            "        sin(aPosition.x + aPosition.z + u_time) * sqrt(heightFactor) * 0.5, \n" +
             "    0.0, 1.0);\n" +
             "\n" +
             "    float fogFactor = clamp((fogClipDistanceFactor * sqrt(heightFactor) + heightFactor + longWave), 0.0, 0.8);\n" +
