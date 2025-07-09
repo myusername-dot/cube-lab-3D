@@ -28,6 +28,12 @@ public class Vector3f {
         this.z = v.z;
     }
 
+    public Vector3f(Vector3 v) {
+        this.x = v.x;
+        this.y = v.y;
+        this.z = v.z;
+    }
+
     public Vector3f set(float x, float y, float z) {
         this.x = x;
         this.y = y;
@@ -49,6 +55,10 @@ public class Vector3f {
 
     public Vector3f back () {
         return new Vector3f(z, y, x);
+    }
+
+    public Vector3f invZero (float val) {
+        return new Vector3f(x == 0 ? val : 0, y == 0 ? val : 0, z == 0 ? val : 0);
     }
 
     public Vector3 vec3 () {
