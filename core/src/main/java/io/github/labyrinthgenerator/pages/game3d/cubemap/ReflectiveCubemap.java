@@ -112,6 +112,7 @@ public class ReflectiveCubemap {
     }
 
     public void setPosition(Vector3 position) {
+        this.position.set(position);
         camFb.position.set(position);
         camFb.update();
         reflectiveSphereMdlInst.transform.setToTranslation(position);

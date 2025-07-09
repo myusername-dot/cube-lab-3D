@@ -21,6 +21,7 @@ import io.github.labyrinthgenerator.pages.game3d.cubemap.ReflectiveCubemap;
 import io.github.labyrinthgenerator.pages.game3d.debug.MyDebugRenderer;
 import io.github.labyrinthgenerator.pages.game3d.entities.player.Player;
 import io.github.labyrinthgenerator.pages.game3d.shaders.SkyBoxShaderProgram;
+import io.github.labyrinthgenerator.pages.game3d.vectors.Vector3i;
 
 import static io.github.labyrinthgenerator.pages.game3d.constants.Constants.HALF_UNIT;
 
@@ -74,7 +75,8 @@ public class PlayScreen extends GameScreen {
         Gdx.input.setCursorCatched(true);
         envCubeMap = new SkyBoxShaderProgram(new Pixmap(Gdx.files.internal(game.getAssMan().bgSky01)));
 
-        exitCubemap = new ReflectiveCubemap(getPlayerSpawnPosition().add(0, -1f, 0), 1f, game);
+        Vector3i worldSize = game.getChunkMan().getWorldSize();
+        exitCubemap = new ReflectiveCubemap(new Vector3(worldSize.x / 2f, -2f, worldSize.z / 2f), 1f, game);
     }
 
     private Environment createEnvironment() {
