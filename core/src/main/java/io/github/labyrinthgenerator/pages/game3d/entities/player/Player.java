@@ -10,14 +10,15 @@ import com.badlogic.gdx.math.Vector3;
 import io.github.labyrinthgenerator.pages.game3d.debug.MyDebugRenderer;
 import io.github.labyrinthgenerator.pages.game3d.entities.Entity;
 import io.github.labyrinthgenerator.pages.game3d.entities.Firefly;
+import io.github.labyrinthgenerator.pages.game3d.gravity.GravityControl;
+import io.github.labyrinthgenerator.pages.game3d.gravity.GravityDir;
 import io.github.labyrinthgenerator.pages.game3d.rect.RectanglePlus;
 import io.github.labyrinthgenerator.pages.game3d.rect.filters.RectanglePlusFilter;
 import io.github.labyrinthgenerator.pages.game3d.screens.GameScreen;
-import io.github.labyrinthgenerator.pages.game3d.vectors.Vector3f;
-import io.github.labyrinthgenerator.pages.game3d.vectors.Vector3i;
 import lombok.extern.slf4j.Slf4j;
 
 import static io.github.labyrinthgenerator.pages.game3d.constants.Constants.*;
+import static io.github.labyrinthgenerator.pages.game3d.gravity.GravityControl.gravity;
 
 @Slf4j
 public class Player extends Entity {
@@ -46,7 +47,7 @@ public class Player extends Entity {
     private final Vector2 horizontalVelocity = new Vector2();
     private final Vector2 horizontalForwardVelocity = new Vector2();
 
-    private Vector3f gravityDirection = new Vector3f(0, 1, 0);
+    private GravityDir gravityDir = GravityDir.DOWN;
 
     private boolean cheats = false;
 
@@ -63,6 +64,7 @@ public class Player extends Entity {
         Vector3 lookAt = new Vector3(0, 0, -1);
         playerCam = new PerspectiveCamera(70, WINDOW_WIDTH, WINDOW_HEIGHT);
         GameScreen.setupCamera(playerCam, getPositionImmutable(), lookAt);
+        screen.setCurrentCam(playerCam);
 
         debugCam = new PerspectiveCamera(70, WINDOW_WIDTH, WINDOW_HEIGHT);
         GameScreen.setupCamera(debugCam, getPositionImmutable().scl(1, -1, 1), lookAt.scl(-1));
@@ -82,13 +84,14 @@ public class Player extends Entity {
 
     private void setCamPosition() {
         playerCam.position.set(getPositionImmutable()
-            .add(adjustVecForGravity(gravityDirection, new Vector3(0f, camY, 0f))));
+            .add(GravityControl.adjustVecForGravity(gravityDir, new Vector3(0f, camY, 0f))));
 
         debugCam.position.set(playerCam.position.x, -playerCam.position.y, playerCam.position.z);
     }
 
     private void rotateCamHorizontal(float delta) {
-        float angle = Gdx.input.getDeltaX() * -cameraRotationSpeed * gravityDirection.sum() * delta;
+        float angle = Gdx.input.getDeltaX() * -cameraRotationSpeed
+            * gravity[gravityDir.ord].sum() * delta;
         playerCam.rotate(Vector3.Y, angle);
 
         debugCam.rotate(Vector3.Y, angle);
@@ -102,16 +105,27 @@ public class Player extends Entity {
         debugCam.rotate(axis, -angle);
     }
 
-    public void setGravityDirection(Vector3f newGravityDirection) {
-        this.gravityDirection = newGravityDirection;//.nor(); // Нормализуем вектор
+    public void setGravityDirection(GravityDir gravityDir) {
+        this.gravityDir = gravityDir;//.nor(); // Нормализуем вектор
         updateCameraRotation();
     }
 
     private void updateCameraRotation() {
         // Поворачиваем камеру так, чтобы пол был под ногами
-        playerCam.up.set(new Vector3(gravityDirection.x, gravityDirection.y, gravityDirection.z));
+        playerCam.up.set(
+            gravity[gravityDir.ord].x,
+            gravity[gravityDir.ord].y,
+            gravity[gravityDir.ord].z
+        );
         //playerCam.direction.set(gravityDirection); // Направление камеры
         playerCam.update();
+
+        debugCam.up.set(
+            gravity[gravityDir.ord].x,
+            gravity[gravityDir.ord].y,
+            gravity[gravityDir.ord].z
+        );
+        debugCam.update();
     }
 
     public float getExitDistance() {
@@ -148,7 +162,7 @@ public class Player extends Entity {
         if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_6)) currentInventorySlot = 6;
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.SHIFT_LEFT)) {
-            setGravityDirection(gravityDirection.cpy().scl(-1));
+            setGravityDirection(gravityDir == GravityDir.DOWN ? GravityDir.UP : GravityDir.DOWN);
             isOnGround = false;
         }
 
@@ -237,8 +251,8 @@ public class Player extends Entity {
             headbob = false;
         }
 
-        Vector3 velocity = adjustVecForGravity(
-            gravityDirection,
+        Vector3 velocity = GravityControl.adjustVecForGravity(
+            gravityDir,
             new Vector3(horizontalVelocity.x, velocityY, horizontalVelocity.y)
         );
 
@@ -306,50 +320,6 @@ public class Player extends Entity {
     public void afterTick() {
         super.afterTick();
         log.debug("End tick player thread id: " + Thread.currentThread().getId() + ".");
-    }
-
-    private float round(float v, int dims) {
-        return (int) (v * dims) / (float) dims;
-    }
-
-    public static Vector3 adjustVecForGravity(Vector3f gravityDirection, Vector3 in) {
-        return adjustVecForGravity(gravityDirection, in, null);
-    }
-
-    public static Vector3 adjustVecForGravity(Vector3f gravityDirection, Vector3 in, Vector3i worldSize) {
-        //int yScl = invertY ? 1 : -1; // swap new y coordinate by 0 - layer height
-        Vector3 out;
-
-        if (gravityDirection.equals(new Vector3(0, 1, 0))) {
-            // Гравитация направлена вниз
-            out = new Vector3(in.x, in.y, in.z);
-        } else if (gravityDirection.equals(new Vector3(0, -1, 0))) {
-            // Гравитация направлена вверх
-            if (worldSize == null) out = new Vector3(in.z, -1 * in.y, in.x);
-            else out = new Vector3(in.x, worldSize.y - in.y, in.z);
-        } else if (gravityDirection.equals(new Vector3(1, 0, 0))) {
-            // Гравитация направлена вправо
-            out = new Vector3(in.z, -1 * in.x, -1 * in.y); // maybe flip out x z
-        } else if (gravityDirection.equals(new Vector3(-1, 0, 0))) {
-            // Гравитация направлена влево
-            if (worldSize == null) out = new Vector3(-in.z, -1 * in.x, in.y);
-            else out = new Vector3(worldSize.x - in.z, -1 * in.x, worldSize.z - -1 * in.y);
-        } else if (gravityDirection.equals(new Vector3(0, 0, 1))) {
-            // Гравитация направлена вперед
-            out = new Vector3(-1 * in.y, -1 * in.z, in.x); // maybe flip out x z
-        } else if (gravityDirection.equals(new Vector3(0, 0, -1))) {
-            // Гравитация направлена назад
-            if (worldSize == null) out = new Vector3(in.y, -1 * in.z, -in.x);
-            else out = new Vector3(worldSize.x - -1 * in.y, -1 * in.z, worldSize.x - in.x);
-        } else {
-            out = new Vector3(0, 0, 0);
-        }
-
-        return out;
-    }
-
-    public Vector3 getRectPositionImmutable() {
-        return rect.getPosition();
     }
 
     public Vector2 getMovementDir() {

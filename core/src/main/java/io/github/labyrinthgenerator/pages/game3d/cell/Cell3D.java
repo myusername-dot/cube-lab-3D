@@ -13,6 +13,8 @@ import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
 import io.github.labyrinthgenerator.pages.game3d.entities.Entity;
 import io.github.labyrinthgenerator.pages.game3d.entities.player.Player;
+import io.github.labyrinthgenerator.pages.game3d.gravity.GravityControl;
+import io.github.labyrinthgenerator.pages.game3d.gravity.GravityDir;
 import io.github.labyrinthgenerator.pages.game3d.models.ModelInstanceBB;
 import io.github.labyrinthgenerator.pages.game3d.screens.GameScreen;
 import io.github.labyrinthgenerator.pages.game3d.vectors.Vector3f;
@@ -67,7 +69,7 @@ public class Cell3D extends Entity {
         return modelInstanceBB;
     }
 
-    public void buildCell(Vector3f gravityDirection) {
+    public void buildCell(GravityDir gravityDirection) {
         // @formatter:off
         if (hasWallNorth) mdlInstWallNorth = createWallInstance(mdlWallNorth, texRegNorth, gravityDirection, getPositionImmutable());
         if (hasWallSouth) mdlInstWallSouth = createWallInstance(mdlWallSouth, texRegSouth, gravityDirection, getPositionImmutable());
@@ -80,7 +82,7 @@ public class Cell3D extends Entity {
 
     private ModelInstanceBB createWallInstance(
         Model model, Texture texture,
-        Vector3f gravityDirection,
+        GravityDir gravityDirection,
         Vector3 position) {
 
         ModelInstanceBB instance = createModelInstanceBB(model, texture, position);
@@ -91,7 +93,7 @@ public class Cell3D extends Entity {
 
     private ModelInstanceBB createFloorOrCeilingInstance(
         Model model, Texture texture,
-        Vector3f gravityDirection,
+        GravityDir gravityDirection,
         Vector3 position) {
 
         ModelInstanceBB instance = createModelInstanceBB(model, texture, position);
@@ -100,16 +102,16 @@ public class Cell3D extends Entity {
         return instance;
     }
 
-    private void transformMdlInstVertsAndNormal(ModelInstanceBB instance, Vector3f gravityDirection) {
+    private void transformMdlInstVertsAndNormal(ModelInstanceBB instance, GravityDir gravityDirection) {
         Node node = instance.nodes.get(0);
 
-        node.translation.set(Player.adjustVecForGravity(
+        node.translation.set(GravityControl.adjustVecForGravity(
             gravityDirection,
             node.translation
         ));
         Quaternion rotation = node.rotation;
         Vector3 rotationVec = new Vector3(rotation.x, rotation.y, rotation.z);
-        rotationVec = Player.adjustVecForGravity(
+        rotationVec = GravityControl.adjustVecForGravity(
             gravityDirection,
             rotationVec
         );
@@ -124,7 +126,7 @@ public class Cell3D extends Entity {
         // set 4 vertices // and normal
         for (int i = 0; i < meshPart.mesh.getNumVertices(); i++) {
             int corner = i * cornerLength;
-            Vector3 localVertOrNormal = Player.adjustVecForGravity(
+            Vector3 localVertOrNormal = GravityControl.adjustVecForGravity(
                 gravityDirection,
                 new Vector3(vertices[corner], vertices[corner + 1], vertices[corner + 2])
             );
