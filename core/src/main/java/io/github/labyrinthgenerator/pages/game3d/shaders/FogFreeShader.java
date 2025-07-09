@@ -31,7 +31,7 @@ public class FogFreeShader extends SpotLightFreeShader {
 
     protected final MyShaderProvider myShaderProvider;
 
-    private final String VERTEX_SHADER =
+    private final String vertexShader =
         "attribute vec4 a_position;\n" +
             "attribute vec3 a_normal;\n" +
             "attribute vec2 a_texCoord0;\n" + // texture
@@ -77,7 +77,7 @@ public class FogFreeShader extends SpotLightFreeShader {
             "}";
 
 
-    private String FRAGMENT_SHADER =
+    private String fragmentShader =
         "#define NUM_LIGHTS " + MyShaderProvider.MAX_NUM_LIGHTS + "\n" +
             "#ifdef GL_ES \n" +
             "#define LOWP lowp\n" +
@@ -206,9 +206,9 @@ public class FogFreeShader extends SpotLightFreeShader {
     @Override
     public void init() {
         if (lightingFlag) {
-            FRAGMENT_SHADER = "#define lightingFlag\n\n" + FRAGMENT_SHADER;
+            fragmentShader = "#define lightingFlag\n\n" + fragmentShader;
         }
-        program = new ShaderProgram(VERTEX_SHADER, FRAGMENT_SHADER);
+        program = new ShaderProgram(vertexShader, fragmentShader);
         if (!program.isCompiled()) {
             throw new GdxRuntimeException(program.getLog());
         }
