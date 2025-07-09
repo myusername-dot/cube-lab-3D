@@ -25,22 +25,25 @@ public class Player extends Entity {
     private final Vector2 movementDir = new Vector2();
 
     public final RectanglePlus rect;
+
     public final PerspectiveCamera playerCam;
     private final PerspectiveCamera debugCam;
 
     private final MyDebugRenderer debugger;
 
     private final float cameraRotationSpeed = 25f;
-    private boolean headbob = false;
-    private boolean verticalCameraMovement = false;
     private float camY = HALF_UNIT; // camera y bug, should be -HALF_UNIT
+    private boolean headbob = false;
+
+    private boolean verticalCameraMovement = false;
+    private boolean jumping = false;
+    private boolean cheats = false;
 
     private final float playerMoveSpeed = 4f;
     private final float acceleration = 10f;
     private final float deceleration = 10f;
 
     private final float jumpStrength = 8.0f;
-
     private boolean isOnGround = true;
 
     private float velocityY = 0f;
@@ -48,8 +51,6 @@ public class Player extends Entity {
     private final Vector2 horizontalForwardVelocity = new Vector2();
 
     private GravityDir gravityDir = GravityDir.DOWN;
-
-    private boolean cheats = false;
 
     private int currentHP = 100;
     public boolean isDead = false;
@@ -141,9 +142,26 @@ public class Player extends Entity {
     public void handleInput(final float delta) {
         movementDir.setZero();
 
-        if (Gdx.input.isKeyJustPressed(Input.Keys.J)) {
+        if (Gdx.input.isKeyJustPressed(Input.Keys.K)) {
             debugger.debugMode = MyDebugRenderer.DebugMode.values()[
                 (debugger.debugMode.ordinal() + 1) % MyDebugRenderer.DebugMode.values().length];
+        }
+
+        if (Gdx.input.isKeyJustPressed(Input.Keys.J)) {
+            jumping = !jumping;
+        }
+
+        if (Gdx.input.isKeyJustPressed(Input.Keys.SHIFT_LEFT)) {
+            setGravityDirection(gravityDir == GravityDir.DOWN ? GravityDir.UP : GravityDir.DOWN);
+            isOnGround = false;
+        }
+
+        if (Gdx.input.isKeyJustPressed(Input.Keys.H)) {
+            verticalCameraMovement = !verticalCameraMovement;
+        }
+
+        if (Gdx.input.isKeyJustPressed(Input.Keys.L)) {
+            cheats = !cheats;
         }
 
         if (screen.game.getGameInput().scrolledYDown) {
@@ -161,19 +179,6 @@ public class Player extends Entity {
         if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_5)) currentInventorySlot = 5;
         if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_6)) currentInventorySlot = 6;
 
-        if (Gdx.input.isKeyJustPressed(Input.Keys.SHIFT_LEFT)) {
-            setGravityDirection(gravityDir == GravityDir.DOWN ? GravityDir.UP : GravityDir.DOWN);
-            isOnGround = false;
-        }
-
-        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_0)) {
-            verticalCameraMovement = !verticalCameraMovement;
-        }
-
-        if (Gdx.input.isKeyJustPressed(Input.Keys.L)) {
-            cheats = !cheats;
-        }
-
         rotateCamHorizontal(delta);
 
         if (verticalCameraMovement) {
@@ -184,7 +189,7 @@ public class Player extends Entity {
             velocityY -= 9.81f * delta;
         }
 
-        if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE) && isOnGround) {
+        if (jumping && Gdx.input.isKeyJustPressed(Input.Keys.SPACE) && isOnGround) {
             velocityY = jumpStrength;
             isOnGround = false;
         }
