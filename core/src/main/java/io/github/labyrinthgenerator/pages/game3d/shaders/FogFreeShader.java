@@ -314,12 +314,11 @@ public class FogFreeShader extends SpotLightFreeShader {
         if (player != null) {
             Object userData = renderable.userData;
             if (userData instanceof Vector3) {
-                Vector3 rendPos3 = (Vector3) userData;
-                Vector2 rendPos2 = new Vector2(rendPos3.x, rendPos3.z);
-                Vector3 playerPos3 = player.getPositionImmutable();
-                float distance = rendPos2.dst(playerPos3.x, playerPos3.z);
+                Vector3 rendPos = (Vector3) userData;
+                Vector3 playerPos = player.getPositionImmutable();
+                float distance = rendPos.dst(playerPos);
                 if (distance < MAX_LIGHT_RENDERING_DISTANCE) {
-                    float angle = myShaderProvider.getViewAngle(player.playerCam, rendPos3);
+                    float angle = myShaderProvider.getViewAngle(player.playerCam, rendPos);
                     pointLights = myShaderProvider.getPointLightsByPlayerDistAndCamAngle(distance, angle);
                 }
             }

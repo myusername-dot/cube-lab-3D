@@ -27,7 +27,7 @@ import static io.github.labyrinthgenerator.pages.game3d.constants.Constants.HALF
 public class MyShaderProvider extends Tickable implements ShaderProvider {
 
     public static final int MAX_NUM_LIGHTS = 20;
-    public static final float MAX_LIGHT_RENDERING_DISTANCE = 5f;
+    public static final float MAX_LIGHT_RENDERING_DISTANCE = 10f;
 
     public final SpotLightShader spotLightShader;
     public final SpotLightFreeShader spotLightFreeShader;
@@ -82,15 +82,14 @@ public class MyShaderProvider extends Tickable implements ShaderProvider {
         pointLightsByPlayerDistAndCamAngle.clear();
         player.playerCam.update();
 
-        Vector3 playerPos3 = player.getPositionImmutable();
+        Vector3 playerPos = player.getPositionImmutable();
         List<Entity> nearestEntities = game.getEntMan().getNearestEntities(player.getPositionImmutable());
         List<PointLightPlus> pointLights = nearestEntities.stream()
             .map(Entity::getPointLight)
             .filter(Objects::nonNull)
             .collect(Collectors.toList());
         for (PointLightPlus pointLight : pointLights) {
-            Vector2 pointLightPos2 = new Vector2(pointLight.position.x, pointLight.position.z);
-            float distance = pointLightPos2.dst(playerPos3.x, playerPos3.z);
+            float distance = pointLight.position.dst(playerPos);
             if (distance < MAX_LIGHT_RENDERING_DISTANCE) {
                 // Угол между направлением камеры и точкой
                 float angle = getViewAngle(player.playerCam, pointLight.position);
