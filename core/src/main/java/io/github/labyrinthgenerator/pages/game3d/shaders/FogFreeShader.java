@@ -126,11 +126,9 @@ public class FogFreeShader extends SpotLightFreeShader {
             "       c = texture2D(u_texture, v_texCoords0);" +
             "    }\n" +
             "\n" +
-            //"    float heightFactor = max(0.0, position.y);\n" +
             "    float heightFactor = max(0.0, (worldPosition.y - 0.5) * 1.6);\n" + // 0..1 -> 0..0.5 * 1.6
             "\n" +
             "    float longWave = clamp(\n" +
-            //"        sin(aPosition.x + aPosition.z + u_time) * (max(-0.5, position.y) + 0.5) * 0.4, \n" + // 0.5..-0.5
             "        sin(aPosition.x + aPosition.z + u_time) * sqrt(heightFactor) * 0.5, \n" +
             "    0.0, 1.0);\n" +
             "\n" +
