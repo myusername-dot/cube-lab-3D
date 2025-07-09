@@ -72,4 +72,8 @@ public class GravityControl {
         }
         return out;
     }
+
+    public static float getYScl(GravityDir gravityDir) {
+        return gravity[gravityDir.ord].sum();
+    }
 }

@@ -97,15 +97,14 @@ public class Player extends Entity {
     }
 
     private void rotateCamHorizontal(float delta) {
-        float angle = Gdx.input.getDeltaX() * -cameraRotationSpeed
-            * gravity[gravityDir.ord].sum() * delta;
+        float angle = Gdx.input.getDeltaX() * -cameraRotationSpeed * GravityControl.getYScl(gravityDir) * delta;
         playerCam.rotate(Vector3.Y, angle);
 
         debugCam.rotate(Vector3.Y, angle);
     }
 
     private void rotateCamVertical(float delta) {
-        float angle = Gdx.input.getDeltaY() * -cameraRotationSpeed * gravity[gravityDir.ord].sum() * delta;
+        float angle = Gdx.input.getDeltaY() * -cameraRotationSpeed * GravityControl.getYScl(gravityDir) * delta;
 
         float newVerticalAngle = currentVerticalAngle + angle;
 
@@ -275,10 +274,7 @@ public class Player extends Entity {
             headbob = false;
         }
 
-        Vector3 velocity = GravityControl.adjustVecForGravity(
-            gravityDir,
-            new Vector3(horizontalVelocity.x, velocityY, horizontalVelocity.y)
-        );
+        Vector3 velocity = new Vector3(horizontalVelocity.x, velocityY * GravityControl.getYScl(gravityDir), horizontalVelocity.y);
 
         Vector3 newPosition = new Vector3(
             rect.getX() + velocity.x * delta,
