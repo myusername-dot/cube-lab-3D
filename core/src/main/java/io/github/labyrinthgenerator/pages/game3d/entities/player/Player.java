@@ -129,17 +129,19 @@ public class Player extends Entity {
         debugCam.rotate(axis, -angle);
     }
 
+    private void reSwapCameraDirection() {
+        playerCam.direction.set(GravityControls.reSwap(playerCam.direction, true, true));
+    }
+
     private void updateCameraRotation() {
+        currentVerticalAngle = 0f;
         // Поворачиваем камеру так, чтобы пол был под ногами
         playerCam.up.set(gravity[currentGravity.ord].vec3());
-        playerCam.direction.set(GravityControls.swap(playerCam.direction, false, true));
-        currentVerticalAngle = 0f;
-        //playerCam.direction.set(gravity[gravityDir.ord].vec3()); // Направление камеры
-        //playerCam.direction.set(GravityControls.swap(playerCam.direction, true, true));
+        playerCam.direction.set(GravityControls.swap(playerCam.direction, true, true));
         playerCam.update();
 
         debugCam.up.set(gravity[currentGravity.ord].vec3());
-        //debugCam.direction.set(GravityControl.swap(gravityDir, debugCam.direction));
+        debugCam.direction.set(GravityControls.swap(debugCam.direction, true, true));
         debugCam.update();
     }
 
@@ -171,12 +173,14 @@ public class Player extends Entity {
         }
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.SHIFT_LEFT)) {
+            reSwapCameraDirection();
             GravityControls.swapYDir();
             updateCameraRotation();
             isOnGround = false;
         }
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.G)) {
+            reSwapCameraDirection();
             GravityControls.swapXDir();
             updateCameraRotation();
             isOnGround = false;
