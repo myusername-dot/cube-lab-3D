@@ -45,7 +45,7 @@ public class ModelMaker {
             0, 1, 0,
             0, 0, 0,
             1, 0, 0,
-            0, 0, -1,
+            0, 0,-1,
             getTextureMaterial(TextureAttribute.Diffuse));
 
         mdlPoint = createModelWithTexture(
@@ -113,7 +113,7 @@ public class ModelMaker {
             material, Usage.Position | Usage.Normal | Usage.TextureCoordinates);  // goto Cell3D cornerLength
 
         model.nodes.get(0).rotation.set(Vector3.X, direction == 1 ? 90f : -90f);
-        if (direction == -1) model.nodes.get(0).translation.add(0, 1, 0);
+        if (direction == 1) model.nodes.get(0).translation.add(0, 1, 0);
         // todo ceiling not check
 
         return model;
