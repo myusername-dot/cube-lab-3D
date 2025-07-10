@@ -94,12 +94,10 @@ public class GravityControls {
             case FORWARD:
             case BACK:
                 out = new Vector3(in.y * inv, in.x * scl, in.z);
-                //out = new Vector3(in.z, in.x * scl, in.y * inv);
                 break;
             case LEFT:
             case RIGHT:
                 out = new Vector3(in.x, in.z * scl, in.y * inv);
-                //out = new Vector3(in.y * inv, in.z * scl, in.x);
                 break;
             default:
                 out = in;
@@ -119,12 +117,10 @@ public class GravityControls {
             case FORWARD:
             case BACK:
                 out = new Vector3(in.y * scl, in.x * inv, in.z);
-                //out = new Vector3(in.y * scl, in.z * inv, in.x);
                 break;
             case LEFT:
             case RIGHT:
                 out = new Vector3(in.x, in.z * inv, in.y * scl);
-                //out = new Vector3(in.z, in.x * inv, in.y * scl);
                 break;
             default:
                 out = in;
