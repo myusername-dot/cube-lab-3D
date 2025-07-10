@@ -180,14 +180,14 @@ public class Player extends Entity {
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.SHIFT_LEFT)) {
             reSwapCameraDirection();
-            GravityControls.swapYDir();
+            GravityControls.swapVerticalGravityDir();
             updateCameraRotation();
             isOnGround = false;
         }
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.G)) {
             reSwapCameraDirection();
-            GravityControls.swapXDir();
+            GravityControls.randomGravityDir();
             updateCameraRotation();
             isOnGround = false;
         }
