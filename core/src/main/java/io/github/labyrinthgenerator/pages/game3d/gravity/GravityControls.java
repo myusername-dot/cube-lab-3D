@@ -10,8 +10,8 @@ public class GravityControls {
 
     // @formatter:off
     public static final Vector3f[] gravity = new Vector3f[]{
-        new Vector3f( 0,  1,  0),  // down
-        new Vector3f( 0, -1,  0),  // up
+        new Vector3f( 0, -1,  0),  // down
+        new Vector3f( 0,  1,  0),  // up
         new Vector3f( 1,  0,  0),  // forward
         new Vector3f(-1,  0,  0),  // back
         new Vector3f( 0,  0, -1),  // right
@@ -19,17 +19,17 @@ public class GravityControls {
     };
 
     public static final Vector3[] worldScl = new Vector3[]{
-        new Vector3(  1,  1,  1),  // down
-        new Vector3(  1, -1,  1),  // up
-        new Vector3(  1, -1, -1),  // forward
-        new Vector3( -1, -1,  1),  // back
-        new Vector3(  1, -1, -1),  // right
-        new Vector3( -1, -1,  1),  // left
+        new Vector3(  1, -1,  1),  // down
+        new Vector3(  1,  1,  1),  // up
+        new Vector3(  1,  1, -1),  // forward
+        new Vector3( -1,  1,  1),  // back
+        new Vector3(  1,  1, -1),  // right
+        new Vector3( -1,  1,  1),  // left
     };
 
     public static final Vector3[] worldSclAddMask = new Vector3[]{
-        new Vector3( -1, -1, -1),  // down
-        new Vector3( -1,  2, -1),  // up
+        new Vector3( -1,  1, -1),  // down
+        new Vector3( -1, -1, -1),  // up
         new Vector3( -1,  0,  0),  // forward
         new Vector3(  0,  0, -1),  // back
         new Vector3( -1,  0,  0),  // right
@@ -79,25 +79,23 @@ public class GravityControls {
         return out;
     }
 
-    public static Vector3 swap(final Vector3 in, boolean gScl, boolean invY) {
-        // Local gravity dir, fix libgdx y < 0
-        float scl = gScl ? GravityControls.getGravityScl(true) : 1;
-        // Inv libgdx y < 0 coordinate
-        float inv = invY ? -1 : 1;
+    public static Vector3 swap(final Vector3 in, boolean gScl) {
+        // Local gravity dir
+        float scl = gScl ? GravityControls.getGravityScl() : 1;
 
         Vector3 out = new Vector3(in); // Создаем выходной вектор
         switch (currentGravity) {
             case UP:
             case DOWN:
-                out.y *= inv * scl;
+                out.y *= scl;
                 break;
             case FORWARD:
             case BACK:
-                out.set(in.y * inv, in.x * scl, in.z);
+                out.set(in.y, in.x * scl, in.z);
                 break;
             case LEFT:
             case RIGHT:
-                out.set(in.x, in.z * scl, in.y * inv);
+                out.set(in.x, in.z * scl, in.y);
                 break;
             default:
                 break;
@@ -105,25 +103,23 @@ public class GravityControls {
         return out;
     }
 
-    public static Vector3 reSwap(final Vector3 in, boolean gScl, boolean invY) {
-        // Local gravity dir, fix libgdx y < 0
-        float scl = gScl ? GravityControls.getGravityScl(true) : 1;
-        // Inv libgdx y < 0 coordinate
-        float inv = invY ? -1 : 1;
+    public static Vector3 reSwap(final Vector3 in, boolean gScl) {
+        // Local gravity dir
+        float scl = gScl ? GravityControls.getGravityScl() : 1;
 
         Vector3 out = new Vector3(in); // Создаем выходной вектор
         switch (currentGravity) {
             case UP:
             case DOWN:
-                out.y *= inv * scl;
+                out.y *= scl;
                 break;
             case FORWARD:
             case BACK:
-                out.set(in.y * scl, in.x * inv, in.z);
+                out.set(in.y * scl, in.x, in.z);
                 break;
             case LEFT:
             case RIGHT:
-                out.set(in.x, in.z * inv, in.y * scl);
+                out.set(in.x, in.z, in.y * scl);
                 break;
             default:
                 break;
@@ -131,11 +127,8 @@ public class GravityControls {
         return out;
     }
 
-    public static float getGravityScl(boolean invY) {
-        // Gravity dir
-        // Invert y coordinate because libgdx y < 0, x,z > 0
-        if (!invY || currentGravity == UP || currentGravity == DOWN) return gravity[currentGravity.ord].sum();
-        return -gravity[currentGravity.ord].sum();
+    public static float getGravityScl() {
+        return gravity[currentGravity.ord].sum();
     }
 
     // @formatter:off

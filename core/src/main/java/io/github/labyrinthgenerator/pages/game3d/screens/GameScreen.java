@@ -123,6 +123,7 @@ public abstract class GameScreen implements Screen {
     }
 
     public static void setupCamera(Camera cam, Vector3 pos, Vector3 lookAt) {
+        cam.up.set(0, -1, 0);
         cam.position.set(pos.x, pos.y, pos.z);
         cam.lookAt(lookAt.add(pos));
         cam.near = 0.01f;

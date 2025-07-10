@@ -62,7 +62,7 @@ public class ModelMaker {
         mdlWallEast = createWallModel(TEXTURE_SIZE, TEXTURE_SIZE, "EAST");
 
         mdlFloor = createFloorOrCeilingModel(TEXTURE_SIZE, TEXTURE_SIZE * 2, 1);
-        mdlCeiling = createFloorOrCeilingModel(TEXTURE_SIZE, 0, -1);
+        mdlCeiling = createFloorOrCeilingModel(TEXTURE_SIZE, 0, -1); // fixme
     }
 
     private Model createWallModel(int textureX, int textureY, String direction) {
@@ -71,10 +71,10 @@ public class ModelMaker {
         Material material = getTextureMaterial(TextureAttribute.Diffuse, texture);
 
         Model wallModel = mdlBuilder.createRect(
-            1, 1, 0,
-            0, 1, 0,
-            0, 0, 0,
             1, 0, 0,
+            0, 0, 0,
+            0, 1, 0,
+            1, 1, 0,
             1, 0, 1,
             material,
             Usage.Position | Usage.Normal | Usage.TextureCoordinates // goto Cell3D cornerLength
@@ -105,10 +105,10 @@ public class ModelMaker {
             textureX, textureY, TEXTURE_SIZE, TEXTURE_SIZE);
         Material material = getTextureMaterial(TextureAttribute.Diffuse, texture);
         Model model = mdlBuilder.createRect(
-            1, 1, 0,
-            0, 1, 0,
-            0, 0, 0,
             1, 0, 0,
+            0, 0, 0,
+            0, 1, 0,
+            1, 1, 0,
             0, direction, 0,
             material, Usage.Position | Usage.Normal | Usage.TextureCoordinates);  // goto Cell3D cornerLength
 

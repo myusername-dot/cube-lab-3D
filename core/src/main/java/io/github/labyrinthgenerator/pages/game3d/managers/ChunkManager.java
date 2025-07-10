@@ -21,7 +21,7 @@ public class ChunkManager {
         this.worldSize = worldSize;
         this.chunksSize = new Vector3i(
             worldSize.x / CHUNK_SIZE + 1,
-            -worldSize.y / CHUNK_SIZE + 1,
+            worldSize.y / CHUNK_SIZE + 1,
             worldSize.z / CHUNK_SIZE + 1
         );
         this.chunks = new Chunk[chunksSize.x][chunksSize.y][chunksSize.z];
@@ -39,7 +39,7 @@ public class ChunkManager {
     }
 
     private Chunk createChunk(Vector3i position) {
-        return new Chunk(position.x * CHUNK_SIZE, -position.y * CHUNK_SIZE, position.z * CHUNK_SIZE); // -position.y!!!
+        return new Chunk(position.x * CHUNK_SIZE, position.y * CHUNK_SIZE, position.z * CHUNK_SIZE);
     }
 
     public Chunk get(float x, float y, float z) {
@@ -74,7 +74,7 @@ public class ChunkManager {
     }
 
     public Vector3i getWorldSize() {
-        return worldSize; // size.y < 0 !!!
+        return worldSize;
     }
 
     public Vector3i getChunksSize() {
@@ -84,7 +84,7 @@ public class ChunkManager {
     private Vector3i getChunkPosition(float x, float y, float z) {
         return new Vector3i(
             (int) (x / CHUNK_SIZE),
-            (int) (-y / CHUNK_SIZE), // -y!!!
+            (int) (y / CHUNK_SIZE),
             (int) (z / CHUNK_SIZE)
         );
     }
