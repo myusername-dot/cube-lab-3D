@@ -93,7 +93,7 @@ public class Player extends Entity {
 
     private void setCamPosition() {
         playerCam.position.set(getPositionImmutable());
-            //.add(GravityControls.adjustVecForGravity(new Vector3(0f, camY, 0f))));
+        //.add(GravityControls.adjustVecForGravity(new Vector3(0f, camY, 0f))));
 
         debugCam.position.set(playerCam.position.x, -playerCam.position.y, playerCam.position.z);
     }
@@ -123,10 +123,20 @@ public class Player extends Entity {
         angle = newVerticalAngle - currentVerticalAngle;
         currentVerticalAngle = newVerticalAngle;
 
-        Vector3 axis = new Vector3(playerCam.direction.z, 0f, -playerCam.direction.x);
-        axis = GravityControls.swap(axis, false, true);
+        Vector3 axis = playerCam.direction.cpy();
+        Vector3 axScl = new Vector3(-1, 0, 1);
+        axScl = GravityControls.swap(axScl, false, false);
+        axis = swapNot0(axis.scl(axScl));
         playerCam.rotate(axis, angle);
         debugCam.rotate(axis, -angle);
+    }
+
+    private Vector3 swapNot0(Vector3 in) {
+        float x = in.x, y = in.y, z = in.z;
+        if (x == 0) in.set(x, z, y);
+        if (y == 0) in.set(z, y, x);
+        if (z == 0) in.set(y, x, z);
+        return in;
     }
 
     private void reSwapCameraDirection() {
