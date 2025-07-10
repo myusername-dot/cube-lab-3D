@@ -68,24 +68,16 @@ public class Cell3D extends Entity {
 
     public void buildCell() {
         // @formatter:off
-        if (hasWallNorth) mdlInstWallNorth = createWallInstance(mdlWallNorth, texRegNorth, getPositionImmutable());
-        if (hasWallSouth) mdlInstWallSouth = createWallInstance(mdlWallSouth, texRegSouth, getPositionImmutable());
-        if (hasWallWest ) mdlInstWallWest  = createWallInstance(mdlWallWest, texRegWest, getPositionImmutable());
-        if (hasWallEast ) mdlInstWallEast  = createWallInstance(mdlWallEast, texRegEast, getPositionImmutable());
-        if (hasFloor    ) mdlInstFloor     = createFloorOrCeilingInstance(mdlFloor, texRegFloor, getPositionImmutable());
-        if (hasCeiling  ) mdlInstCeiling   = createFloorOrCeilingInstance(mdlCeiling, texRegCeiling, getPositionImmutable());
+        if (hasWallNorth) mdlInstWallNorth = createModelInstance(mdlWallNorth, texRegNorth,   getPositionImmutable());
+        if (hasWallSouth) mdlInstWallSouth = createModelInstance(mdlWallSouth, texRegSouth,   getPositionImmutable());
+        if (hasWallWest ) mdlInstWallWest  = createModelInstance(mdlWallWest,  texRegWest,    getPositionImmutable());
+        if (hasWallEast ) mdlInstWallEast  = createModelInstance(mdlWallEast,  texRegEast,    getPositionImmutable());
+        if (hasFloor    ) mdlInstFloor     = createModelInstance(mdlFloor,     texRegFloor,   getPositionImmutable());
+        if (hasCeiling  ) mdlInstCeiling   = createModelInstance(mdlCeiling,   texRegCeiling, getPositionImmutable());
         // @formatter:on
     }
 
-    private ModelInstanceBB createWallInstance(Model model, Texture texture, Vector3 position) {
-
-        ModelInstanceBB instance = createModelInstanceBB(model, texture, position);
-        transformMdlInstVertsAndNormal(instance);
-        instance.transform.setToTranslation(position);
-        return instance;
-    }
-
-    private ModelInstanceBB createFloorOrCeilingInstance(Model model, Texture texture, Vector3 position) {
+    private ModelInstanceBB createModelInstance(Model model, Texture texture, Vector3 position) {
 
         ModelInstanceBB instance = createModelInstanceBB(model, texture, position);
         transformMdlInstVertsAndNormal(instance);

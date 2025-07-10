@@ -28,12 +28,12 @@ public class GravityControls {
     };
 
     public static final Vector3[] worldSclAddMask = new Vector3[]{
-        new Vector3( -1,  1, -1),  // down
+        new Vector3( -1,  0, -1),  // down
         new Vector3( -1, -1, -1),  // up
-        new Vector3( -1,  0,  0),  // forward
-        new Vector3(  0,  0, -1),  // back
-        new Vector3( -1,  0,  0),  // right
-        new Vector3(  0,  0, -1),  // left
+        new Vector3( -1, -1,  0),  // forward
+        new Vector3(  0, -1, -1),  // back
+        new Vector3( -1, -1,  0),  // right
+        new Vector3(  0, -1, -1),  // left
     };
     // @formatter:on
 

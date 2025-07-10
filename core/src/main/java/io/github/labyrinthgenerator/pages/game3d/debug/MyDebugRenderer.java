@@ -43,28 +43,22 @@ public class MyDebugRenderer {
             horizontalAngle = player.getCurrentHorizontalAngle();
         }
 
-        if (player != null) camera.rotate(horizontalAxis, -horizontalAngle * 2);
-        camera.up.scl(-1);
+        //if (player != null) camera.rotate(horizontalAxis, -horizontalAngle * 2);
+        camera.up.y = -camera.up.y;
         camera.update();
         Matrix4 combined = camera.combined.cpy();
-        if (player != null) camera.rotate(horizontalAxis, horizontalAngle * 2);
-        camera.up.scl(-1);
+        //if (player != null) camera.rotate(horizontalAxis, horizontalAngle * 2);
+        camera.up.y = -camera.up.y;
         camera.update();
         // Создаем матрицу масштабирования для инверсии оси Y
-        Matrix4 scaleMatrix = new Matrix4();
-        scaleMatrix.setToScaling(1, -1, 1); // Инвертируем ось Y
-
-        /*Vector3i worldSize = game.getChunkMan().getWorldSize();
-        float[] vals = combined.getValues();
-        combined.setTranslation(worldSize.x - vals[Matrix4.M03], vals[Matrix4.M13], vals[Matrix4.M23]);*/
+        //Matrix4 scaleMatrix = new Matrix4();
+        //scaleMatrix.setToScaling(1, -1, 1); // Инвертируем ось Y
 
         // Умножаем матрицу проекции на матрицу масштабирования
-        combined.mul(scaleMatrix);
+        //combined.mul(scaleMatrix);
 
-        // Устанавливаем перевернутую матрицу проекции
         renderer.setProjectionMatrix(combined);
 
-        // Рендерим объекты
         renderShapes();
     }
 
@@ -87,9 +81,6 @@ public class MyDebugRenderer {
         float width = rectanglePlus.getWidth();
         float height = rectanglePlus.getHeight();
         float depth = rectanglePlus.getDepth();
-
-        y = -y;
-        height = -height;
 
         // Рендеринг 3D прямоугольника в виде линий (по периметру)
         renderer.line(x, y, z, x + width, y, z); // Front bottom
