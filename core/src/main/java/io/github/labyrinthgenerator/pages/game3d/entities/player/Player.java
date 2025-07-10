@@ -60,6 +60,8 @@ public class Player extends Entity {
     public boolean isDead = false;
     public boolean gotHit = false;
 
+    private int test = 0;
+
     public int currentInventorySlot = 1;
 
     public Player(Vector3 position, float rectWidth, float rectHeight, float rectDepth, final GameScreen screen) {
@@ -99,7 +101,7 @@ public class Player extends Entity {
     private void rotateCamHorizontal(float delta) {
         float angle = Gdx.input.getDeltaX() * -cameraRotationSpeed * GravityControls.getYScl() * delta;
         Vector3 axis = Vector3.Y;
-        axis = GravityControls.swap(axis, false, false);
+        axis = GravityControls.swap(axis, true, true);
         playerCam.rotate(axis, angle);
 
         debugCam.rotate(axis, angle);
@@ -150,6 +152,11 @@ public class Player extends Entity {
 
     public void handleInput(final float delta) {
         movementDir.setZero();
+
+        if (Gdx.input.isKeyJustPressed(Input.Keys.T)) {
+            playerCam.up.set(gravity[test++ % gravity.length].vec3());
+            playerCam.update();
+        }
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.K)) {
             debugger.debugMode = MyDebugRenderer.DebugMode.values()[
@@ -213,7 +220,6 @@ public class Player extends Entity {
 
         // local gravity x z, inv -y
         Vector3 localCamDir = GravityControls.swap(playerCam.direction, false, true);
-        Vector3 localUp = GravityControls.swap(playerCam.up, false, false);
 
         if (Gdx.input.isKeyPressed(Input.Keys.W)) {
             movementDir.add(localCamDir.x, localCamDir.z);
@@ -228,14 +234,14 @@ public class Player extends Entity {
         boolean horizontalMovement = false;
 
         if (Gdx.input.isKeyPressed(Input.Keys.A)) {
-            Vector3 rightDir = localCamDir.cpy().crs(localUp);
+            Vector3 rightDir = localCamDir.cpy().crs(playerCam.up);
             movementDir.sub(rightDir.x, rightDir.z);
             horizontalMovement = true;
             headbob = true;
         }
 
         if (Gdx.input.isKeyPressed(Input.Keys.D)) {
-            Vector3 rightDir = localCamDir.cpy().crs(localUp);
+            Vector3 rightDir = localCamDir.cpy().crs(playerCam.up);
             movementDir.add(rightDir.x, rightDir.z);
             horizontalMovement = true;
             headbob = true;
