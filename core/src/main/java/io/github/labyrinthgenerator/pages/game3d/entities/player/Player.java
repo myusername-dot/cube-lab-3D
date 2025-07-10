@@ -30,7 +30,6 @@ public class Player extends Entity {
     public final RectanglePlus rect;
 
     public final PerspectiveCamera playerCam;
-    private final PerspectiveCamera debugCam;
 
     private final MyDebugRenderer debugger;
 
@@ -42,6 +41,10 @@ public class Player extends Entity {
     private boolean jumping = false;
     private boolean cheats = false;
 
+    private final Vector3 currentHorizontalAxis = Vector3.Y.cpy();
+    private final Vector3 currentVerticalAxis = new Vector3();
+
+    private float currentHorizontalAngle = 0f;
     private float currentVerticalAngle = 0f;
     private static final float MAX_VERTICAL_ANGLE = 80f;
 
@@ -60,8 +63,6 @@ public class Player extends Entity {
     public boolean isDead = false;
     public boolean gotHit = false;
 
-    private int test = 0;
-
     public int currentInventorySlot = 1;
 
     public Player(Vector3 position, float rectWidth, float rectHeight, float rectDepth, final GameScreen screen) {
@@ -74,10 +75,6 @@ public class Player extends Entity {
         playerCam = new PerspectiveCamera(70, WINDOW_WIDTH, WINDOW_HEIGHT);
         GameScreen.setupCamera(playerCam, getPositionImmutable(), lookAt);
         screen.setCurrentCam(playerCam);
-
-        debugCam = new PerspectiveCamera(70, WINDOW_WIDTH, WINDOW_HEIGHT);
-        GameScreen.setupCamera(debugCam, getPositionImmutable().scl(1, -1, 1), lookAt.scl(-1));
-        screen.setDebugCam(debugCam);
 
         rect = new RectanglePlus(
             position.x - rectWidth / 2f,
@@ -94,20 +91,17 @@ public class Player extends Entity {
     private void setCamPosition() {
         playerCam.position.set(getPositionImmutable());
         //.add(GravityControls.adjustVecForGravity(new Vector3(0f, camY, 0f))));
-
-        debugCam.position.set(playerCam.position.x, -playerCam.position.y, playerCam.position.z);
     }
 
     private void rotateCamHorizontal(float delta) {
         // Gravity dir -1 or 1
         float scl = GravityControls.getYScl(false);
         float angle = Gdx.input.getDeltaX() * -cameraRotationSpeed * scl * delta;
-        Vector3 axis = Vector3.Y;
-        // Goto local gravity coords
-        axis = GravityControls.swap(axis, false, false);
+
+        currentHorizontalAngle += angle;
+
         // Rotate local dir angle
-        playerCam.rotate(axis, angle);
-        debugCam.rotate(axis, angle);
+        playerCam.rotate(currentHorizontalAxis, angle);
     }
 
     private void rotateCamVertical(float delta) {
@@ -133,10 +127,9 @@ public class Player extends Entity {
         // Goto local gravity coords
         axScl = GravityControls.swap(axScl, false, false);
         // Swap left and right. Local y after scaling is 0
-        axis = swapNot0(axis.scl(axScl));
+        currentVerticalAxis.set(swapNot0(axis.scl(axScl)));
         // Rotate local dir angle
-        playerCam.rotate(axis, angle);
-        debugCam.rotate(axis, -angle);
+        playerCam.rotate(currentVerticalAxis, angle);
     }
 
     private Vector3 swapNot0(Vector3 in) {
@@ -153,14 +146,14 @@ public class Player extends Entity {
 
     private void updateCameraRotation() {
         currentVerticalAngle = 0f;
+        currentHorizontalAngle = 0f;
+        // Goto local gravity coords
+        currentHorizontalAxis.set(GravityControls.swap(Vector3.Y, false, false));
+
         // Поворачиваем камеру так, чтобы пол был под ногами
         playerCam.up.set(gravity[currentGravity.ord].vec3());
         playerCam.direction.set(GravityControls.swap(playerCam.direction, true, true));
         playerCam.update();
-
-        debugCam.up.set(gravity[currentGravity.ord].vec3());
-        debugCam.direction.set(GravityControls.swap(debugCam.direction, true, true));
-        debugCam.update();
     }
 
     public float getExitDistance() {
@@ -175,11 +168,6 @@ public class Player extends Entity {
 
     public void handleInput(final float delta) {
         movementDir.setZero();
-
-        if (Gdx.input.isKeyJustPressed(Input.Keys.T)) {
-            playerCam.up.set(gravity[test++ % gravity.length].vec3());
-            playerCam.update();
-        }
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.K)) {
             debugger.debugMode = MyDebugRenderer.DebugMode.values()[
@@ -317,6 +305,7 @@ public class Player extends Entity {
             rect.getZ() + velocity.z * delta
         );
 
+        // Clamp 6 floors
         Vector3i worldSize = screen.game.getChunkMan().getWorldSize();
         float clampX = MathUtils.clamp(newPosition.x, -rect.getWidth() / 2f, worldSize.x - rect.getWidth() / 2f);
         float clampY = MathUtils.clamp(newPosition.y, worldSize.y + rect.getHeight() / 2f, rect.getHeight() / 2f);
@@ -403,6 +392,18 @@ public class Player extends Entity {
 
     public boolean isOnGround() {
         return isOnGround;
+    }
+
+    public Vector3 getHorizontalAxis() {
+        return currentHorizontalAxis;
+    }
+
+    public Vector3 getVerticalAxis() {
+        return currentVerticalAxis;
+    }
+
+    public float getCurrentHorizontalAngle() {
+        return currentHorizontalAngle;
     }
 
 	/*private void useUsableInterface(final IUsable usableInterface) {

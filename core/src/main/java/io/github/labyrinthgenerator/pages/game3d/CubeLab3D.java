@@ -205,7 +205,7 @@ public class CubeLab3D extends Game implements Page {
 		getScreen().render(Gdx.graphics.getDeltaTime());
 
 		if (debugger.debugMode != MyDebugRenderer.DebugMode.DISABLE) {
-			debugger.render(getScreen().getDebugCam().combined);
+			debugger.render(getScreen().getCurrentCam());
 		}
 
 		gameInput.resetScrolled();
