@@ -61,8 +61,8 @@ public class ModelMaker {
         mdlWallWest = createWallModel(TEXTURE_SIZE * 3, TEXTURE_SIZE, "WEST");
         mdlWallEast = createWallModel(TEXTURE_SIZE, TEXTURE_SIZE, "EAST");
 
-        mdlFloor = createFloorOrCeilingModel(TEXTURE_SIZE, TEXTURE_SIZE * 2, 1);
-        mdlCeiling = createFloorOrCeilingModel(TEXTURE_SIZE, 0, -1); // fixme
+        mdlFloor = createFloorOrCeilingModel(TEXTURE_SIZE, TEXTURE_SIZE * 2, -1);
+        mdlCeiling = createFloorOrCeilingModel(TEXTURE_SIZE, 0, 1); // fixme
     }
 
     private Model createWallModel(int textureX, int textureY, String direction) {
@@ -82,7 +82,7 @@ public class ModelMaker {
 
         switch (direction) {
             case "NORTH":
-                wallModel.nodes.get(0).rotation.set(Vector3.Y, 180f);
+                wallModel.nodes.get(0).rotation.set(Vector3.Y, -180f);
                 wallModel.nodes.get(0).translation.add(1, 0, 0);
                 break;
             case "SOUTH":
@@ -90,11 +90,11 @@ public class ModelMaker {
                 wallModel.nodes.get(0).translation.add(0, 0, 1);
                 break;
             case "WEST":
-                wallModel.nodes.get(0).rotation.set(Vector3.Y, 90f);
+                wallModel.nodes.get(0).rotation.set(Vector3.Y, -90f);
                 wallModel.nodes.get(0).translation.add(1, 0, 1);
                 break;
             case "EAST":
-                wallModel.nodes.get(0).rotation.set(Vector3.Y, -90f);
+                wallModel.nodes.get(0).rotation.set(Vector3.Y, 90f);
                 break;
         }
         return wallModel;
