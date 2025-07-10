@@ -89,8 +89,8 @@ public class Player extends Entity {
     }
 
     private void setCamPosition() {
-        playerCam.position.set(getPositionImmutable());
-        //.add(GravityControls.adjustVecForGravity(new Vector3(0f, camY, 0f))));
+        playerCam.position.set(getPositionImmutable()
+            .add(GravityControls.swap(new Vector3(0f, camY, 0f), true, false)));
     }
 
     private void rotateCamHorizontal(float delta) {
@@ -287,10 +287,10 @@ public class Player extends Entity {
         }
 
         if (headbob) {
-            //camY = HALF_UNIT;
+            camY = HALF_UNIT;
             final float sinOffset = (float) (Math.sin(screen.game.getTimeSinceLaunch() * playerMoveSpeed * 4f)
                 * 0.01875f);
-            //camY += sinOffset;
+            camY += sinOffset;
 
             headbob = false;
         }
