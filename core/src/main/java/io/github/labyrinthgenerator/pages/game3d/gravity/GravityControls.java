@@ -43,7 +43,7 @@ public class GravityControls {
         return adjustVecForGravity(in, null);
     }
 
-    public static Vector3 adjustVecForGravity(Vector3 in, Vector3i worldSize) {
+    public static Vector3 adjustVecForGravity(final Vector3 in, Vector3i worldSize) {
         Vector3 out;
         switch (currentGravity) {
             case DOWN:
@@ -82,7 +82,7 @@ public class GravityControls {
         return out;
     }
 
-    public static Vector3 swap(Vector3 in, boolean yScl, boolean invY) {
+    public static Vector3 swap(final Vector3 in, boolean yScl, boolean invY) {
         // Local gravity y dir
         float scl = yScl ? GravityControls.getYScl(true) : 1;
         // Inv libgdx y < 0 coordinate
@@ -107,7 +107,7 @@ public class GravityControls {
         return out;
     }
 
-    public static Vector3 reSwap(Vector3 in, boolean yScl, boolean invY) {
+    public static Vector3 reSwap(final Vector3 in, boolean yScl, boolean invY) {
         // Local gravity y dir
         float scl = yScl ? GravityControls.getYScl(true) : 1;
         // Inv libgdx y < 0 coordinate

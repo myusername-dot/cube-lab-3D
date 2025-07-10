@@ -183,7 +183,6 @@ public class PlayScreen extends GameScreen {
         super.render(delta);
 
         currentCam.update();
-        debugCam.update();
 
         if (game.getDebugger().debugMode == MyDebugRenderer.DebugMode.DEBUG_ONLY) return;
 
@@ -234,8 +233,9 @@ public class PlayScreen extends GameScreen {
             guiFont32.draw(game.getBatch(), "movement dir     : " + player.getMovementDir(), viewport.getWorldWidth() / 8f, viewport.getWorldHeight() - (screenYShift += 16));
             guiFont32.draw(game.getBatch(), "cam dir           : " + player.getDirection(), viewport.getWorldWidth() / 8f, viewport.getWorldHeight() - (screenYShift += 16));
             guiFont32.draw(game.getBatch(), "velocity           : " + player.getHorizontalVelocity(), viewport.getWorldWidth() / 8f, viewport.getWorldHeight() - (screenYShift += 16));
-            guiFont32.draw(game.getBatch(), "velocity forward : " + player.getHorizontalVelocity(), viewport.getWorldWidth() / 8f, viewport.getWorldHeight() - (screenYShift += 16));
             guiFont32.draw(game.getBatch(), "velocity Y         : " + player.getVerticalVelocity(), viewport.getWorldWidth() / 8f, viewport.getWorldHeight() - (screenYShift += 16));
+            guiFont32.draw(game.getBatch(), "horizontal axis    : " + player.getHorizontalAxis(), viewport.getWorldWidth() / 8f, viewport.getWorldHeight() - (screenYShift += 16));
+            guiFont32.draw(game.getBatch(), "vertical axis      : " + player.getVerticalAxis(), viewport.getWorldWidth() / 8f, viewport.getWorldHeight() - (screenYShift += 16));
             guiFont32.draw(game.getBatch(), "Exit distance      : " + player.getExitDistance(), viewport.getWorldWidth() / 8f, viewport.getWorldHeight() - (screenYShift += 16));
         }
     }

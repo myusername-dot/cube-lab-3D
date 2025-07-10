@@ -23,7 +23,6 @@ public abstract class GameScreen implements Screen {
 
     protected Viewport viewport;
     protected Camera currentCam;
-    protected Camera debugCam;
     protected Environment env;
 
     protected Player player;
@@ -135,10 +134,6 @@ public abstract class GameScreen implements Screen {
         return currentCam;
     }
 
-    public Camera getDebugCam() {
-        return debugCam;
-    }
-
     public Player getPlayer() {
         return player;
     }
@@ -211,10 +206,6 @@ public abstract class GameScreen implements Screen {
 
     public void setCurrentCam(final Camera currentCam) {
         this.currentCam = currentCam;
-    }
-
-    public void setDebugCam(final Camera debugCam) {
-        this.debugCam = debugCam;
     }
 
     @Override
