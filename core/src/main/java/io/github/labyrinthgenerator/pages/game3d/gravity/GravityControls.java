@@ -138,49 +138,26 @@ public class GravityControls {
         return -gravity[currentGravity.ord].sum();
     }
 
+    // @formatter:off
     public static void swapVerticalGravityDir() {
         switch (currentGravity) {
-            case DOWN:
-                currentGravity = UP;
-                break;
-            case UP:
-                currentGravity = DOWN;
-                break;
-            case RIGHT:
-                currentGravity = LEFT;
-                break;
-            case LEFT:
-                currentGravity = RIGHT;
-                break;
-            case BACK:
-                currentGravity = FORWARD;
-                break;
-            case FORWARD:
-                currentGravity = BACK;
-                break;
+            case DOWN: currentGravity = UP; break;
+            case UP: currentGravity = DOWN; break;
+            case RIGHT: currentGravity = LEFT; break;
+            case LEFT: currentGravity = RIGHT; break;
+            case BACK: currentGravity = FORWARD; break;
+            case FORWARD: currentGravity = BACK; break;
         }
     }
-
     public static void randomGravityDir() {
         switch (currentGravity) {
-            case DOWN:
-                currentGravity = BACK;
-                break;
-            case UP:
-                currentGravity = FORWARD;
-                break;
-            case RIGHT:
-                currentGravity = UP;
-                break;
-            case LEFT:
-                currentGravity = DOWN;
-                break;
-            case BACK:
-                currentGravity = LEFT;
-                break;
-            case FORWARD:
-                currentGravity = RIGHT;
-                break;
+            case DOWN: currentGravity = BACK; break;
+            case UP: currentGravity = FORWARD; break;
+            case RIGHT: currentGravity = UP; break;
+            case LEFT: currentGravity = DOWN; break;
+            case BACK: currentGravity = LEFT; break;
+            case FORWARD: currentGravity = RIGHT; break;
         }
     }
+    // @formatter:on
 }
