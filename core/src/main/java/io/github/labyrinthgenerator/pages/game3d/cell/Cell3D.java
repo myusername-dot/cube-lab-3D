@@ -96,10 +96,10 @@ public class Cell3D extends Entity {
     private void transformMdlInstVertsAndNormal(ModelInstanceBB instance) {
         Node node = instance.nodes.get(0);
 
-        node.translation.set(GravityControls.adjustVecForGravity(node.translation));
+        node.translation.set(GravityControls.adjustWorldVecForGravity(node.translation));
         Quaternion rotation = node.rotation;
         Vector3 rotationVec = new Vector3(rotation.x, rotation.y, rotation.z);
-        rotationVec = GravityControls.adjustVecForGravity(rotationVec);
+        rotationVec = GravityControls.adjustWorldVecForGravity(rotationVec);
         rotation.set(rotationVec.x, rotationVec.y, rotationVec.z, rotation.w);
 
         MeshPart meshPart = node.parts.get(0).meshPart;
@@ -111,7 +111,7 @@ public class Cell3D extends Entity {
         // set 4 vertices // and normal
         for (int i = 0; i < meshPart.mesh.getNumVertices(); i++) {
             int corner = i * cornerLength;
-            Vector3 localVertOrNormal = GravityControls.adjustVecForGravity(
+            Vector3 localVertOrNormal = GravityControls.adjustWorldVecForGravity(
                 new Vector3(vertices[corner], vertices[corner + 1], vertices[corner + 2])
             );
             // @formatter:off
