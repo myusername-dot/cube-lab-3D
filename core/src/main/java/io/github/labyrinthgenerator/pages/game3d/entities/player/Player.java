@@ -99,16 +99,17 @@ public class Player extends Entity {
     }
 
     private void rotateCamHorizontal(float delta) {
-        float angle = Gdx.input.getDeltaX() * -cameraRotationSpeed * GravityControls.getYScl() * delta;
+        float angle = Gdx.input.getDeltaX() * -cameraRotationSpeed * GravityControls.getYScl(false) * delta;
         Vector3 axis = Vector3.Y;
-        axis = GravityControls.swap(axis, true, true);
+        axis = GravityControls.swap(axis, false, false);
         playerCam.rotate(axis, angle);
 
         debugCam.rotate(axis, angle);
     }
 
     private void rotateCamVertical(float delta) {
-        float angle = Gdx.input.getDeltaY() * -cameraRotationSpeed * GravityControls.getYScl() * delta;
+        float scl = GravityControls.getYScl(true);
+        float angle = Gdx.input.getDeltaY() * -cameraRotationSpeed * scl * delta;
 
         float newVerticalAngle = currentVerticalAngle + angle;
 
@@ -123,7 +124,7 @@ public class Player extends Entity {
         currentVerticalAngle = newVerticalAngle;
 
         Vector3 axis = new Vector3(playerCam.direction.z, 0f, -playerCam.direction.x);
-        axis = GravityControls.swap(axis, true, true);
+        axis = GravityControls.swap(axis, false, true);
         playerCam.rotate(axis, angle);
         debugCam.rotate(axis, -angle);
     }
@@ -131,6 +132,8 @@ public class Player extends Entity {
     private void updateCameraRotation() {
         // Поворачиваем камеру так, чтобы пол был под ногами
         playerCam.up.set(gravity[currentGravity.ord].vec3());
+        playerCam.direction.set(GravityControls.swap(playerCam.direction, false, true));
+        currentVerticalAngle = 0f;
         //playerCam.direction.set(gravity[gravityDir.ord].vec3()); // Направление камеры
         //playerCam.direction.set(GravityControls.swap(playerCam.direction, true, true));
         playerCam.update();
@@ -232,16 +235,15 @@ public class Player extends Entity {
         }
 
         boolean horizontalMovement = false;
+        Vector3 rightDir = GravityControls.swap(playerCam.direction.cpy().crs(playerCam.up), false, true);
 
         if (Gdx.input.isKeyPressed(Input.Keys.A)) {
-            Vector3 rightDir = localCamDir.cpy().crs(playerCam.up);
             movementDir.sub(rightDir.x, rightDir.z);
             horizontalMovement = true;
             headbob = true;
         }
 
         if (Gdx.input.isKeyPressed(Input.Keys.D)) {
-            Vector3 rightDir = localCamDir.cpy().crs(playerCam.up);
             movementDir.add(rightDir.x, rightDir.z);
             horizontalMovement = true;
             headbob = true;
@@ -284,7 +286,7 @@ public class Player extends Entity {
         }
 
         Vector3 velocity = GravityControls.reSwap(
-            new Vector3(horizontalVelocity.x, velocityY * GravityControls.getYScl(), horizontalVelocity.y),
+            new Vector3(horizontalVelocity.x, velocityY * GravityControls.getYScl(true), horizontalVelocity.y),
             false, true);
 
         Vector3 newPosition = new Vector3(

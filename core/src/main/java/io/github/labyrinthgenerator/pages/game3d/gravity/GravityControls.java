@@ -83,7 +83,7 @@ public class GravityControls {
     }
 
     public static Vector3 swap(Vector3 in, boolean yScl, boolean invY) {
-        float scl = yScl ? GravityControls.getYScl() : 1; // gravity y dir
+        float scl = yScl ? GravityControls.getYScl(true) : 1; // gravity y dir
         float inv = invY ? -1 : 1; // libgdx y < 0
         Vector3 out;
         switch (currentGravity) {
@@ -108,7 +108,7 @@ public class GravityControls {
     }
 
     public static Vector3 reSwap(Vector3 in, boolean yScl, boolean invY) {
-        float scl = yScl ? GravityControls.getYScl() : 1;
+        float scl = yScl ? GravityControls.getYScl(true) : 1;
         float inv = invY ? -1 : 1;
         Vector3 out;
         switch (currentGravity) {
@@ -132,8 +132,9 @@ public class GravityControls {
         return out;
     }
 
-    public static float getYScl() {
-        return gravity[currentGravity.ord].sum();
+    public static float getYScl(boolean invY) {
+        if (!invY || currentGravity == UP || currentGravity == DOWN) return gravity[currentGravity.ord].sum();
+        return -gravity[currentGravity.ord].sum();
     }
 
     public static void swapYDir() {
