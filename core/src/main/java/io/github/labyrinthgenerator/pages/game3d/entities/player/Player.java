@@ -107,6 +107,7 @@ public class Player extends Entity {
     private void rotateCamVertical(float delta) {
         // Gravity dir -1 or 1
         float gScl = GravityControls.getGravityScl();
+        if (currentGravity != GravityDir.UP && currentGravity != GravityDir.DOWN) gScl *= -1;
         float angle = Gdx.input.getDeltaY() * -cameraRotationSpeed * gScl * delta;
 
         float newVerticalAngle = currentVerticalAngle + angle;
@@ -296,7 +297,7 @@ public class Player extends Entity {
         }
 
         Vector3 velocity = GravityControls.reSwap(
-            new Vector3(horizontalVelocity.x, velocityY * GravityControls.getGravityScl(), horizontalVelocity.y),
+            new Vector3(horizontalVelocity.x, velocityY * GravityControls.getGravityScl() * -1, horizontalVelocity.y),
             false);
 
         Vector3 newPosition = new Vector3(
