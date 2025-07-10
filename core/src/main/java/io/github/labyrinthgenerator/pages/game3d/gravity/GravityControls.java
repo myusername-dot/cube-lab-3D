@@ -44,40 +44,37 @@ public class GravityControls {
     }
 
     public static Vector3 adjustWorldVecForGravity(final Vector3 in, Vector3i worldSize) {
-        Vector3 out;
+        Vector3 out = new Vector3(in); // Создаем выходной вектор на основе входного
         switch (currentGravity) {
             case DOWN:
-                out = new Vector3(in.x, in.y, in.z);
                 out.scl(worldScl[DOWN.ord]);
                 break;
             case UP:
-                out = new Vector3(in.z, in.y, in.x);
-                out.scl(worldScl[UP.ord]);
-                if (worldSize != null)
+                out.set(in.z, in.y, in.x).scl(worldScl[UP.ord]);
+                if (worldSize != null) {
                     out.add(new Vector3(0, worldSize.y, 0));
+                }
                 break;
             case FORWARD:
-                out = new Vector3(in.z, in.x, in.y);
-                out.scl(worldScl[FORWARD.ord]);
+                out.set(in.z, in.x, in.y).scl(worldScl[FORWARD.ord]);
                 break;
             case BACK:
-                out = new Vector3(in.z, in.x, in.y);
-                out.scl(worldScl[BACK.ord]);
-                if (worldSize != null)
+                out.set(in.z, in.x, in.y).scl(worldScl[BACK.ord]);
+                if (worldSize != null) {
                     out.add(new Vector3(worldSize.x, 0, worldSize.z));
+                }
                 break;
             case LEFT:
-                out = new Vector3(in.y, in.z, in.x);
-                out.scl(worldScl[LEFT.ord]);
+                out.set(in.y, in.z, in.x).scl(worldScl[LEFT.ord]);
                 break;
             case RIGHT:
-                out = new Vector3(in.y, in.z, in.x);
-                out.scl(worldScl[RIGHT.ord]);
-                if (worldSize != null)
+                out.set(in.y, in.z, in.x).scl(worldScl[RIGHT.ord]);
+                if (worldSize != null) {
                     out.add(worldSize.x, 0, worldSize.z);
+                }
                 break;
             default:
-                out = in;
+                break;
         }
         return out;
     }
@@ -87,22 +84,23 @@ public class GravityControls {
         float scl = gScl ? GravityControls.getGravityScl(true) : 1;
         // Inv libgdx y < 0 coordinate
         float inv = invY ? -1 : 1;
-        Vector3 out;
+
+        Vector3 out = new Vector3(in); // Создаем выходной вектор
         switch (currentGravity) {
             case UP:
             case DOWN:
-                out = new Vector3(in.x, in.y * inv * scl, in.z);
+                out.y *= inv * scl;
                 break;
             case FORWARD:
             case BACK:
-                out = new Vector3(in.y * inv, in.x * scl, in.z);
+                out.set(in.y * inv, in.x * scl, in.z);
                 break;
             case LEFT:
             case RIGHT:
-                out = new Vector3(in.x, in.z * scl, in.y * inv);
+                out.set(in.x, in.z * scl, in.y * inv);
                 break;
             default:
-                out = in;
+                break;
         }
         return out;
     }
@@ -112,22 +110,23 @@ public class GravityControls {
         float scl = gScl ? GravityControls.getGravityScl(true) : 1;
         // Inv libgdx y < 0 coordinate
         float inv = invY ? -1 : 1;
-        Vector3 out;
+
+        Vector3 out = new Vector3(in); // Создаем выходной вектор
         switch (currentGravity) {
             case UP:
             case DOWN:
-                out = new Vector3(in.x, in.y * inv * scl, in.z);
+                out.y *= inv * scl;
                 break;
             case FORWARD:
             case BACK:
-                out = new Vector3(in.y * scl, in.x * inv, in.z);
+                out.set(in.y * scl, in.x * inv, in.z);
                 break;
             case LEFT:
             case RIGHT:
-                out = new Vector3(in.x, in.z * inv, in.y * scl);
+                out.set(in.x, in.z * inv, in.y * scl);
                 break;
             default:
-                out = in;
+                break;
         }
         return out;
     }
@@ -139,53 +138,49 @@ public class GravityControls {
         return -gravity[currentGravity.ord].sum();
     }
 
-    public static void swapYDir() {
-        GravityDir newDir = DOWN;
+    public static void swapVerticalGravityDir() {
         switch (currentGravity) {
             case DOWN:
-                newDir = UP;
+                currentGravity = UP;
                 break;
             case UP:
-                newDir = DOWN;
+                currentGravity = DOWN;
                 break;
             case RIGHT:
-                newDir = LEFT;
+                currentGravity = LEFT;
                 break;
             case LEFT:
-                newDir = RIGHT;
+                currentGravity = RIGHT;
                 break;
             case BACK:
-                newDir = FORWARD;
+                currentGravity = FORWARD;
                 break;
             case FORWARD:
-                newDir = BACK;
+                currentGravity = BACK;
                 break;
         }
-        currentGravity = newDir;
     }
 
-    public static void swapXDir() {
-        GravityDir newDir = LEFT;
+    public static void randomGravityDir() {
         switch (currentGravity) {
             case DOWN:
-                newDir = BACK;
+                currentGravity = BACK;
                 break;
             case UP:
-                newDir = FORWARD;
+                currentGravity = FORWARD;
                 break;
             case RIGHT:
-                newDir = UP;
+                currentGravity = UP;
                 break;
             case LEFT:
-                newDir = DOWN;
+                currentGravity = DOWN;
                 break;
             case BACK:
-                newDir = LEFT;
+                currentGravity = LEFT;
                 break;
             case FORWARD:
-                newDir = RIGHT;
+                currentGravity = RIGHT;
                 break;
         }
-        currentGravity =  newDir;
     }
 }
