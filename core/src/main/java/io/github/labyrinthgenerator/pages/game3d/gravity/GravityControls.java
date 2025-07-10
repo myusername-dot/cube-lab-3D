@@ -8,6 +8,10 @@ import static io.github.labyrinthgenerator.pages.game3d.gravity.GravityDir.*;
 
 public class GravityControls {
 
+    public static final GravityDir[] gravityDirections = new GravityDir[]{
+        DOWN, FORWARD, UP, BACK, RIGHT, LEFT
+    };
+
     // @formatter:off
     public static final Vector3f[] gravity = new Vector3f[]{
         new Vector3f( 0, -1,  0),  // down
@@ -19,21 +23,21 @@ public class GravityControls {
     };
 
     public static final Vector3[] worldScl = new Vector3[]{
-        new Vector3(  1, -1,  1),  // down
-        new Vector3(  1,  1,  1),  // up
-        new Vector3(  1,  1, -1),  // forward
-        new Vector3( -1,  1,  1),  // back
-        new Vector3(  1,  1, -1),  // right
-        new Vector3( -1,  1,  1),  // left
+        new Vector3(  1,  1,  1),  // down
+        new Vector3(  1, -1,  1),  // up
+        new Vector3(  1,  1,  1),  // forward
+        new Vector3( -1,  1, -1),  // back
+        new Vector3( -1,  1, -1),  // right
+        new Vector3(  1,  1,  1),  // left
     };
 
     public static final Vector3[] worldSclAddMask = new Vector3[]{
-        new Vector3( -1,  0, -1),  // down
-        new Vector3( -1, -1, -1),  // up
-        new Vector3( -1, -1,  0),  // forward
-        new Vector3(  0, -1, -1),  // back
-        new Vector3( -1, -1,  0),  // right
-        new Vector3(  0, -1, -1),  // left
+        new Vector3( -1, -1, -1),  // down
+        new Vector3( -1,  0, -1),  // up
+        new Vector3( -1, -1, -1),  // forward
+        new Vector3(  0, -1,  0),  // back
+        new Vector3(  0, -1,  0),  // right
+        new Vector3( -1, -1, -1),  // left
     };
     // @formatter:on
 
@@ -50,25 +54,25 @@ public class GravityControls {
                 out.scl(worldScl[DOWN.ord]);
                 break;
             case UP:
-                out.set(in.z, in.y, in.x).scl(worldScl[UP.ord]);
+                out.set(in.x, in.y, in.z).scl(worldScl[UP.ord]);
                 if (worldSize != null) {
                     out.add(new Vector3(0, worldSize.y, 0));
                 }
                 break;
             case FORWARD:
-                out.set(in.z, in.x, in.y).scl(worldScl[FORWARD.ord]);
+                out.set(in.y, in.x, in.z).scl(worldScl[FORWARD.ord]);
                 break;
             case BACK:
-                out.set(in.z, in.x, in.y).scl(worldScl[BACK.ord]);
+                out.set(in.y, in.x, in.z).scl(worldScl[BACK.ord]);
                 if (worldSize != null) {
                     out.add(new Vector3(worldSize.x, 0, worldSize.z));
                 }
                 break;
             case LEFT:
-                out.set(in.y, in.z, in.x).scl(worldScl[LEFT.ord]);
+                out.set(in.x, in.z, in.y).scl(worldScl[LEFT.ord]);
                 break;
             case RIGHT:
-                out.set(in.y, in.z, in.x).scl(worldScl[RIGHT.ord]);
+                out.set(in.x, in.z, in.y).scl(worldScl[RIGHT.ord]);
                 if (worldSize != null) {
                     out.add(worldSize.x, 0, worldSize.z);
                 }

@@ -12,7 +12,7 @@ import static io.github.labyrinthgenerator.pages.game3d.constants.Constants.CHUN
 
 public class ChunkManager {
 
-    private final Vector3i worldSize; // size.y < 0 !!!
+    private final Vector3i worldSize;
 
     private final Vector3i chunksSize;
     private final Chunk[][][] chunks;

@@ -9,7 +9,6 @@ import io.github.labyrinthgenerator.pages.game3d.CubeLab3D;
 import io.github.labyrinthgenerator.pages.game3d.cell.Cell3D;
 import io.github.labyrinthgenerator.pages.game3d.entities.Firefly;
 import io.github.labyrinthgenerator.pages.game3d.gravity.GravityControls;
-import io.github.labyrinthgenerator.pages.game3d.gravity.GravityDir;
 import io.github.labyrinthgenerator.pages.game3d.managers.ChunkManager;
 import io.github.labyrinthgenerator.pages.game3d.models.ModelMaker;
 import io.github.labyrinthgenerator.pages.game3d.rect.RectanglePlus;
@@ -26,16 +25,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static io.github.labyrinthgenerator.pages.game3d.constants.Constants.*;
-import static io.github.labyrinthgenerator.pages.game3d.gravity.GravityDir.*;
+import static io.github.labyrinthgenerator.pages.game3d.gravity.GravityControls.gravityDirections;
 
 @Slf4j
 public class LMapBuilder {
 
     private final CubeLab3D game;
-
-    private final GravityDir[] gravityDirections = new GravityDir[]{
-        DOWN, FORWARD, UP, BACK, RIGHT, LEFT
-    };
 
     public Vector2 mapLoadSpawnPosition = new Vector2();
     public Vector2 mapLoadExitPosition = new Vector2();
@@ -93,7 +88,7 @@ public class LMapBuilder {
         for (int i = 0; i < chunksSize.x; i++)
             for (int j = 0; j < chunksSize.y; j++)
                 for (int k = 0; k < chunksSize.z; k++)
-                    chunkMan.add(i * CHUNK_SIZE, j * CHUNK_SIZE, k * CHUNK_SIZE); // -j!!!
+                    chunkMan.add(i * CHUNK_SIZE, j * CHUNK_SIZE, k * CHUNK_SIZE);
 
         // WALLS TEX
         final Texture texWall = ModelMaker.textureRegionToTexture(
@@ -158,7 +153,7 @@ public class LMapBuilder {
                         // FLOOR LAYER 2
                         currentCell3D = new Cell3D(
                             GravityControls.adjustWorldVecForGravity(
-                                new Vector3(i, -1, k), // fixme
+                                new Vector3(i, 1, k), // fixme
                                 game.getChunkMan().getWorldSize()
                             ),
                             game.getScreen()
