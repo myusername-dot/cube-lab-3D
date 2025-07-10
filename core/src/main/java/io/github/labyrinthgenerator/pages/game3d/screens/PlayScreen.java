@@ -20,6 +20,7 @@ import io.github.labyrinthgenerator.pages.game3d.constants.Constants;
 import io.github.labyrinthgenerator.pages.game3d.cubemap.ReflectiveCubemap;
 import io.github.labyrinthgenerator.pages.game3d.debug.MyDebugRenderer;
 import io.github.labyrinthgenerator.pages.game3d.entities.player.Player;
+import io.github.labyrinthgenerator.pages.game3d.gravity.GravityControls;
 import io.github.labyrinthgenerator.pages.game3d.shaders.SkyBoxShaderProgram;
 import io.github.labyrinthgenerator.pages.game3d.vectors.Vector3i;
 
@@ -234,6 +235,7 @@ public class PlayScreen extends GameScreen {
             guiFont32.draw(game.getBatch(), "cam dir           : " + player.getDirection(), viewport.getWorldWidth() / 8f, viewport.getWorldHeight() - (screenYShift += 16));
             guiFont32.draw(game.getBatch(), "velocity           : " + player.getHorizontalVelocity(), viewport.getWorldWidth() / 8f, viewport.getWorldHeight() - (screenYShift += 16));
             guiFont32.draw(game.getBatch(), "velocity Y         : " + player.getVerticalVelocity(), viewport.getWorldWidth() / 8f, viewport.getWorldHeight() - (screenYShift += 16));
+            guiFont32.draw(game.getBatch(), "gravity            : " + GravityControls.currentGravity, viewport.getWorldWidth() / 8f, viewport.getWorldHeight() - (screenYShift += 16));
             guiFont32.draw(game.getBatch(), "horizontal axis    : " + player.getHorizontalAxis(), viewport.getWorldWidth() / 8f, viewport.getWorldHeight() - (screenYShift += 16));
             guiFont32.draw(game.getBatch(), "vertical axis      : " + player.getVerticalAxis(), viewport.getWorldWidth() / 8f, viewport.getWorldHeight() - (screenYShift += 16));
             guiFont32.draw(game.getBatch(), "Exit distance      : " + player.getExitDistance(), viewport.getWorldWidth() / 8f, viewport.getWorldHeight() - (screenYShift += 16));
