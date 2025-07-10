@@ -99,15 +99,19 @@ public class Player extends Entity {
     }
 
     private void rotateCamHorizontal(float delta) {
-        float angle = Gdx.input.getDeltaX() * -cameraRotationSpeed * GravityControls.getYScl(false) * delta;
+        // Gravity dir -1 or 1
+        float scl = GravityControls.getYScl(false);
+        float angle = Gdx.input.getDeltaX() * -cameraRotationSpeed * scl * delta;
         Vector3 axis = Vector3.Y;
+        // Goto local gravity coords
         axis = GravityControls.swap(axis, false, false);
+        // Rotate local dir angle
         playerCam.rotate(axis, angle);
-
         debugCam.rotate(axis, angle);
     }
 
     private void rotateCamVertical(float delta) {
+        // Gravity dir -1 or 1
         float scl = GravityControls.getYScl(true);
         float angle = Gdx.input.getDeltaY() * -cameraRotationSpeed * scl * delta;
 
@@ -124,9 +128,13 @@ public class Player extends Entity {
         currentVerticalAngle = newVerticalAngle;
 
         Vector3 axis = playerCam.direction.cpy();
+        // Vertical movement vec scl. Rotate x, z coords
         Vector3 axScl = new Vector3(-1, 0, 1);
+        // Goto local gravity coords
         axScl = GravityControls.swap(axScl, false, false);
+        // Swap left and right. Local y after scaling is 0
         axis = swapNot0(axis.scl(axScl));
+        // Rotate local dir angle
         playerCam.rotate(axis, angle);
         debugCam.rotate(axis, -angle);
     }
