@@ -188,7 +188,7 @@ public class MainMenuScreen extends GameScreen {
     public void render(final float delta) {
         super.render(delta);
 
-        currentCam.rotate(Vector3.Y, -6f * delta);
+        currentCam.rotate(Vector3.Y, 6f * delta);
         currentCam.update();
 
         game.getFbo().begin();

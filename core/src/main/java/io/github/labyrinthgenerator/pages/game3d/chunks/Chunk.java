@@ -18,11 +18,13 @@ public class Chunk {
         this.x = x;
         this.y = y;
         this.z = z;
-        center = new Vector3(x + width / 2f, y - height / 2f, z + depth / 2f);
+        center = new Vector3(x + width / 2f, y + height / 2f, z + depth / 2f);
     }
 
     public boolean contains(float x, float y, float z) {
-        return this.x <= x && this.x + this.width >= x && this.y >= y && this.y - this.height <= y && this.z <= z && this.z + this.depth >= z;
+        return this.x <= x && this.x + this.width >= x
+            && this.y <= y && this.y + this.height >= y
+            && this.z <= z && this.z + this.depth >= z;
     }
 
     @Override

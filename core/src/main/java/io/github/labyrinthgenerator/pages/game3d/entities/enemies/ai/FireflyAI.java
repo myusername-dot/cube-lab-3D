@@ -65,7 +65,7 @@ public class FireflyAI extends EnemyAI {
     private void setNewTargetPosition() {
         targetPos.set(
             currentPos.x + MathUtils.random(-targetPosXZRandomMaxMin, targetPosXZRandomMaxMin),
-            currentPos.y - MathUtils.random(-targetPosYRandomMaxMin, targetPosYRandomMaxMin),
+            currentPos.y + MathUtils.random(-targetPosYRandomMaxMin, targetPosYRandomMaxMin),
             currentPos.z + MathUtils.random(-targetPosXZRandomMaxMin, targetPosXZRandomMaxMin)
         );
 

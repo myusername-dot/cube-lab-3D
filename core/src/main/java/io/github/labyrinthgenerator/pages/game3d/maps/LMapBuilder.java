@@ -86,14 +86,14 @@ public class LMapBuilder {
         int width = edges.get(0).get(edges.get(0).size() - 1).length(), height = width, depth = edges.get(0).size();
 
         // CHUNKS
-        ChunkManager chunkMan = new ChunkManager(new Vector3i(width, -height, depth));
+        ChunkManager chunkMan = new ChunkManager(new Vector3i(width, height, depth));
         Vector3i chunksSize = chunkMan.getChunksSize();
         game.setChunkMan(chunkMan);
 
         for (int i = 0; i < chunksSize.x; i++)
             for (int j = 0; j < chunksSize.y; j++)
                 for (int k = 0; k < chunksSize.z; k++)
-                    chunkMan.add(i * CHUNK_SIZE, -j * CHUNK_SIZE, k * CHUNK_SIZE); // -j!!!
+                    chunkMan.add(i * CHUNK_SIZE, j * CHUNK_SIZE, k * CHUNK_SIZE); // -j!!!
 
         // WALLS TEX
         final Texture texWall = ModelMaker.textureRegionToTexture(
@@ -158,7 +158,7 @@ public class LMapBuilder {
                         // FLOOR LAYER 2
                         currentCell3D = new Cell3D(
                             GravityControls.adjustWorldVecForGravity(
-                                new Vector3(i, -1, k),
+                                new Vector3(i, 1, k),
                                 game.getChunkMan().getWorldSize()
                             ),
                             game.getScreen()
@@ -213,7 +213,7 @@ public class LMapBuilder {
                 int minFirefliesCount = 2, maxFirefliesCount = 5;
                 int firefliesC = MathUtils.random(minFirefliesCount, maxFirefliesCount);
                 for (int i = 0; i < firefliesC; i++) {
-                    scl.set(HALF_UNIT, MathUtils.random(0.3f, 0.7f), HALF_UNIT); // FIXME
+                    scl.set(HALF_UNIT, -MathUtils.random(0.3f, 0.7f), HALF_UNIT); // FIXME
                     scl = GravityControls.adjustWorldVecForGravity(scl);
                     new Firefly(
                         cell3D.getPositionImmutable().add(scl),

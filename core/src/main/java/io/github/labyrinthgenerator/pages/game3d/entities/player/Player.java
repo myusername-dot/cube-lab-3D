@@ -78,7 +78,7 @@ public class Player extends Entity {
 
         rect = new RectanglePlus(
             position.x - rectWidth / 2f,
-            position.y + rectHeight / 2f,
+            position.y - rectHeight / 2f,
             position.z - rectDepth / 2f,
             rectWidth, rectHeight, rectDepth,
             id, RectanglePlusFilter.PLAYER,
@@ -90,12 +90,12 @@ public class Player extends Entity {
 
     private void setCamPosition() {
         playerCam.position.set(getPositionImmutable()
-            .add(GravityControls.swap(new Vector3(0f, camY, 0f), true, false)));
+            .add(GravityControls.swap(new Vector3(0f, camY, 0f), true)));
     }
 
     private void rotateCamHorizontal(float delta) {
         // Gravity dir -1 or 1
-        float gScl = GravityControls.getGravityScl(false);
+        float gScl = GravityControls.getGravityScl();
         float angle = Gdx.input.getDeltaX() * -cameraRotationSpeed * gScl * delta;
 
         currentHorizontalAngle += angle;
@@ -105,8 +105,8 @@ public class Player extends Entity {
     }
 
     private void rotateCamVertical(float delta) {
-        // Gravity dir -1 or 1 and fix libgdx y < 0
-        float gScl = GravityControls.getGravityScl(true);
+        // Gravity dir -1 or 1
+        float gScl = GravityControls.getGravityScl();
         float angle = Gdx.input.getDeltaY() * -cameraRotationSpeed * gScl * delta;
 
         float newVerticalAngle = currentVerticalAngle + angle;
@@ -125,7 +125,7 @@ public class Player extends Entity {
         // Vertical movement vec gScl. Rotate x, z coords
         Vector3 axScl = new Vector3(-1, 0, 1);
         // Goto local gravity coords
-        axScl = GravityControls.swap(axScl, false, false);
+        axScl = GravityControls.swap(axScl, false);
         // Swap left and right. Local y after scaling is 0
         currentVerticalAxis.set(swapNot0(axis.scl(axScl)));
         // Rotate local dir angle
@@ -141,18 +141,18 @@ public class Player extends Entity {
     }
 
     private void reSwapCameraDirection() {
-        playerCam.direction.set(GravityControls.reSwap(playerCam.direction, true, true));
+        playerCam.direction.set(GravityControls.reSwap(playerCam.direction, true));
     }
 
     private void updateCameraRotation() {
         currentVerticalAngle = 0f;
         currentHorizontalAngle = 0f;
         // Goto local gravity coords
-        currentHorizontalAxis.set(GravityControls.swap(Vector3.Y, false, false));
+        currentHorizontalAxis.set(GravityControls.swap(Vector3.Y, false));
 
         // Поворачиваем камеру так, чтобы пол был под ногами
         playerCam.up.set(gravity[currentGravity.ord].vec3());
-        playerCam.direction.set(GravityControls.swap(playerCam.direction, true, true));
+        playerCam.direction.set(GravityControls.swap(playerCam.direction, true));
         playerCam.update();
     }
 
@@ -232,7 +232,7 @@ public class Player extends Entity {
         }
 
         // local gravity x z, inv -y
-        Vector3 localCamDir = GravityControls.swap(playerCam.direction, false, true);
+        Vector3 localCamDir = GravityControls.swap(playerCam.direction, false);
 
         if (Gdx.input.isKeyPressed(Input.Keys.W)) {
             movementDir.add(localCamDir.x, localCamDir.z);
@@ -245,7 +245,7 @@ public class Player extends Entity {
         }
 
         boolean horizontalMovement = false;
-        Vector3 rightDir = GravityControls.swap(playerCam.direction.cpy().crs(playerCam.up), false, true);
+        Vector3 rightDir = GravityControls.swap(playerCam.direction.cpy().crs(playerCam.up), false);
 
         if (Gdx.input.isKeyPressed(Input.Keys.A)) {
             movementDir.sub(rightDir.x, rightDir.z);
@@ -296,8 +296,8 @@ public class Player extends Entity {
         }
 
         Vector3 velocity = GravityControls.reSwap(
-            new Vector3(horizontalVelocity.x, velocityY * GravityControls.getGravityScl(true), horizontalVelocity.y),
-            false, true);
+            new Vector3(horizontalVelocity.x, velocityY * GravityControls.getGravityScl(), horizontalVelocity.y),
+            false);
 
         Vector3 newPosition = new Vector3(
             rect.getX() + velocity.x * delta,
@@ -308,7 +308,7 @@ public class Player extends Entity {
         // Clamp 6 floors
         Vector3i worldSize = screen.game.getChunkMan().getWorldSize();
         float clampX = MathUtils.clamp(newPosition.x, -rect.getWidth() / 2f, worldSize.x - rect.getWidth() / 2f);
-        float clampY = MathUtils.clamp(newPosition.y, worldSize.y + rect.getHeight() / 2f, rect.getHeight() / 2f);
+        float clampY = MathUtils.clamp(newPosition.y, -rect.getHeight() / 2f, worldSize.y - rect.getHeight() / 2f);
         float clampZ = MathUtils.clamp(newPosition.z, -rect.getDepth() / 2f, worldSize.z - rect.getDepth() / 2f);
         if (newPosition.x != clampX || newPosition.y != clampY || newPosition.z != clampZ) {
             newPosition.set(clampX, clampY, clampZ);
@@ -332,7 +332,7 @@ public class Player extends Entity {
 
         setPosition(
             rect.getX() + rect.getWidth() / 2f,
-            rect.getY() - rect.getHeight() / 2f,
+            rect.getY() + rect.getHeight() / 2f,
             rect.getZ() + rect.getDepth() / 2f
         );
         setCamPosition();

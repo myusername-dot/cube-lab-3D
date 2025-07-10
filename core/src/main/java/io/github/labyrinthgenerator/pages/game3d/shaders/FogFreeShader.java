@@ -228,13 +228,13 @@ public class FogFreeShader extends SpotLightFreeShader {
         program.setUniformf("u_spotCutoff", cutoffAngle);
         setFogUniforms(playerVelocity);
         Vector3i worldSize = myShaderProvider.getGame().getChunkMan().getWorldSize();
-        float[] worldSizeF = new float[]{worldSize.x + 1f, worldSize.y - 2f, worldSize.z + 1f};
+        float[] worldSizeF = new float[]{worldSize.x + 1f, worldSize.y + 1f, worldSize.z + 1f};
         program.setUniform3fv("u_worldSize", worldSizeF, 0, 3);
         float[] cameraPosition = new float[]{camera.position.x, camera.position.y, camera.position.z};
         program.setUniform3fv("u_cameraPosition", cameraPosition, 0, 3);
         context.begin();
         context.setDepthTest(GL20.GL_LEQUAL);
-        context.setCullFace(GL20.GL_BACK);
+        context.setCullFace(GL20.GL_NONE);
     }
 
     private void setDefaultLightUniforms() {

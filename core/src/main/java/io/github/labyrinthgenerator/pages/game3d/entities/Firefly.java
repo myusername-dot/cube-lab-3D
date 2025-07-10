@@ -65,7 +65,7 @@ public class Firefly extends Enemy {
         final float rectDepth = mdlInst.radius;
         rect = new RectanglePlus(
             position.x - rectWidth / 2f,
-            position.y + rectHeight / 2f,
+            position.y - rectHeight / 2f,
             position.z - rectDepth / 2f,
             rectWidth, rectHeight, rectDepth, id, RectanglePlusFilter.ENTITY, screen.game.getRectMan()
         );
@@ -96,7 +96,7 @@ public class Firefly extends Enemy {
 
         setPosition(
             rect.getX() + rect.getWidth() / 2f,
-            rect.getY() - rect.getHeight() / 2f,
+            rect.getY() + rect.getHeight() / 2f,
             rect.getZ() + rect.getDepth() / 2f
         );
 

@@ -46,6 +46,7 @@ public class ReflectiveCubemap {
         this.position = position;
 
         camFb = new PerspectiveCamera(90, 640, 480);
+        camFb.up.set(0, -1, 0);
         camFb.position.set(0, HALF_UNIT, 0);
         camFb.lookAt(0, HALF_UNIT, 1);
         camFb.near = 0.01f;

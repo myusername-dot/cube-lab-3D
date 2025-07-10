@@ -72,8 +72,8 @@ public abstract class Entity {
     public boolean canUpdateChunk() {
         if (isDestroyed) return false;
         Vector3i worldSize = chunkMan.getWorldSize();
-        if (position.x < 0 || position.y > 0 || position.z < 0 ||
-            position.x > worldSize.x || position.y < worldSize.y || position.z > worldSize.z) {
+        if (position.x < 0 || position.y < 0 || position.z < 0 ||
+            position.x > worldSize.x || position.y > worldSize.y || position.z > worldSize.z) {
             //log.warn("Entity id: " + id + " position " + position + " out of bounds.");
             return false;
         }

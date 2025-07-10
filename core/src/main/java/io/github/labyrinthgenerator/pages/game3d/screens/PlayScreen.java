@@ -77,7 +77,7 @@ public class PlayScreen extends GameScreen {
         envCubeMap = new SkyBoxShaderProgram(new Pixmap(Gdx.files.internal(game.getAssMan().bgSky01)));
 
         Vector3i worldSize = game.getChunkMan().getWorldSize();
-        exitCubemap = new ReflectiveCubemap(new Vector3(worldSize.x / 2f, -2f, worldSize.z / 2f), 1f, game);
+        exitCubemap = new ReflectiveCubemap(new Vector3(worldSize.x / 2f, 2f, worldSize.z / 2f), 1f, game);
     }
 
     private Environment createEnvironment() {
