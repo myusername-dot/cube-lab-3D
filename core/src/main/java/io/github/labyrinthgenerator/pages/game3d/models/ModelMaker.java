@@ -62,7 +62,7 @@ public class ModelMaker {
         mdlWallEast = createWallModel(TEXTURE_SIZE, TEXTURE_SIZE, "EAST");
 
         mdlFloor = createFloorOrCeilingModel(TEXTURE_SIZE, TEXTURE_SIZE * 2, -1);
-        mdlCeiling = createFloorOrCeilingModel(TEXTURE_SIZE, 0, 1); // fixme
+        mdlCeiling = createFloorOrCeilingModel(TEXTURE_SIZE, 0, 1);
     }
 
     private Model createWallModel(int textureX, int textureY, String direction) {
@@ -109,11 +109,12 @@ public class ModelMaker {
             0, 0, 0,
             0, 1, 0,
             1, 1, 0,
-            0, direction, 0,
+            0, -direction, 0,
             material, Usage.Position | Usage.Normal | Usage.TextureCoordinates);  // goto Cell3D cornerLength
 
         model.nodes.get(0).rotation.set(Vector3.X, direction == 1 ? 90f : -90f);
-        if (direction == 1) model.nodes.get(0).translation.add(0, 1, 0);
+        if (direction == -1) model.nodes.get(0).translation.add(0, 1, 0);
+        // todo ceiling not check
 
         return model;
     }
