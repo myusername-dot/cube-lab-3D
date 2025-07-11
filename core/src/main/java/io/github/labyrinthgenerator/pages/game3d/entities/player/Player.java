@@ -10,7 +10,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import io.github.labyrinthgenerator.pages.game3d.debug.MyDebugRenderer;
 import io.github.labyrinthgenerator.pages.game3d.entities.Entity;
-import io.github.labyrinthgenerator.pages.game3d.entities.Firefly;
+import io.github.labyrinthgenerator.pages.game3d.entities.enemies.Firefly;
 import io.github.labyrinthgenerator.pages.game3d.gravity.GravityControls;
 import io.github.labyrinthgenerator.pages.game3d.gravity.GravityDir;
 import io.github.labyrinthgenerator.pages.game3d.rect.RectanglePlus;
