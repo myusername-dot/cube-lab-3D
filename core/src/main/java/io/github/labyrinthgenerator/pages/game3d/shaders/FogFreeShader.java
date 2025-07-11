@@ -128,12 +128,12 @@ public class FogFreeShader extends SpotLightFreeShader {
             "       c = texture2D(u_texture, v_texCoords0);" +
             "    }\n" +
             "\n" +
-            "    float heightFactor = max(0.5 + worldPosition.y, 0.0);\n" + // bottom
-            "    heightFactor = max(0.5 + u_worldSize.y - worldPosition.y, heightFactor);\n" + // top
-            "    heightFactor = max(0.5 - worldPosition.x - 1.0, heightFactor);\n" + // forward
-            "    heightFactor = max(0.5 + worldPosition.x - u_worldSize.x, heightFactor);\n" + // back
-            "    heightFactor = max(0.5 - worldPosition.z - 1.0, heightFactor);\n" + // left
-            "    heightFactor = max(0.5 + worldPosition.z - u_worldSize.z, heightFactor);\n" + // right
+            "    float heightFactor = -min(1.4 + worldPosition.y, 0.0);\n" + // bottom // -2...?
+            "    heightFactor = max(1.6 + worldPosition.y - u_worldSize.y, heightFactor);\n" + // top
+            "    heightFactor = max(0.6 - worldPosition.x - 1.0, heightFactor);\n" + // forward
+            "    heightFactor = max(0.6 + worldPosition.x - u_worldSize.x, heightFactor);\n" + // back
+            "    heightFactor = max(0.6 - worldPosition.z - 1.0, heightFactor);\n" + // left
+            "    heightFactor = max(0.6 + worldPosition.z - u_worldSize.z, heightFactor);\n" + // right
             "    heightFactor *= 1.6;\n" +
             "\n" +
             "    float longWave = clamp(\n" +
