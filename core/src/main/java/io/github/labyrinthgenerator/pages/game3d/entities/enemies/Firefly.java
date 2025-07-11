@@ -81,6 +81,7 @@ public class Firefly extends Enemy {
 
     @Override
     public void render3D(final ModelBatch mdlBatch, final Environment env, final float delta) {
+        //Vector3 up = GravityControls.gravity[GravityControls.currentGravity.ord].cpy().abs().vec3();
         mdlInst.transform.setToLookAt(screen.getCamBackView(), Vector3.Y);
         mdlInst.transform.setTranslation(getPositionImmutable());
 

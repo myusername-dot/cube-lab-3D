@@ -188,7 +188,8 @@ public abstract class GameScreen implements Screen {
     }
 
     protected void updateBackView() {
-        camBackView.set(currentCam.direction.cpy().rotate(Vector3.Z, 180f));
+        //Vector3 axis = GravityControls.swap(Vector3.Z);
+        camBackView.set(currentCam.direction.cpy().rotate(Vector3.Z, 180f).nor());
     }
 
     public Vector3 getCamBackView() {
