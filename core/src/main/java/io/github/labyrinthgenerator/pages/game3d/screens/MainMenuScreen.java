@@ -14,6 +14,8 @@ import com.badlogic.gdx.utils.viewport.StretchViewport;
 import io.github.labyrinthgenerator.pages.game2d.Labyrinth2D;
 import io.github.labyrinthgenerator.pages.game3d.CubeLab3D;
 import io.github.labyrinthgenerator.pages.game3d.constants.Constants;
+import io.github.labyrinthgenerator.pages.game3d.gravity.GravityControls;
+import io.github.labyrinthgenerator.pages.game3d.gravity.GravityDir;
 
 import static io.github.labyrinthgenerator.pages.game3d.constants.Constants.*;
 
@@ -68,6 +70,9 @@ public class MainMenuScreen extends GameScreen {
 
         game.setScreen(this);
         game.getMapBuilder().buildMap(Labyrinth2D.txtFilename);
+
+        GravityControls.currentGravity = GravityDir.DOWN;
+
         setupCamera();
 
         Gdx.input.setCursorCatched(false);
