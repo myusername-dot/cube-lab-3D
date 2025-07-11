@@ -44,12 +44,12 @@ public class MyDebugRenderer {
         }
 
         //if (player != null) camera.rotate(horizontalAxis, -horizontalAngle * 2);
-        camera.up.y = -camera.up.y;
-        camera.update();
+        //camera.up.y = -camera.up.y;
+        //camera.update();
         Matrix4 combined = camera.combined.cpy();
         //if (player != null) camera.rotate(horizontalAxis, horizontalAngle * 2);
-        camera.up.y = -camera.up.y;
-        camera.update();
+        //camera.up.y = -camera.up.y;
+        //camera.update();
         // Создаем матрицу масштабирования для инверсии оси Y
         //Matrix4 scaleMatrix = new Matrix4();
         //scaleMatrix.setToScaling(1, -1, 1); // Инвертируем ось Y
@@ -81,6 +81,9 @@ public class MyDebugRenderer {
         float width = rectanglePlus.getWidth();
         float height = rectanglePlus.getHeight();
         float depth = rectanglePlus.getDepth();
+
+        y = -y;
+        height = -height;
 
         // Рендеринг 3D прямоугольника в виде линий (по периметру)
         renderer.line(x, y, z, x + width, y, z); // Front bottom

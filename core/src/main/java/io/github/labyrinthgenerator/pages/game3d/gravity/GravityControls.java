@@ -32,8 +32,8 @@ public class GravityControls {
     };
 
     public static final Vector3[] worldPositionRectangleAdd = new Vector3[]{
-        new Vector3(  0,  0,  0),  // down
-        new Vector3(  0, -1,  0),  // up
+        new Vector3(  0, -1,  0),  // down
+        new Vector3(  0,  0,  0),  // up
         new Vector3(  0,  0, -1),  // forward
         new Vector3( -1,  0,  0),  // back
         new Vector3(  0,  0, -1),  // right

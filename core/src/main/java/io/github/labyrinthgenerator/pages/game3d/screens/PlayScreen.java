@@ -67,8 +67,8 @@ public class PlayScreen extends GameScreen {
 
         Vector3 playerSpawnPosition = getPlayerSpawnPosition();
         player = new Player(
-            playerSpawnPosition,
-            HALF_UNIT / 2f, HALF_UNIT * 2f, HALF_UNIT / 2f,
+            playerSpawnPosition.sub(0, HALF_UNIT, 0),
+            HALF_UNIT / 2f, HALF_UNIT / 2f, HALF_UNIT / 2f,
             this
         );
         viewport.setCamera(currentCam);
