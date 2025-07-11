@@ -71,10 +71,10 @@ public class ModelMaker {
         Material material = getTextureMaterial(TextureAttribute.Diffuse, texture);
 
         Model wallModel = mdlBuilder.createRect(
-            1, 0, 0,
+            1,-1, 0,
+            0,-1, 0,
             0, 0, 0,
-            0, 1, 0,
-            1, 1, 0,
+            1, 0, 0,
             1, 0, 1,
             material,
             Usage.Position | Usage.Normal | Usage.TextureCoordinates // goto Cell3D cornerLength
@@ -90,11 +90,11 @@ public class ModelMaker {
                 wallModel.nodes.get(0).translation.add(0, 0, 1);
                 break;
             case "WEST":
-                wallModel.nodes.get(0).rotation.set(Vector3.Y, -90f);
+                wallModel.nodes.get(0).rotation.set(Vector3.Y, 90f);
                 wallModel.nodes.get(0).translation.add(1, 0, 1);
                 break;
             case "EAST":
-                wallModel.nodes.get(0).rotation.set(Vector3.Y, 90f);
+                wallModel.nodes.get(0).rotation.set(Vector3.Y, -90f);
                 break;
         }
         return wallModel;
@@ -105,15 +105,15 @@ public class ModelMaker {
             textureX, textureY, TEXTURE_SIZE, TEXTURE_SIZE);
         Material material = getTextureMaterial(TextureAttribute.Diffuse, texture);
         Model model = mdlBuilder.createRect(
-            1, 0, 0,
+            1,-1, 0,
+            0,-1, 0,
             0, 0, 0,
-            0, 1, 0,
-            1, 1, 0,
-            0, -direction, 0,
+            1, 0, 0,
+            0, direction, 0,
             material, Usage.Position | Usage.Normal | Usage.TextureCoordinates);  // goto Cell3D cornerLength
 
         model.nodes.get(0).rotation.set(Vector3.X, direction == 1 ? 90f : -90f);
-        if (direction == 1) model.nodes.get(0).translation.add(0, 1, 0);
+        if (direction == -1) model.nodes.get(0).translation.add(0, -1, 0);
         // todo ceiling not check
 
         return model;
