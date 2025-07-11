@@ -1,8 +1,8 @@
 package io.github.labyrinthgenerator.pages.game3d.managers;
 
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector3;
 import io.github.labyrinthgenerator.pages.game3d.chunks.Chunk;
-import io.github.labyrinthgenerator.pages.game3d.vectors.Vector3f;
 import io.github.labyrinthgenerator.pages.game3d.vectors.Vector3i;
 
 import java.util.ArrayList;
@@ -18,7 +18,7 @@ public class ChunkManager {
     private final Chunk[][][] chunks;
 
     public ChunkManager(Vector3i worldSize) {
-        this.worldSize = worldSize;
+        this.worldSize = worldSize.cpy();
         this.chunksSize = new Vector3i(
             worldSize.x / CHUNK_SIZE + 1,
             worldSize.y / CHUNK_SIZE + 1,
@@ -44,10 +44,6 @@ public class ChunkManager {
 
     public Chunk get(float x, float y, float z) {
         Vector3i position = getChunkPosition(x, y, z);
-        if (position.x >= chunksSize.x || position.y >= chunksSize.y || position.z >= chunksSize.z
-            || position.x < 0 || position.y < 0 || position.z < 0) {
-            throw new RuntimeException("position >= size || < 0: " + position + ", " + chunksSize + ", " + new Vector3f(x, y, z) + ".");
-        }
         Chunk chunk = chunks[position.x][position.y][position.z];
         if (chunk == null) {
             throw new NullPointerException("Chunk at position " + x + ", " + y + ", " + z + " is null.");
@@ -74,14 +70,17 @@ public class ChunkManager {
     }
 
     public Vector3i getWorldSize() {
-        return worldSize;
+        return worldSize.cpy();
     }
 
     public Vector3i getChunksSize() {
-        return chunksSize;
+        return chunksSize.cpy();
     }
 
     private Vector3i getChunkPosition(float x, float y, float z) {
+        x = MathUtils.clamp(x, 0, worldSize.x);
+        y = MathUtils.clamp(y, 0, worldSize.y);
+        z = MathUtils.clamp(z, 0, worldSize.z);
         return new Vector3i(
             (int) (x / CHUNK_SIZE),
             (int) (y / CHUNK_SIZE),
