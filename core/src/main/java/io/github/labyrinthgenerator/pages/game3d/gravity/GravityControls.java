@@ -54,25 +54,25 @@ public class GravityControls {
                 out.scl(worldScl[DOWN.ord]);
                 break;
             case UP:
-                out.set(in.x, in.y, in.z).scl(worldScl[UP.ord]);
+                out.set(in.z, in.y, in.x).scl(worldScl[UP.ord]);
                 if (worldSize != null) {
                     out.add(new Vector3(0, worldSize.y, 0));
                 }
                 break;
             case FORWARD:
-                out.set(in.y, in.x, in.z).scl(worldScl[FORWARD.ord]);
+                out.set(in.z, in.x, in.y).scl(worldScl[FORWARD.ord]);
                 break;
             case BACK:
-                out.set(in.y, in.x, in.z).scl(worldScl[BACK.ord]);
+                out.set(in.z, in.x, in.y).scl(worldScl[BACK.ord]);
                 if (worldSize != null) {
                     out.add(new Vector3(worldSize.x, 0, worldSize.z));
                 }
                 break;
             case LEFT:
-                out.set(in.x, in.z, in.y).scl(worldScl[LEFT.ord]);
+                out.set(in.y, in.z, in.x).scl(worldScl[LEFT.ord]);
                 break;
             case RIGHT:
-                out.set(in.x, in.z, in.y).scl(worldScl[RIGHT.ord]);
+                out.set(in.y, in.z, in.x).scl(worldScl[RIGHT.ord]);
                 if (worldSize != null) {
                     out.add(worldSize.x, 0, worldSize.z);
                 }

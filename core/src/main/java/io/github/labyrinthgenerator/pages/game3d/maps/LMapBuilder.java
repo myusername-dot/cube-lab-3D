@@ -153,7 +153,7 @@ public class LMapBuilder {
                         // FLOOR LAYER 2
                         currentCell3D = new Cell3D(
                             GravityControls.adjustWorldVecForGravity(
-                                new Vector3(i, 1, k), // fixme
+                                new Vector3(i, 1, k),
                                 game.getChunkMan().getWorldSize()
                             ),
                             game.getScreen()
@@ -208,7 +208,7 @@ public class LMapBuilder {
                 int minFirefliesCount = 2, maxFirefliesCount = 5;
                 int firefliesC = MathUtils.random(minFirefliesCount, maxFirefliesCount);
                 for (int i = 0; i < firefliesC; i++) {
-                    scl.set(HALF_UNIT, MathUtils.random(0.3f, 0.7f), HALF_UNIT); // FIXME
+                    scl.set(HALF_UNIT, -MathUtils.random(0.3f, 0.7f), HALF_UNIT); // models y = -1
                     scl = GravityControls.adjustWorldVecForGravity(scl);
                     new Firefly(
                         cell3D.getPositionImmutable().add(scl),
