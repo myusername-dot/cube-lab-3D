@@ -14,7 +14,7 @@ public class PointLightPlus extends PointLight {
 
     public Vector3 worldToScreen(final Vector3 worldPosition, final Camera camera) {
         Vector3 worldPositionBug = worldPosition.cpy();
-        //worldPositionBug.y += 0.5f;
+        //worldPositionBug.y -= 1f;
         return camera.project(worldPositionBug); // Возвращаем экранные координаты
     }
 }

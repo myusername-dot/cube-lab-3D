@@ -55,6 +55,7 @@ public class ModelMaker {
             HALF_UNIT / 6f, -HALF_UNIT / 6f, 0,
             0, 0, -1,
             getTextureMaterial(TextureAttribute.Diffuse));
+        //mdlPoint.nodes.get(0).translation.add(0, -1, 0); // bugs.....
 
         mdlWallNorth = createWallModel(0, TEXTURE_SIZE, "NORTH");
         mdlWallSouth = createWallModel(TEXTURE_SIZE * 2, TEXTURE_SIZE, "SOUTH");

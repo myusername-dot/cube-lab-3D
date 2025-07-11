@@ -56,7 +56,6 @@ public class FogFreeShader extends SpotLightFreeShader {
             "    aPosition = a_position;\n" +
             "    v_normal = a_normal;\n" +
             "    worldPosition = (u_worldTrans * a_position).xyz;\n" +
-            "    worldPosition.y -= 1.0;\n" +
             "\n" +
             "\n" + // Вычисляем расстояние до камеры
             "    clip2Distance = length(vec3(position.x, min(0.0, position.y * 4.0), position.z));\n" + // todo FIXME
@@ -128,8 +127,8 @@ public class FogFreeShader extends SpotLightFreeShader {
             "       c = texture2D(u_texture, v_texCoords0);" +
             "    }\n" +
             "\n" +
-            "    float heightFactor = -min(1.4 + worldPosition.y, 0.0);\n" + // bottom
-            "    heightFactor = max(0.6 + worldPosition.y - u_worldSize.y, heightFactor);\n" + // top
+            "    float heightFactor = -min(0.4 + worldPosition.y, 0.0);\n" + // bottom
+            "    heightFactor = max(-0.4 + worldPosition.y - u_worldSize.y, heightFactor);\n" + // top
             "    heightFactor = max(-0.4 - worldPosition.x, heightFactor);\n" + // forward
             "    heightFactor = max(-0.4 + worldPosition.x - u_worldSize.x, heightFactor);\n" + // back
             "    heightFactor = max(-0.4 - worldPosition.z, heightFactor);\n" + // left
