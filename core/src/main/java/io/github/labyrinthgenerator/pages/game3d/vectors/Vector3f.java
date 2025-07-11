@@ -57,6 +57,14 @@ public class Vector3f {
         return new Vector3f(z, y, x);
     }
 
+    public Vector3f shiftR () {
+        return new Vector3f(z, x, y);
+    }
+
+    public Vector3f shiftL () {
+        return new Vector3f(y, z, x);
+    }
+
     public Vector3f invZero (float val) {
         return new Vector3f(x == 0 ? val : 0, y == 0 ? val : 0, z == 0 ? val : 0);
     }

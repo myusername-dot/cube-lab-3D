@@ -195,6 +195,7 @@ public class MainMenuScreen extends GameScreen {
 
         currentCam.rotate(Vector3.Y, 6f * delta);
         currentCam.update();
+        updateBackView();
 
         game.getFbo().begin();
         clearScreen();
