@@ -234,7 +234,7 @@ public class FogFreeShader extends SpotLightFreeShader {
         program.setUniform3fv("u_cameraPosition", cameraPosition, 0, 3);
         context.begin();
         context.setDepthTest(GL20.GL_LEQUAL);
-        context.setCullFace(GL20.GL_BACK);
+        context.setCullFace(GL20.GL_FRONT);
     }
 
     private void setDefaultLightUniforms() {
