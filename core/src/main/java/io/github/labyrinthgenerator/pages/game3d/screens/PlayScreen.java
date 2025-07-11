@@ -184,6 +184,7 @@ public class PlayScreen extends GameScreen {
         super.render(delta);
 
         currentCam.update();
+        updateBackView();
 
         if (game.getDebugger().debugMode == MyDebugRenderer.DebugMode.DEBUG_ONLY) return;
 

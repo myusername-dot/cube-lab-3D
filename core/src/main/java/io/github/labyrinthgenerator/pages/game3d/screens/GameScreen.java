@@ -23,6 +23,7 @@ public abstract class GameScreen implements Screen {
 
     protected Viewport viewport;
     protected Camera currentCam;
+    protected final Vector3 camBackView = new Vector3();
     protected Environment env;
 
     protected Player player;
@@ -184,6 +185,14 @@ public abstract class GameScreen implements Screen {
         game.getChunkMan().clear();
         game.getTickMan().clear();
         game.getShaderProvider().clear();
+    }
+
+    protected void updateBackView() {
+        camBackView.set(currentCam.direction.cpy().rotate(Vector3.Z, 180f));
+    }
+
+    public Vector3 getCamBackView() {
+        return camBackView;
     }
 
     @Override
