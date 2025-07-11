@@ -229,6 +229,7 @@ public class PlayScreen extends GameScreen {
             int screenYShift = 32;
             guiFont32.draw(game.getBatch(), "position           : " + player.getPositionImmutable(), viewport.getWorldWidth() / 8f, viewport.getWorldHeight() - (screenYShift += 16));
             guiFont32.draw(game.getBatch(), "cam position      : " + getCurrentCam().position, viewport.getWorldWidth() / 8f, viewport.getWorldHeight() - (screenYShift += 16));
+            guiFont32.draw(game.getBatch(), "cam direction      : " + getCurrentCam().direction, viewport.getWorldWidth() / 8f, viewport.getWorldHeight() - (screenYShift += 16));
             guiFont32.draw(game.getBatch(), "rectangle         : " + player.rect, viewport.getWorldWidth() / 8f, viewport.getWorldHeight() - (screenYShift += 16));
             guiFont32.draw(game.getBatch(), "is on ground      : " + player.isOnGround(), viewport.getWorldWidth() / 8f, viewport.getWorldHeight() - (screenYShift += 16));
             guiFont32.draw(game.getBatch(), "movement dir     : " + player.getMovementDir(), viewport.getWorldWidth() / 8f, viewport.getWorldHeight() - (screenYShift += 16));
