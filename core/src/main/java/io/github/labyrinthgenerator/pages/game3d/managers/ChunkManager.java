@@ -39,7 +39,7 @@ public class ChunkManager {
     }
 
     private Chunk createChunk(Vector3i position) {
-        return new Chunk(position.x * CHUNK_SIZE, position.y * CHUNK_SIZE, position.z * CHUNK_SIZE);
+        return new Chunk(this,position.x * CHUNK_SIZE, position.y * CHUNK_SIZE, position.z * CHUNK_SIZE);
     }
 
     public Chunk get(float x, float y, float z) {
