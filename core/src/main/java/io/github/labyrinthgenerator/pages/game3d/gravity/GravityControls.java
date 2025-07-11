@@ -22,7 +22,7 @@ public class GravityControls {
         new Vector3f( 0,  0,  1),  // left
     };
 
-    public static final Vector3[] worldScl = new Vector3[]{
+    public static final Vector3[] worldGravityScl = new Vector3[]{
         new Vector3(  1,  1,  1),  // down
         new Vector3(  1, -1,  1),  // up
         new Vector3(  1,  1,  1),  // forward
@@ -31,13 +31,13 @@ public class GravityControls {
         new Vector3(  1,  1,  1),  // left
     };
 
-    public static final Vector3[] worldSclAddMask = new Vector3[]{
-        new Vector3( -1, -1, -1),  // down
-        new Vector3( -1,  0, -1),  // up
-        new Vector3( -1, -1, -1),  // forward
-        new Vector3(  0, -1,  0),  // back
-        new Vector3(  0, -1,  0),  // right
-        new Vector3( -1, -1, -1),  // left
+    public static final Vector3[] worldPositionAddScl = new Vector3[]{
+        new Vector3(  0,  0,  0),  // down
+        new Vector3(  0, -1,  0),  // up
+        new Vector3(  0,  0, -1),  // forward
+        new Vector3( -1,  0,  0),  // back
+        new Vector3(  0,  0, -1),  // right
+        new Vector3( -1,  0,  0),  // left
     };
     // @formatter:on
 
@@ -51,28 +51,28 @@ public class GravityControls {
         Vector3 out = new Vector3(in); // Создаем выходной вектор на основе входного
         switch (currentGravity) {
             case DOWN:
-                out.scl(worldScl[DOWN.ord]);
+                out.scl(worldGravityScl[DOWN.ord]);
                 break;
             case UP:
-                out.set(in.z, in.y, in.x).scl(worldScl[UP.ord]);
+                out.set(in.z, in.y, in.x).scl(worldGravityScl[UP.ord]);
                 if (worldSize != null) {
                     out.add(new Vector3(0, worldSize.y, 0));
                 }
                 break;
             case FORWARD:
-                out.set(in.z, in.x, in.y).scl(worldScl[FORWARD.ord]);
+                out.set(in.z, in.x, in.y).scl(worldGravityScl[FORWARD.ord]);
                 break;
             case BACK:
-                out.set(in.z, in.x, in.y).scl(worldScl[BACK.ord]);
+                out.set(in.z, in.x, in.y).scl(worldGravityScl[BACK.ord]);
                 if (worldSize != null) {
                     out.add(new Vector3(worldSize.x, 0, worldSize.z));
                 }
                 break;
             case LEFT:
-                out.set(in.y, in.z, in.x).scl(worldScl[LEFT.ord]);
+                out.set(in.y, in.z, in.x).scl(worldGravityScl[LEFT.ord]);
                 break;
             case RIGHT:
-                out.set(in.y, in.z, in.x).scl(worldScl[RIGHT.ord]);
+                out.set(in.y, in.z, in.x).scl(worldGravityScl[RIGHT.ord]);
                 if (worldSize != null) {
                     out.add(worldSize.x, 0, worldSize.z);
                 }

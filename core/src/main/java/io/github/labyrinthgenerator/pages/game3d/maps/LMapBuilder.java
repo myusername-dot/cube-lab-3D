@@ -140,8 +140,7 @@ public class LMapBuilder {
                         currentCell3D.texRegWest = texWall;
 
                         scl.set(cellPosition);
-                        scl.add(GravityControls.worldSclAddMask[gravityDirections[edge].ord]);
-                        scl.add(GravityControls.worldScl[gravityDirections[edge].ord]);
+                        scl.add(GravityControls.worldPositionAddScl[gravityDirections[edge].ord]);
                         new RectanglePlus(
                             scl.x, scl.y, scl.z,
                             1, 1, 1,
