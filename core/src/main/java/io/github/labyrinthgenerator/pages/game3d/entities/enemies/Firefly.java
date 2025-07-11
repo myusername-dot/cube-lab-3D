@@ -8,9 +8,7 @@ import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.attributes.BlendingAttribute;
 import com.badlogic.gdx.graphics.g3d.attributes.FloatAttribute;
 import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
-import com.badlogic.gdx.graphics.g3d.environment.PointLight;
 import com.badlogic.gdx.math.Vector3;
-import io.github.labyrinthgenerator.pages.game3d.entities.enemies.Enemy;
 import io.github.labyrinthgenerator.pages.game3d.entities.enemies.ai.FireflyAI;
 import io.github.labyrinthgenerator.pages.game3d.models.ModelInstanceBB;
 import io.github.labyrinthgenerator.pages.game3d.rect.RectanglePlus;
@@ -31,6 +29,7 @@ public class Firefly extends Enemy {
         YELLOW,
         GREEN
     }
+
     private Color color;
     private final Wave wave;
     private boolean isOnWave = false;
@@ -82,8 +81,9 @@ public class Firefly extends Enemy {
 
     @Override
     public void render3D(final ModelBatch mdlBatch, final Environment env, final float delta) {
+        Vector3 axis = Vector3.Z;
         mdlInst.transform.setToLookAt(
-            screen.getCurrentCam().direction.cpy().rotate(Vector3.Z, 180f),
+            screen.getCurrentCam().direction.cpy().rotate(axis, 180f),
             Vector3.Y);
         mdlInst.transform.setTranslation(getPositionImmutable());
 

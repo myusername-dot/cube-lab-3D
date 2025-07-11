@@ -90,7 +90,7 @@ public class Player extends Entity {
 
     private void setCamPosition() {
         playerCam.position.set(getPositionImmutable()
-            .add(GravityControls.swap(new Vector3(0f, camY, 0f), true)));
+            .add(GravityControls.swap(new Vector3(0f, camY, 0f))));
     }
 
     private void rotateCamHorizontal(float delta) {
@@ -123,13 +123,13 @@ public class Player extends Entity {
         currentVerticalAngle = newVerticalAngle;
 
         Vector3 axis = playerCam.direction.cpy();
-        // Vertical movement vec gScl. Rotate x, z coords
+        // Scl -x, z coords
         Vector3 axScl = new Vector3(-1, 0, 1);
         // Goto local gravity coords
-        axScl = GravityControls.swap(axScl, false);
-        // Swap left and right. Local y after scaling is 0
+        axScl = GravityControls.swap(axScl);
+        // Swap to z -x. Local y after scaling is 0
         currentVerticalAxis.set(swapNot0(axis.scl(axScl)));
-        // Rotate local dir angle
+        // Rotate dir angle by local z, 0, -x
         playerCam.rotate(currentVerticalAxis, angle);
     }
 
@@ -142,18 +142,18 @@ public class Player extends Entity {
     }
 
     private void reSwapCameraDirection() {
-        playerCam.direction.set(GravityControls.reSwap(playerCam.direction, true));
+        playerCam.direction.set(GravityControls.reSwap(playerCam.direction));
     }
 
     private void updateCameraRotation() {
         currentVerticalAngle = 0f;
         currentHorizontalAngle = 0f;
         // Goto local gravity coords
-        currentHorizontalAxis.set(GravityControls.swap(Vector3.Y, false));
+        currentHorizontalAxis.set(GravityControls.swap(Vector3.Y));
 
         // Поворачиваем камеру так, чтобы пол был под ногами
         playerCam.up.set(gravity[currentGravity.ord].vec3());
-        playerCam.direction.set(GravityControls.swap(playerCam.direction, true));
+        playerCam.direction.set(GravityControls.swap(playerCam.direction));
         playerCam.update();
     }
 
@@ -233,7 +233,7 @@ public class Player extends Entity {
         }
 
         // local gravity x z, inv -y
-        Vector3 localCamDir = GravityControls.swap(playerCam.direction, false);
+        Vector3 localCamDir = GravityControls.swap(playerCam.direction);
 
         if (Gdx.input.isKeyPressed(Input.Keys.W)) {
             movementDir.add(localCamDir.x, localCamDir.z);
@@ -246,7 +246,7 @@ public class Player extends Entity {
         }
 
         boolean horizontalMovement = false;
-        Vector3 rightDir = GravityControls.swap(playerCam.direction.cpy().crs(playerCam.up), false);
+        Vector3 rightDir = GravityControls.swap(playerCam.direction.cpy().crs(playerCam.up));
 
         if (Gdx.input.isKeyPressed(Input.Keys.A)) {
             movementDir.sub(rightDir.x, rightDir.z);
@@ -297,8 +297,7 @@ public class Player extends Entity {
         }
 
         Vector3 velocity = GravityControls.reSwap(
-            new Vector3(horizontalVelocity.x, velocityY * GravityControls.getGravityScl() * -1, horizontalVelocity.y),
-            false);
+            new Vector3(horizontalVelocity.x, velocityY * GravityControls.getGravityScl() * -1, horizontalVelocity.y));
 
         Vector3 newPosition = new Vector3(
             rect.getX() + velocity.x * delta,
