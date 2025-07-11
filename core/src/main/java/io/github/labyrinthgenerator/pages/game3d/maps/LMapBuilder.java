@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static io.github.labyrinthgenerator.pages.game3d.constants.Constants.*;
+import static io.github.labyrinthgenerator.pages.game3d.gravity.GravityControls.currentGravity;
 import static io.github.labyrinthgenerator.pages.game3d.gravity.GravityControls.gravityDirections;
 
 @Slf4j
@@ -103,7 +104,7 @@ public class LMapBuilder {
             assert width == lines.get(lines.size() - 1).length();
             assert depth == lines.size();
 
-            GravityControls.currentGravity = gravityDirections[edge];
+            currentGravity = gravityDirections[edge];
 
             Vector3 scl = new Vector3();
 
@@ -140,7 +141,7 @@ public class LMapBuilder {
                         currentCell3D.texRegWest = texWall;
 
                         scl.set(cellPosition);
-                        scl.add(GravityControls.worldPositionAddScl[gravityDirections[edge].ord]);
+                        scl.add(GravityControls.worldPositionRectangleAdd[currentGravity.ord]);
                         new RectanglePlus(
                             scl.x, scl.y, scl.z,
                             1, 1, 1,
