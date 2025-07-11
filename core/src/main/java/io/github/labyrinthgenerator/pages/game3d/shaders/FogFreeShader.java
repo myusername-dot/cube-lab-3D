@@ -128,12 +128,12 @@ public class FogFreeShader extends SpotLightFreeShader {
             "       c = texture2D(u_texture, v_texCoords0);" +
             "    }\n" +
             "\n" +
-            "    float heightFactor = -min(1.4 + worldPosition.y, 0.0);\n" + // bottom // -2...?
-            "    heightFactor = max(1.6 + worldPosition.y - u_worldSize.y, heightFactor);\n" + // top
-            "    heightFactor = max(0.6 - worldPosition.x - 1.0, heightFactor);\n" + // forward
-            "    heightFactor = max(0.6 + worldPosition.x - u_worldSize.x, heightFactor);\n" + // back
-            "    heightFactor = max(0.6 - worldPosition.z - 1.0, heightFactor);\n" + // left
-            "    heightFactor = max(0.6 + worldPosition.z - u_worldSize.z, heightFactor);\n" + // right
+            "    float heightFactor = -min(1.4 + worldPosition.y, 0.0);\n" + // bottom
+            "    heightFactor = max(0.6 + worldPosition.y - u_worldSize.y, heightFactor);\n" + // top
+            "    heightFactor = max(-0.4 - worldPosition.x, heightFactor);\n" + // forward
+            "    heightFactor = max(-0.4 + worldPosition.x - u_worldSize.x, heightFactor);\n" + // back
+            "    heightFactor = max(-0.4 - worldPosition.z, heightFactor);\n" + // left
+            "    heightFactor = max(-0.4 + worldPosition.z - u_worldSize.z, heightFactor);\n" + // right
             "    heightFactor *= 1.6;\n" +
             "\n" +
             "    float longWave = clamp(\n" +
@@ -228,7 +228,7 @@ public class FogFreeShader extends SpotLightFreeShader {
         program.setUniformf("u_spotCutoff", cutoffAngle);
         setFogUniforms(playerVelocity);
         Vector3i worldSize = myShaderProvider.getGame().getChunkMan().getWorldSize();
-        float[] worldSizeF = new float[]{worldSize.x + 1f, worldSize.y + 1f, worldSize.z + 1f};
+        float[] worldSizeF = new float[]{worldSize.x, worldSize.y, worldSize.z};
         program.setUniform3fv("u_worldSize", worldSizeF, 0, 3);
         float[] cameraPosition = new float[]{camera.position.x, camera.position.y, camera.position.z};
         program.setUniform3fv("u_cameraPosition", cameraPosition, 0, 3);

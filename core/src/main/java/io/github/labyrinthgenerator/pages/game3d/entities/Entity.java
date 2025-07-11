@@ -8,7 +8,6 @@ import io.github.labyrinthgenerator.pages.game3d.managers.ChunkManager;
 import io.github.labyrinthgenerator.pages.game3d.managers.EntityManager;
 import io.github.labyrinthgenerator.pages.game3d.rect.RectanglePlus;
 import io.github.labyrinthgenerator.pages.game3d.screens.GameScreen;
-import io.github.labyrinthgenerator.pages.game3d.vectors.Vector3i;
 import io.github.labyrinthgenerator.pages.light.PointLightPlus;
 import lombok.extern.slf4j.Slf4j;
 
@@ -70,14 +69,7 @@ public abstract class Entity {
     }
 
     public boolean canUpdateChunk() {
-        if (isDestroyed) return false;
-        Vector3i worldSize = chunkMan.getWorldSize();
-        if (position.x < 0 || position.y < 0 || position.z < 0 ||
-            position.x > worldSize.x || position.y > worldSize.y || position.z > worldSize.z) {
-            //log.warn("Entity id: " + id + " position " + position + " out of bounds.");
-            return false;
-        }
-        return true;
+        return !isDestroyed;
     }
 
     public synchronized void updateChunk() {
