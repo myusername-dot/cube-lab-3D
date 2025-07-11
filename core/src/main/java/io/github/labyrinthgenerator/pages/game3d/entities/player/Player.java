@@ -34,7 +34,7 @@ public class Player extends Entity {
     private final MyDebugRenderer debugger;
 
     private final float cameraRotationSpeed = 25f;
-    private float camY = -HALF_UNIT; // camera y bug, should be HALF_UNIT or 0
+    private float camY = 0;
     private boolean headbob = false;
 
     private boolean verticalCameraMovement = false;
@@ -288,7 +288,7 @@ public class Player extends Entity {
         }
 
         if (headbob) {
-            camY = HALF_UNIT;
+            camY = 0;
             final float sinOffset = (float) (Math.sin(screen.game.getTimeSinceLaunch() * playerMoveSpeed * 4f)
                 * 0.01875f);
             camY += sinOffset;
@@ -308,9 +308,9 @@ public class Player extends Entity {
 
         // Clamp 6 floors
         Vector3i worldSize = screen.game.getChunkMan().getWorldSize();
-        float clampX = MathUtils.clamp(newPosition.x, -rect.getWidth() / 2f, worldSize.x - rect.getWidth() / 2f);
-        float clampY = MathUtils.clamp(newPosition.y, -rect.getHeight() / 2f, worldSize.y - rect.getHeight() / 2f);
-        float clampZ = MathUtils.clamp(newPosition.z, -rect.getDepth() / 2f, worldSize.z - rect.getDepth() / 2f);
+        float clampX = MathUtils.clamp(newPosition.x, -rect.getWidth() * 2f, worldSize.x + rect.getWidth());
+        float clampY = MathUtils.clamp(newPosition.y, -rect.getHeight() * 2f, worldSize.y + rect.getHeight());
+        float clampZ = MathUtils.clamp(newPosition.z, -rect.getDepth() * 2f, worldSize.z + rect.getDepth());
         if (newPosition.x != clampX || newPosition.y != clampY || newPosition.z != clampZ) {
             newPosition.set(clampX, clampY, clampZ);
             isOnGround = true;
