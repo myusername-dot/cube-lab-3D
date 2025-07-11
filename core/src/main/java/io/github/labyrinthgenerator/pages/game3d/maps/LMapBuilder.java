@@ -208,7 +208,7 @@ public class LMapBuilder {
                 int minFirefliesCount = 2, maxFirefliesCount = 5;
                 int firefliesC = MathUtils.random(minFirefliesCount, maxFirefliesCount);
                 for (int i = 0; i < firefliesC; i++) {
-                    scl.set(HALF_UNIT, -MathUtils.random(0.3f, 0.7f), HALF_UNIT); // models y = -1
+                    scl.set(HALF_UNIT, -MathUtils.random(0.3f, 0.7f), HALF_UNIT);
                     scl = GravityControls.adjustWorldVecForGravity(scl);
                     new Firefly(
                         cell3D.getPositionImmutable().add(scl),

@@ -34,7 +34,7 @@ public class Player extends Entity {
     private final MyDebugRenderer debugger;
 
     private final float cameraRotationSpeed = 25f;
-    private float camY = -HALF_UNIT; // camera y bug, should be HALF_UNIT
+    private float camY = -HALF_UNIT; // camera y bug, should be HALF_UNIT or 0
     private boolean headbob = false;
 
     private boolean verticalCameraMovement = false;

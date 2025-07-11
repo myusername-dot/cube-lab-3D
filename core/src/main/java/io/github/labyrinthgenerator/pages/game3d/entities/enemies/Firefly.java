@@ -82,7 +82,9 @@ public class Firefly extends Enemy {
 
     @Override
     public void render3D(final ModelBatch mdlBatch, final Environment env, final float delta) {
-        mdlInst.transform.setToLookAt(screen.getCurrentCam().direction.cpy().rotate(Vector3.Z, 180f), Vector3.Y);
+        mdlInst.transform.setToLookAt(
+            screen.getCurrentCam().direction.cpy().rotate(Vector3.Z, 180f),
+            Vector3.Y);
         mdlInst.transform.setTranslation(getPositionImmutable());
 
         super.render3D(mdlBatch, env, delta);
