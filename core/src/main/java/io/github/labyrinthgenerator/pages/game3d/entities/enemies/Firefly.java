@@ -1,4 +1,4 @@
-package io.github.labyrinthgenerator.pages.game3d.entities;
+package io.github.labyrinthgenerator.pages.game3d.entities.enemies;
 
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
