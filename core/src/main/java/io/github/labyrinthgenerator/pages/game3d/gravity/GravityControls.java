@@ -83,49 +83,39 @@ public class GravityControls {
         return out;
     }
 
-    public static Vector3 swap(final Vector3 in, boolean gScl) {
-        // Local gravity dir
-        float scl = gScl ? GravityControls.getGravityScl() : 1;
-
+    public static Vector3 swap(final Vector3 in) {
         Vector3 out = new Vector3(in); // Создаем выходной вектор
         switch (currentGravity) {
             case UP:
             case DOWN:
-                out.y *= scl;
+            default:
                 break;
             case FORWARD:
             case BACK:
-                out.set(in.y, in.x * scl, in.z);
+                out.set(in.y, in.x, in.z);
                 break;
             case LEFT:
             case RIGHT:
-                out.set(in.x, in.z * scl, in.y);
-                break;
-            default:
+                out.set(in.x, in.z, in.y);
                 break;
         }
         return out;
     }
 
-    public static Vector3 reSwap(final Vector3 in, boolean gScl) {
-        // Local gravity dir
-        float scl = gScl ? GravityControls.getGravityScl() : 1;
-
+    public static Vector3 reSwap(final Vector3 in) {
         Vector3 out = new Vector3(in); // Создаем выходной вектор
         switch (currentGravity) {
             case UP:
             case DOWN:
-                out.y *= scl;
+            default:
                 break;
             case FORWARD:
             case BACK:
-                out.set(in.y * scl, in.x, in.z);
+                out.set(in.y, in.x, in.z);
                 break;
             case LEFT:
             case RIGHT:
-                out.set(in.x, in.z, in.y * scl);
-                break;
-            default:
+                out.set(in.x, in.z, in.y);
                 break;
         }
         return out;
