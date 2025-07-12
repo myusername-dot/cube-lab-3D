@@ -3,6 +3,7 @@ package io.github.labyrinthgenerator.pages.game3d.cubemap;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.*;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g3d.*;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.attributes.CubemapAttribute;
@@ -151,7 +152,7 @@ public class ReflectiveCubemap {
         return finalPixmap;
     }
 
-    public void updateCubemap(final ModelBatch modelBatch, /*final SpriteBatch spriteBatch, */final Environment env, final SkyBoxShaderProgram envCubeMap, float delta) {
+    public void updateCubemap(final ModelBatch modelBatch, final SpriteBatch spriteBatch, final Environment env, final SkyBoxShaderProgram envCubeMap, float delta) {
         if (renderedFirst) return;
 
         Camera currentCam = game.getScreen().getCurrentCam();
@@ -168,6 +169,10 @@ public class ReflectiveCubemap {
         Gdx.gl.glEnable(GL20.GL_BLEND);
         Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
 
+        /*Cubemap cubemap = fb.getColorBufferTexture();
+        FacedCubemapData cubemapData = (FacedCubemapData) cubemap.getCubemapData();
+        GLOnlyTextureData sideData = (GLOnlyTextureData) cubemapData.getTextureData(fb.getSide());*/
+
         fb.begin();
         while (fb.nextSide()) {
             fb.getSide().getUp(camFb.up);
@@ -177,39 +182,31 @@ public class ReflectiveCubemap {
             ScreenUtils.clear(1, 1, 1, 1, true);
             envCubeMap.render(camFb);
 
-            /*final int w = fboWidth;//Gdx.graphics.getBackBufferWidth();
+            final int w = fboWidth;//Gdx.graphics.getBackBufferWidth();
             final int h = fboHeight;//Gdx.graphics.getBackBufferHeight();
-            Pixmap backgroundFBPixmap = Pixmap.createFromFrameBuffer(0, 0, w, h);*/
+            Pixmap backgroundFBPixmap = Pixmap.createFromFrameBuffer(0, 0, w, h);
 
             modelBatch.begin(camFb);
             game.getEntMan().render3DAllEntities(modelBatch, env, delta, camFb.position.cpy(), false);
             modelBatch.end();
 
-            /*Pixmap currentFBPixmap = Pixmap.createFromFrameBuffer(0, 0, w, h);
+            Pixmap currentFBPixmap = Pixmap.createFromFrameBuffer(0, 0, w, h);
             Pixmap finalPixmap = setTransparency(currentFBPixmap, backgroundFBPixmap, 0.5f, w, h);
             Texture finalTexture = new Texture(finalPixmap);
 
-            FileHandle fileHandle = Gdx.files.local("textures/backgroundFBPixmap" + fb.getSide().index + ".png");
-            fileHandle.parent().mkdirs();
-            PixmapIO.writePNG(fileHandle, backgroundFBPixmap);
-            fileHandle = Gdx.files.local("textures/currentFBPixmap" + fb.getSide().index + ".png");
-            PixmapIO.writePNG(fileHandle, currentFBPixmap);
-            fileHandle = Gdx.files.local("textures/finalPixmap" + fb.getSide().index + ".png");
-            PixmapIO.writePNG(fileHandle, finalPixmap);
-
             spriteBatch.begin();
-            spriteBatch.draw(finalTexture, 0, 0, w, h);
+            spriteBatch.draw(finalTexture, 0, h * 2, w * 4, -h * 2);
             spriteBatch.end();
 
             currentFBPixmap.dispose();
             currentFBPixmap = Pixmap.createFromFrameBuffer(0, 0, w, h);
 
-            fileHandle = Gdx.files.local("textures/finalFbo" + fb.getSide().index + ".png");
+            FileHandle fileHandle = Gdx.files.local("textures/finalFbo" + fb.getSide().index + ".png");
             PixmapIO.writePNG(fileHandle, finalPixmap);
 
             backgroundFBPixmap.dispose();
             currentFBPixmap.dispose();
-            finalPixmap.dispose();*/
+            finalPixmap.dispose();
         }
         fb.end();
         renderedFirst = true;
