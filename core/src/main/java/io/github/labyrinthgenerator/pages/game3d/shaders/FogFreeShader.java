@@ -115,16 +115,16 @@ public class FogFreeShader extends SpotLightFreeShader {
             "\n" +
             "void main(void)\n" +
             "{\n" +
-            "    vec4 c = vec4(0);\n" +
+            "    vec4 currentColor = vec4(0);\n" +
             "    if (u_isReflective) {\n" +
             "\n" + // Преобразование в диапазон [-1, 1]
             "\n" + // normalize(texture(u_normalMap, v_texCoords2).xyz * 2.0 - 1.0)
             "       vec3 N = normalize(v_normal);\n" +
             "       vec3 V = normalize(u_cameraPosition - worldPosition);\n" +
             "       vec3 R = reflect(V, N);\n" + // + 0.1 * normalize(N)
-            "       c = texture(u_cubemap, R);\n" + // c *= 1.0 - smoothstep(0.0, 1.0, length(R));
+            "       currentColor = texture(u_cubemap, R);\n" + // currentColor *= 1.0 - smoothstep(0.0, 1.0, length(R));
             "    } else {\n" +
-            "       c = texture2D(u_texture, v_texCoords0);" +
+            "       currentColor = texture2D(u_texture, v_texCoords0);" +
             "    }\n" +
             "\n" +
             "    float heightFactor = -min(0.4 + worldPosition.y, 0.0);\n" + // bottom
@@ -163,9 +163,9 @@ public class FogFreeShader extends SpotLightFreeShader {
             "\n" +
             "\n" + // Основной цвет
             "    if (!u_isReflective) " +
-            "        gl_FragColor = mix(mix(mix(c, spotColor, 0.3), u_fogColor, fogFactor), spotColor, 0.1);\n" +
+            "        currentColor = mix(mix(mix(currentColor, spotColor, 0.3), u_fogColor, fogFactor), spotColor, 0.1);\n" +
             "    else\n" +
-            "        gl_FragColor = mix(c, u_fogColor, fogFactor);\n" +
+            "        currentColor = mix(currentColor, u_fogColor, fogFactor);\n" +
             "\n" +
             "\n" + // Обработка точечных источников света
             "#if defined(lightingFlag)\n" +
@@ -185,15 +185,15 @@ public class FogFreeShader extends SpotLightFreeShader {
             "        }\n" +
             "        glowingColor += lightColor.rgb * attenuation;\n" +
             "    }\n" +
-            "    gl_FragColor.rgb += glowingColor;\n" +
+            "    currentColor.rgb += glowingColor;\n" +
             "#endif\n" +
             "\n" +
             "\n" + // Коррекция цвета
-            "    vec3 color = gl_FragColor.rgb;\n" +
+            "    vec3 color = currentColor.rgb;\n" +
             "    float saturation = 1.3;\n" + // Устанавливаем желаемую насыщенность
             "    vec3 gray = vec3(dot(color, vec3(0.299, 0.587, 0.114)));\n" + // Преобразуем в градацию серого
             "    color = mix(gray, color, saturation);\n" + // Интерполируем между серым и исходным цветом
-            "    gl_FragColor = vec4(color, 1.0);\n" +
+            "    gl_FragColor = vec4(color, currentColor.a);\n" +
             "}\n";
 
     public FogFreeShader(MyShaderProvider myShaderProvider, boolean lightingFlag) {
