@@ -188,7 +188,7 @@ public class PlayScreen extends GameScreen {
 
         if (game.getDebugger().debugMode == MyDebugRenderer.DebugMode.DEBUG_ONLY) return;
 
-        exitCubemap.updateCubemap(game.getMdlBatch(), env, envCubeMap, delta);
+        exitCubemap.updateCubemap(game.getMdlBatch(), game.getBatch(), env, envCubeMap, delta);
 
         game.getFbo().begin();
 
