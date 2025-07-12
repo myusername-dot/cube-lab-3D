@@ -45,7 +45,7 @@ public class ReflectiveCubemap {
         this.radius = radius;
         this.position = position;
 
-        camFb = new PerspectiveCamera(90, 640, 480);
+        camFb = new PerspectiveCamera(90, fboWidth, fboHeight);
         camFb.up.set(0, -1, 0);
         camFb.position.set(0, HALF_UNIT, 0);
         camFb.lookAt(0, HALF_UNIT, 1);
@@ -53,7 +53,7 @@ public class ReflectiveCubemap {
         camFb.far = 100f;
         camFb.update();
 
-        fb = new FrameBufferCubemap(Pixmap.Format.RGB888, fboWidth, fboHeight, true);
+        fb = new FrameBufferCubemap(Pixmap.Format.RGBA8888, fboWidth, fboHeight, true);
         fb.getColorBufferTexture().setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
 
         cubemap = fb.getColorBufferTexture();
@@ -119,11 +119,42 @@ public class ReflectiveCubemap {
         reflectiveSphereMdlInst.transform.setToTranslation(position);
     }
 
-    public void updateCubemap(final ModelBatch modelBatch, final Environment env, final SkyBoxShaderProgram envCubeMap, float delta) {
-        if (renderedFirst) return; // comment this
+    private Pixmap setTransparency(Pixmap firstPixmap, Pixmap secondPixmap, final float alpha, int w, int h) {
+        Pixmap finalPixmap = new Pixmap(w, h, Pixmap.Format.RGBA8888);
+        for (int i = 0; i < w; i++) {
+            for (int j = 0; j < h; j++) {
+                int pixel1 = firstPixmap.getPixel(i, j);
+                int pixel2 = secondPixmap.getPixel(i, j);
+
+                // Извлечение компонентов цвета
+                int r1 = (pixel1 >> 24) & 0xff; // Red компонента первого пикселя
+                int g1 = (pixel1 >> 16) & 0xff; // Green компонента первого пикселя
+                int b1 = (pixel1 >> 8) & 0xff;  // Blue компонента первого пикселя
+                int a1 = (pixel1 & 0xff);       // Alpha компонента первого пикселя
+
+                int r2 = (pixel2 >> 24) & 0xff; // Red компонента второго пикселя
+                int g2 = (pixel2 >> 16) & 0xff; // Green компонента второго пикселя
+                int b2 = (pixel2 >> 8) & 0xff;  // Blue компонента второго пикселя
+                int a2 = (pixel2 & 0xff);       // Alpha компонента второго пикселя
+
+                // Комбинирование цветов с учетом альфа-канала
+                int r = (int) (r1 * (1f - alpha) + r2 * alpha);
+                int g = (int) (g1 * (1f - alpha) + g2 * alpha);
+                int b = (int) (b1 * (1f - alpha) + b2 * alpha);
+                int a = (int) (a1 * (1f - alpha) + a2 * alpha); // Альфа может также быть смешан
+
+                // Объединяем компоненты обратно в один пиксель с правильным порядком
+                int finalPixel = (r << 24) | (g << 16) | (b << 8) | a;
+                finalPixmap.drawPixel(i, j, finalPixel);
+            }
+        }
+        return finalPixmap;
+    }
+
+    public void updateCubemap(final ModelBatch modelBatch, /*final SpriteBatch spriteBatch, */final Environment env, final SkyBoxShaderProgram envCubeMap, float delta) {
+        if (renderedFirst) return;
 
         Camera currentCam = game.getScreen().getCurrentCam();
-        //if (!game.getScreen().frustumCull(currentCam, reflectiveSphereMdlInst)) return;
         if (!game.getScreen().frustumCull(currentCam, position, radius * 2)) return;
 
         MyShaderProvider myShaderProvider = game.getShaderProvider();
@@ -134,21 +165,51 @@ public class ReflectiveCubemap {
 
         Gdx.gl.glViewport(0, 0, fboWidth, fboHeight);
         Gdx.gl.glDisable(GL20.GL_SCISSOR_TEST);
+        Gdx.gl.glEnable(GL20.GL_BLEND);
+        Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
 
         fb.begin();
         while (fb.nextSide()) {
             fb.getSide().getUp(camFb.up);
             fb.getSide().getDirection(camFb.direction);
             camFb.update();
-            //if (renderedFirst && !game.getScreen().frustumCull(camFb, currentCam.position, radius)) continue;
 
             ScreenUtils.clear(1, 1, 1, 1, true);
-
             envCubeMap.render(camFb);
 
+            /*final int w = fboWidth;//Gdx.graphics.getBackBufferWidth();
+            final int h = fboHeight;//Gdx.graphics.getBackBufferHeight();
+            Pixmap backgroundFBPixmap = Pixmap.createFromFrameBuffer(0, 0, w, h);*/
+
             modelBatch.begin(camFb);
-            game.getEntMan().render3DAllEntities(modelBatch, env, delta, camFb.position.cpy(), false); // true
+            game.getEntMan().render3DAllEntities(modelBatch, env, delta, camFb.position.cpy(), false);
             modelBatch.end();
+
+            /*Pixmap currentFBPixmap = Pixmap.createFromFrameBuffer(0, 0, w, h);
+            Pixmap finalPixmap = setTransparency(currentFBPixmap, backgroundFBPixmap, 0.5f, w, h);
+            Texture finalTexture = new Texture(finalPixmap);
+
+            FileHandle fileHandle = Gdx.files.local("textures/backgroundFBPixmap" + fb.getSide().index + ".png");
+            fileHandle.parent().mkdirs();
+            PixmapIO.writePNG(fileHandle, backgroundFBPixmap);
+            fileHandle = Gdx.files.local("textures/currentFBPixmap" + fb.getSide().index + ".png");
+            PixmapIO.writePNG(fileHandle, currentFBPixmap);
+            fileHandle = Gdx.files.local("textures/finalPixmap" + fb.getSide().index + ".png");
+            PixmapIO.writePNG(fileHandle, finalPixmap);
+
+            spriteBatch.begin();
+            spriteBatch.draw(finalTexture, 0, 0, w, h);
+            spriteBatch.end();
+
+            currentFBPixmap.dispose();
+            currentFBPixmap = Pixmap.createFromFrameBuffer(0, 0, w, h);
+
+            fileHandle = Gdx.files.local("textures/finalFbo" + fb.getSide().index + ".png");
+            PixmapIO.writePNG(fileHandle, finalPixmap);
+
+            backgroundFBPixmap.dispose();
+            currentFBPixmap.dispose();
+            finalPixmap.dispose();*/
         }
         fb.end();
         renderedFirst = true;
