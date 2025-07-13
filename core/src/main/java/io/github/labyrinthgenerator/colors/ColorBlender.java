@@ -81,17 +81,23 @@ public class ColorBlender {
         return (c.x + c.y + c.z) / 3;
     }
 
+    private static void clamp(Vector3i c) {
+        c.x = Math.min(255, Math.max(0, c.x));
+        c.y = Math.min(255, Math.max(0, c.y));
+        c.z = Math.min(255, Math.max(0, c.z));
+    }
+
     public static int clamp(int minSrc, int maxSrc, int dst) {
         Vector3i c1 = extractRGB(minSrc);
         Vector3i c2 = extractRGB(maxSrc);
         Quaternion c3 = extractRGBA(dst);
 
         int min1 = min(c1);
-        int max1 = max(c2);
+        int max2 = max(c2);
 
-        int r = (int) (MathUtils.clamp(c3.x, min1, max1));
-        int g = (int) (MathUtils.clamp(c3.y, min1, max1));
-        int b = (int) (MathUtils.clamp(c3.z, min1, max1));
+        int r = (int) (MathUtils.clamp(c3.x, min1, max2));
+        int g = (int) (MathUtils.clamp(c3.y, min1, max2));
+        int b = (int) (MathUtils.clamp(c3.z, min1, max2));
 
         return create(r, g, b, c3.w / 255f);
     }
@@ -125,23 +131,30 @@ public class ColorBlender {
         return sub(pixel, grayC, alpha);
     }
 
-    public static int saturation(int pixel, float saturation, float alpha) {
-        int grayP = create((int) (0.299 * 255), (int) (0.587 * 255), (int) (0.114 * 255), 1f);
+    public static int saturation(int pixel, float saturationFactor, float alpha) {
         Vector3i c1 = extractRGB(pixel);
-        Vector3i c2 = extractRGB(grayP);
 
-        int grayC = (int) c1.vec3().scl(1f / 255f).dot(c2.vec3().scl(1f / 255f)) * 255;
+        int gray = (int) (0.299 * c1.x + 0.587 * c1.y + 0.114 * c1.z);
+        Vector3i grayColor = new Vector3i(gray, gray, gray);
 
-        return mix(pixel, grayC, saturation, alpha);
+        Vector3i newColor = new Vector3i(
+            (int) (c1.x + (grayColor.x - c1.x) * saturationFactor),
+            (int) (c1.y + (grayColor.y - c1.y) * saturationFactor),
+            (int) (c1.z + (grayColor.z - c1.z) * saturationFactor)
+        );
+
+        clamp(newColor);
+
+        return mix(pixel, create(newColor.x, newColor.y, newColor.z, alpha), saturationFactor, alpha);
     }
 
-    public static int add(int pixel1, int pixel2, float alpha) {
+    public static int add(int pixel1, int pixel2, float alpha1, float alpha) {
         Vector3i c1 = extractRGB(pixel1);
         Vector3i c2 = extractRGB(pixel2);
 
-        int r = Math.min(c1.x + c2.x, 255);
-        int g = Math.min(c1.y + c2.y, 255);
-        int b = Math.min(c1.z + c2.z, 255);
+        int r = (int) Math.min(c1.x * alpha1 + c2.x, 255f);
+        int g = (int) Math.min(c1.y * alpha1 + c2.y, 255f);
+        int b = (int) Math.min(c1.z * alpha1 + c2.z, 255f);
 
         return create(r, g, b, alpha);
     }
