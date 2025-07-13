@@ -138,8 +138,8 @@ public abstract class GameScreen implements Screen {
 
     protected Environment createEnvironment() {
         Environment env = new Environment();
-        env.set(new ColorAttribute(ColorAttribute.AmbientLight, 1f, 1f, 1f, 1f));
-        //fogColor = new Color(66 / 256f, 33 / 256f, 54 / 256f, 1f);
+        env.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.5f, 0.5f, 0.5f, 1f));
+        //fogColor = new Color(66f / 256f, 33f / 256f, 54f / 256f, 1f);
         fogColor = new Color(0.9f, 0.9f, 0.9f, 1f);
         env.set(new ColorAttribute(ColorAttribute.Fog, fogColor.r, fogColor.g, fogColor.b, fogColor.a));
         return env;
