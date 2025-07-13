@@ -3,6 +3,7 @@ package io.github.labyrinthgenerator.pages.game3d.shaders;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g3d.Attribute;
 import com.badlogic.gdx.graphics.g3d.Renderable;
+import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.attributes.CubemapAttribute;
 import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
 import com.badlogic.gdx.graphics.g3d.utils.RenderContext;
@@ -92,9 +93,10 @@ public class FogFreeShader extends SpotLightFreeShader {
             "uniform samplerCube u_cubemap;\n" +
             "uniform bool u_isReflective;" +
             "uniform vec3 u_cameraPosition;\n" +
-            "uniform vec4 u_fogColor;\n" +
+            "uniform vec4 fogColor;\n" +
             "uniform vec2 u_fogVelocity;\n" +
             "uniform vec3 u_worldSize;\n" +
+            "uniform vec4 ambientLightColor;\n" +
             "uniform float u_time;\n" +
             "\n" +
             "varying vec4 position;\n" + // Передаем gl_Position
@@ -126,6 +128,8 @@ public class FogFreeShader extends SpotLightFreeShader {
             "    } else {\n" +
             "       currentColor = texture2D(u_texture, v_texCoords0);" +
             "    }\n" +
+            "\n" + // ambient
+            "    currentColor *= ambientLightColor;\n" +
             "\n" +
             "    float heightFactor = -min(0.4 + worldPosition.y, 0.0);\n" + // bottom
             "    heightFactor = max(-0.4 + worldPosition.y - u_worldSize.y, heightFactor);\n" + // top
@@ -163,9 +167,9 @@ public class FogFreeShader extends SpotLightFreeShader {
             "\n" +
             "\n" + // Основной цвет
             "    if (!u_isReflective) " +
-            "        currentColor = mix(mix(mix(currentColor, spotColor, 0.3), u_fogColor, fogFactor), spotColor, 0.1);\n" +
+            "        currentColor = mix(mix(mix(currentColor, spotColor, 0.3), fogColor, fogFactor), spotColor, 0.1);\n" +
             "    else\n" +
-            "        currentColor = mix(currentColor, u_fogColor, fogFactor);\n" +
+            "        currentColor = mix(currentColor, fogColor, fogFactor);\n" +
             "\n" +
             "\n" + // Обработка точечных источников света
             "#if defined(lightingFlag)\n" +
@@ -193,7 +197,7 @@ public class FogFreeShader extends SpotLightFreeShader {
             "    float saturation = 1.3;\n" + // Устанавливаем желаемую насыщенность
             "    vec3 gray = vec3(dot(color, vec3(0.299, 0.587, 0.114)));\n" + // Преобразуем в градацию серого
             "    color = mix(gray, color, saturation);\n" + // Интерполируем между серым и исходным цветом
-            "    gl_FragColor = vec4(color, currentColor.a);\n" +
+            "    gl_FragColor = vec4(color, 1.0);\n" +
             "}\n";
 
     public FogFreeShader(MyShaderProvider myShaderProvider, boolean lightingFlag) {
@@ -218,19 +222,29 @@ public class FogFreeShader extends SpotLightFreeShader {
     @Override
     public void begin(Camera camera, RenderContext context) {
         this.context = context;
-        Vector2 playerVelocity = getPlayerVelocity();
+        this.env = myShaderProvider.getGame().getScreen().getEnvironment();
+
         program.bind();
+
         program.setUniformMatrix(u_projTrans, camera.combined);
+
         program.setUniformi("u_texture", 0);
         program.setUniformi("u_cubemap", 1);
         //program.setUniformi("u_normalMap", 2);
+
         program.setUniformf("u_spotCutoff", cutoffAngle);
-        setFogUniforms(playerVelocity);
-        Vector3i worldSize = myShaderProvider.getGame().getChunkMan().getWorldSize();
-        float[] worldSizeF = new float[]{worldSize.x, worldSize.y, worldSize.z};
+
+        ColorAttribute ambientAttribute = (ColorAttribute) env.get(ColorAttribute.AmbientLight);
+        program.setUniformf(ambientAttribute.toString(), ambientAttribute.color);
+
+        setFogUniforms();
+
+        Vector3i worldSizeV = myShaderProvider.getGame().getChunkMan().getWorldSize();
+        float[] worldSizeF = new float[]{worldSizeV.x, worldSizeV.y, worldSizeV.z};
         program.setUniform3fv("u_worldSize", worldSizeF, 0, 3);
-        float[] cameraPosition = new float[]{camera.position.x, camera.position.y, camera.position.z};
-        program.setUniform3fv("u_cameraPosition", cameraPosition, 0, 3);
+        float[] cameraPositionF = new float[]{camera.position.x, camera.position.y, camera.position.z};
+        program.setUniform3fv("u_cameraPosition", cameraPositionF, 0, 3);
+
         context.begin();
         context.setDepthTest(GL20.GL_LEQUAL);
         context.setCullFace(GL20.GL_FRONT);
@@ -243,8 +257,10 @@ public class FogFreeShader extends SpotLightFreeShader {
         program.setUniform4fv("u_pointLightColors[0]", new float[]{0, 0, 0, 0}, 0, 4);
     }
 
-    private void setFogUniforms(Vector2 playerVelocity) {
-        program.setUniformf("u_fogColor", new Color(0.5f, 0.5f, 0.5f, 0.5f));
+    private void setFogUniforms() {
+        Vector2 playerVelocity = getPlayerVelocity();
+        ColorAttribute fogAttribute = (ColorAttribute) env.get(ColorAttribute.Fog);
+        program.setUniformf(fogAttribute.toString(), fogAttribute.color);
         program.setUniformf("u_fogDensity", fogBaseDensity);
         program.setUniform2fv("u_fogVelocity", new float[]{playerVelocity.x, playerVelocity.y}, 0, 2);
         program.setUniformf("u_time", timer);

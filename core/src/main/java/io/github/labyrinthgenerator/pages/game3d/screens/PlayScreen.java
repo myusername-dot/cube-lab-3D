@@ -3,15 +3,12 @@ package io.github.labyrinthgenerator.pages.game3d.screens;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.audio.Sound;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.graphics.g3d.Environment;
-import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
 import io.github.labyrinthgenerator.pages.game2d.Labyrinth2D;
@@ -28,7 +25,6 @@ import static io.github.labyrinthgenerator.pages.game3d.constants.Constants.HALF
 
 public class PlayScreen extends GameScreen {
     private final TextureRegion skyBg;
-    private Color fogColor;
 
     private boolean showGuiMenu = false;
     private boolean showExitDistance = false;
@@ -77,14 +73,7 @@ public class PlayScreen extends GameScreen {
         envCubeMap = new SkyBoxShaderProgram(new Pixmap(Gdx.files.internal(game.getAssMan().bgSky01)));
 
         Vector3i worldSize = game.getChunkMan().getWorldSize();
-        exitCubemap = new ReflectiveCubemap(new Vector3(worldSize.x / 2f, 2f, worldSize.z / 2f), 1f, game);
-    }
-
-    private Environment createEnvironment() {
-        Environment environment = new Environment();
-        environment.set(new ColorAttribute(ColorAttribute.AmbientLight, 1f, 1f, 1f, 1f));
-        fogColor = new Color(66 / 256f, 33 / 256f, 54 / 256f, 1f);
-        return environment;
+        exitCubemap = new ReflectiveCubemap(new Vector3(worldSize.x / 2f, 4f, worldSize.z / 2f), 2f, game);
     }
 
     private TextureRegion createSkyBackground(final CubeLab3D game) {

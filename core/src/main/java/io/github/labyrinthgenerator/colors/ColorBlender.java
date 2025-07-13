@@ -1,5 +1,6 @@
 package io.github.labyrinthgenerator.colors;
 
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
@@ -79,6 +80,10 @@ public class ColorBlender {
 
     private static int avg(Vector3i c) {
         return (c.x + c.y + c.z) / 3;
+    }
+
+    public static int avg(Color c) {
+        return (int) ((c.r * 255f + c.g * 255f + c.b * 255f) / 3f);
     }
 
     private static void clamp(Vector3i c) {
@@ -199,18 +204,34 @@ public class ColorBlender {
         return create(tmp.x, tmp.y, tmp.z, alpha);
     }
 
-    public static int replacementMin(int pixel1, int pixel2, float threshold, float alpha) {
+    public static int replacementMin(int pixel1, int pixel2, float threshold, boolean invThreshold, float alpha) {
         Vector3i c1 = extractRGB(pixel1);
         Vector3i c2 = extractRGB(pixel2);
 
         int factorC = (int) (threshold * 255f);
         int avg = avg(c1);
 
-        if (avg > factorC) return setAlpha(pixel1, alpha);
+        if (invThreshold ? avg < factorC : avg > factorC) return setAlpha(pixel1, alpha);
 
         int r = Math.min(c1.x, c2.x);
         int g = Math.min(c1.y, c2.y);
         int b = Math.min(c1.z, c2.z);
+
+        return create(r, g, b, alpha);
+    }
+
+    public static int replacementMax(int pixel1, int pixel2, float threshold, float alpha) {
+        Vector3i c1 = extractRGB(pixel1);
+        Vector3i c2 = extractRGB(pixel2);
+
+        int factorC = (int) (threshold * 255f);
+        int avg = avg(c1);
+
+        if (avg < factorC) return setAlpha(pixel1, alpha);
+
+        int r = Math.max(c1.x, c2.x);
+        int g = Math.max(c1.y, c2.y);
+        int b = Math.max(c1.z, c2.z);
 
         return create(r, g, b, alpha);
     }

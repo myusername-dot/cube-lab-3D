@@ -3,8 +3,10 @@ package io.github.labyrinthgenerator.pages.game3d.screens;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Camera;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.Shader;
+import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import io.github.labyrinthgenerator.pages.game3d.CubeLab3D;
@@ -24,7 +26,9 @@ public abstract class GameScreen implements Screen {
     protected Viewport viewport;
     protected Camera currentCam;
     protected final Vector3 camBackView = new Vector3();
+
     protected Environment env;
+    protected Color fogColor;
 
     protected Player player;
 
@@ -130,6 +134,19 @@ public abstract class GameScreen implements Screen {
         cam.near = 0.01f;
         cam.far = Constants.CAMERA_FAR;
         cam.update();
+    }
+
+    protected Environment createEnvironment() {
+        Environment env = new Environment();
+        env.set(new ColorAttribute(ColorAttribute.AmbientLight, 1f, 1f, 1f, 1f));
+        //fogColor = new Color(66 / 256f, 33 / 256f, 54 / 256f, 1f);
+        fogColor = new Color(0.9f, 0.9f, 0.9f, 1f);
+        env.set(new ColorAttribute(ColorAttribute.Fog, fogColor.r, fogColor.g, fogColor.b, fogColor.a));
+        return env;
+    }
+
+    public Environment getEnvironment() {
+        return env;
     }
 
     public Camera getCurrentCam() {
