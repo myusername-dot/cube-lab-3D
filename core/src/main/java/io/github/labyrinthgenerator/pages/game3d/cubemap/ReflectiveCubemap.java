@@ -14,6 +14,7 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 import com.badlogic.gdx.utils.ScreenUtils;
+import io.github.labyrinthgenerator.colors.ColorBlender;
 import io.github.labyrinthgenerator.pages.game3d.CubeLab3D;
 import io.github.labyrinthgenerator.pages.game3d.mesh.NormalMapAttribute;
 import io.github.labyrinthgenerator.pages.game3d.mesh.NormalMappedMesh;
@@ -127,26 +128,11 @@ public class ReflectiveCubemap {
                 int pixel1 = firstPixmap.getPixel(i, j);
                 int pixel2 = secondPixmap.getPixel(i, j);
 
-                // Извлечение компонентов цвета
-                int r1 = (pixel1 >> 24) & 0xff; // Red компонента первого пикселя
-                int g1 = (pixel1 >> 16) & 0xff; // Green компонента первого пикселя
-                int b1 = (pixel1 >> 8) & 0xff;  // Blue компонента первого пикселя
-                int a1 = (pixel1 & 0xff);       // Alpha компонента первого пикселя
+                int outPixel = ColorBlender.multiply(pixel1, pixel2, alpha);
+                outPixel = ColorBlender.nor(outPixel, alpha);
+                outPixel = ColorBlender.replacementMin(pixel1, outPixel, 0.595f, alpha);
 
-                int r2 = (pixel2 >> 24) & 0xff; // Red компонента второго пикселя
-                int g2 = (pixel2 >> 16) & 0xff; // Green компонента второго пикселя
-                int b2 = (pixel2 >> 8) & 0xff;  // Blue компонента второго пикселя
-                int a2 = (pixel2 & 0xff);       // Alpha компонента второго пикселя
-
-                // Комбинирование цветов с учетом альфа-канала
-                int r = (int) (r1 * (1f - alpha) + r2 * alpha);
-                int g = (int) (g1 * (1f - alpha) + g2 * alpha);
-                int b = (int) (b1 * (1f - alpha) + b2 * alpha);
-                int a = (int) (a1 * (1f - alpha) + a2 * alpha); // Альфа может также быть смешан
-
-                // Объединяем компоненты обратно в один пиксель с правильным порядком
-                int finalPixel = (r << 24) | (g << 16) | (b << 8) | a;
-                finalPixmap.drawPixel(i, j, finalPixel);
+                finalPixmap.drawPixel(i, j, outPixel);
             }
         }
         return finalPixmap;
@@ -173,6 +159,9 @@ public class ReflectiveCubemap {
         FacedCubemapData cubemapData = (FacedCubemapData) cubemap.getCubemapData();
         GLOnlyTextureData sideData = (GLOnlyTextureData) cubemapData.getTextureData(fb.getSide());*/
 
+        final int w = fboWidth;//Gdx.graphics.getBackBufferWidth();
+        final int h = fboHeight;//Gdx.graphics.getBackBufferHeight();
+
         fb.begin();
         while (fb.nextSide()) {
             fb.getSide().getUp(camFb.up);
@@ -182,8 +171,6 @@ public class ReflectiveCubemap {
             ScreenUtils.clear(1, 1, 1, 1, true);
             envCubeMap.render(camFb);
 
-            final int w = fboWidth;//Gdx.graphics.getBackBufferWidth();
-            final int h = fboHeight;//Gdx.graphics.getBackBufferHeight();
             Pixmap backgroundFBPixmap = Pixmap.createFromFrameBuffer(0, 0, w, h);
 
             modelBatch.begin(camFb);
@@ -191,7 +178,7 @@ public class ReflectiveCubemap {
             modelBatch.end();
 
             Pixmap currentFBPixmap = Pixmap.createFromFrameBuffer(0, 0, w, h);
-            Pixmap finalPixmap = setTransparency(currentFBPixmap, backgroundFBPixmap, 0.5f, w, h);
+            Pixmap finalPixmap = setTransparency(currentFBPixmap, backgroundFBPixmap, 1f, w, h);
             Texture finalTexture = new Texture(finalPixmap);
 
             spriteBatch.begin();
