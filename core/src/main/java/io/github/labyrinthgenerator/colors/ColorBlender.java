@@ -206,9 +206,29 @@ public class ColorBlender {
         int factorC = (int) (threshold * 255f);
         int avg = avg(c1);
 
-        int r = avg < factorC ? Math.min(c1.x, c2.x) : c1.x;
-        int g = avg < factorC ? Math.min(c1.y, c2.y) : c1.y;
-        int b = avg < factorC ? Math.min(c1.z, c2.z) : c1.z;
+        if (avg > factorC) return setAlpha(pixel1, alpha);
+
+        int r = Math.min(c1.x, c2.x);
+        int g = Math.min(c1.y, c2.y);
+        int b = Math.min(c1.z, c2.z);
+
+        return create(r, g, b, alpha);
+    }
+
+    public static int replacementMinSmooth(int pixel1, int pixel2, float threshold, float alpha) {
+        Vector3i c1 = extractRGB(pixel1);
+        Vector3i c2 = extractRGB(pixel2);
+
+        int factorC = (int) (threshold * 255f);
+        int avg = avg(c1);
+
+        if (avg > factorC) return setAlpha(pixel1, alpha);
+
+        float avgDiff = (float) Math.pow(((float) factorC - avg) / factorC, 1f);
+
+        int r = (int) (Math.min(c1.x, c2.x) * (1f - avgDiff) + c1.x * (avgDiff));
+        int g = (int) (Math.min(c1.y, c2.y) * (1f - avgDiff) + c1.y * (avgDiff));
+        int b = (int) (Math.min(c1.z, c2.z) * (1f - avgDiff) + c1.z * (avgDiff));
 
         return create(r, g, b, alpha);
     }
