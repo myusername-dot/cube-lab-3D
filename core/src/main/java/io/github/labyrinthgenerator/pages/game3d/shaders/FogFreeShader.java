@@ -12,6 +12,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 import io.github.labyrinthgenerator.pages.game3d.entities.player.Player;
+import io.github.labyrinthgenerator.pages.game3d.gravity.GravityControls;
 import io.github.labyrinthgenerator.pages.game3d.mesh.NormalMapAttribute;
 import io.github.labyrinthgenerator.pages.game3d.vectors.Vector3i;
 import io.github.labyrinthgenerator.pages.light.PointLightPlus;
@@ -329,6 +330,7 @@ public class FogFreeShader extends SpotLightFreeShader {
         if (player != null) {
             Vector2 playerVelocity = player.getHorizontalForwardVelocity();
             Vector3 playerDir = player.getDirection();
+            playerDir = GravityControls.swap(playerDir);
             return new Vector2(playerVelocity.x * sign(playerDir.x), playerVelocity.y * sign(playerDir.z));
         }
         return new Vector2(0, 0);
