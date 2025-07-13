@@ -185,11 +185,11 @@ public class ReflectiveCubemap {
             spriteBatch.draw(finalTexture, 0, h * 2, w * 4, -h * 2);
             spriteBatch.end();
 
-            currentFBPixmap.dispose();
+            /*currentFBPixmap.dispose();
             currentFBPixmap = Pixmap.createFromFrameBuffer(0, 0, w, h);
 
             FileHandle fileHandle = Gdx.files.local("textures/finalFbo" + fb.getSide().index + ".png");
-            PixmapIO.writePNG(fileHandle, finalPixmap);
+            PixmapIO.writePNG(fileHandle, finalPixmap);*/
 
             backgroundFBPixmap.dispose();
             currentFBPixmap.dispose();
