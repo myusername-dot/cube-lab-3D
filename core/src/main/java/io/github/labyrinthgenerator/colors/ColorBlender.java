@@ -193,7 +193,10 @@ public class ColorBlender {
         int g = (int) (c1.y * alpha1 + c2.y * (1f - alpha1));
         int b = (int) (c1.z * alpha1 + c2.z * (1f - alpha1));
 
-        return create(r, g, b, alpha);
+        Vector3i tmp = new Vector3i(r, g, b);
+        clamp(tmp);
+
+        return create(tmp.x, tmp.y, tmp.z, alpha);
     }
 
     public static int replacementMin(int pixel1, int pixel2, float threshold, float alpha) {
