@@ -86,10 +86,11 @@ public class ColorBlender {
         return (int) ((c.r * 255f + c.g * 255f + c.b * 255f) / 3f);
     }
 
-    private static void clamp(Vector3i c) {
+    private static Vector3i clamp(Vector3i c) {
         c.x = Math.min(255, Math.max(0, c.x));
         c.y = Math.min(255, Math.max(0, c.y));
         c.z = Math.min(255, Math.max(0, c.z));
+        return c;
     }
 
     public static int clamp(int minSrc, int maxSrc, int dst) {
@@ -160,6 +161,8 @@ public class ColorBlender {
         int r = (int) Math.min(c1.x * alpha1 + c2.x, 255f);
         int g = (int) Math.min(c1.y * alpha1 + c2.y, 255f);
         int b = (int) Math.min(c1.z * alpha1 + c2.z, 255f);
+
+        Vector3i tmp = clamp(new Vector3i(r, g, b));
 
         return create(r, g, b, alpha);
     }
