@@ -130,10 +130,10 @@ public class ReflectiveCubemap {
 
                 int outPixel = ColorBlender.multiply(pixel1, pixel2, alpha);
                 //outPixel = ColorBlender.nor(outPixel, alpha);
-                outPixel = ColorBlender.replacementMin(pixel1, outPixel, 0.595f, alpha);
-                outPixel = ColorBlender.add(outPixel, pixel2, 0.6f, alpha);
-                //outPixel = ColorBlender.clamp(pixel2, pixel1, outPixel);
-                outPixel = ColorBlender.saturation(outPixel, 1.8f, alpha);
+                outPixel = ColorBlender.replacementMinSmooth(pixel1, outPixel, 0.595f, alpha);
+                outPixel = ColorBlender.add(outPixel, pixel2, 0.5f, alpha);
+                outPixel = ColorBlender.clamp(pixel2, pixel1, outPixel);
+                outPixel = ColorBlender.saturation(outPixel, 1.7f, alpha);
 
                 finalPixmap.drawPixel(i, j, outPixel);
             }
