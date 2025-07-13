@@ -126,7 +126,7 @@ public class ReflectiveCubemap {
         ColorAttribute ambientAttribute = (ColorAttribute) game.getScreen().getEnvironment()
             .get(ColorAttribute.AmbientLight);
         Color ambientColor = ambientAttribute.color;
-        int ambientAvg = ColorBlender.avg(ambientColor);
+        float ambientAvg = ColorBlender.avg(ambientColor) / 255f;
         for (int i = 0; i < w; i++) {
             for (int j = 0; j < h; j++) {
                 int pixel1 = firstPixmap.getPixel(i, j);
@@ -135,7 +135,7 @@ public class ReflectiveCubemap {
                 int outPixel = ColorBlender.multiply(pixel1, pixel2, alpha);
                 //outPixel = ColorBlender.nor(outPixel, alpha);
                 //outPixel = ColorBlender.replacementMin(pixel1, outPixel, 0.595f * ambientAvg, false, alpha);
-                outPixel = ColorBlender.replacementMin(pixel1, outPixel, 0.8f * ambientAvg, true, alpha);
+                outPixel = ColorBlender.replacementMin(pixel1, outPixel, 0.35f / ambientAvg, true, alpha);
                 outPixel = ColorBlender.add(outPixel, pixel2, 0.5f, alpha);
                 outPixel = ColorBlender.clamp(pixel2, pixel1, outPixel);
                 outPixel = ColorBlender.saturation(outPixel, 1.3f, alpha);
