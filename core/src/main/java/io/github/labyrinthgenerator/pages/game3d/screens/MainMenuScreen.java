@@ -3,12 +3,12 @@ package io.github.labyrinthgenerator.pages.game3d.screens;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.audio.Sound;
-import com.badlogic.gdx.graphics.*;
+import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.PerspectiveCamera;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.graphics.g3d.Environment;
-import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
 import io.github.labyrinthgenerator.pages.game2d.Labyrinth2D;
@@ -33,7 +33,6 @@ public class MainMenuScreen extends GameScreen {
     private int fboOption = 0;
     private boolean displayControls = false;
 
-    private Color fogColor;
     //private final Sound sfxAmbient;
     //private final long sfxAmbientId;
     private final Sound sfxChoice;
@@ -76,14 +75,6 @@ public class MainMenuScreen extends GameScreen {
         setupCamera();
 
         Gdx.input.setCursorCatched(false);
-    }
-
-    private Environment createEnvironment() {
-        Environment env = new Environment();
-        env.set(new ColorAttribute(ColorAttribute.AmbientLight, 1, 1, 1, 1f));
-        fogColor = new Color(66 / 256f, 33 / 256f, 54 / 256f, 1f);
-        env.set(new ColorAttribute(ColorAttribute.Fog, fogColor));
-        return env;
     }
 
     private TextureRegion createSkyBackground(final CubeLab3D game) {
