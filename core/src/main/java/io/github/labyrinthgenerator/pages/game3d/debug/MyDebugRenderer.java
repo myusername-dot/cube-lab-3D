@@ -35,27 +35,31 @@ public class MyDebugRenderer {
     }
 
     public void render(Camera camera) {
-        Player player = game.getScreen().getPlayer();
-        Vector3 horizontalAxis = Vector3.Z.cpy().add(Vector3.X);
+        /*Player player = game.getScreen().getPlayer();
+        Vector3 horizontalAxis = new Vector3(1, 0, 1);
         float horizontalAngle = 0;
         if (player != null) {
             horizontalAxis.set(player.controls.getHorizontalAxis());
             horizontalAngle = player.controls.getCurrentHorizontalAngle();
         }
 
-        //if (player != null) camera.rotate(horizontalAxis, -horizontalAngle * 2);
-        //camera.up.y = -camera.up.y;
-        //camera.update();
-        Matrix4 combined = camera.combined.cpy();
-        //if (player != null) camera.rotate(horizontalAxis, horizontalAngle * 2);
-        //camera.up.y = -camera.up.y;
-        //camera.update();
-        // Создаем матрицу масштабирования для инверсии оси Y
-        //Matrix4 scaleMatrix = new Matrix4();
-        //scaleMatrix.setToScaling(1, -1, 1); // Инвертируем ось Y
+        if (player != null) {
+            camera.rotate(horizontalAxis, -horizontalAngle * 2);
+        }
+        //swapXZ(camera.direction);
+        //camera.direction.scl(-1);
+        camera.up.scl(-1);
+        camera.update();*/
 
-        // Умножаем матрицу проекции на матрицу масштабирования
-        //combined.mul(scaleMatrix);
+        Matrix4 combined = camera.combined.cpy();
+
+        /*camera.up.scl(-1);
+        //camera.direction.scl(-1);
+        //swapXZ(camera.direction);
+        if (player != null) {
+            camera.rotate(horizontalAxis, horizontalAngle * 2);
+        }
+        camera.update();*/
 
         renderer.setProjectionMatrix(combined);
 
@@ -82,6 +86,8 @@ public class MyDebugRenderer {
         float height = rectanglePlus.getHeight();
         float depth = rectanglePlus.getDepth();
 
+        //x = worldSize.x - x;
+        //z = worldSize.z - z;
         y = -y;
         height = -height;
 
