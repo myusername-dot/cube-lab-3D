@@ -19,6 +19,8 @@ public class PlayerControls {
     private final PlayersInventory inventoryControls;
     private final PlayersMovement movementControls;
 
+    private final MyDebugRenderer debugger;
+
     boolean isOnGround = true;
 
     boolean headBob = false;
@@ -32,6 +34,7 @@ public class PlayerControls {
         this.cameraControls = new PlayersCamera(player, this);
         this.inventoryControls = new PlayersInventory(player);
         this.movementControls = new PlayersMovement(player, this);
+        this.debugger = screen.game.getDebugger();
     }
 
     public void handleInput(final float delta) {
@@ -60,7 +63,6 @@ public class PlayerControls {
     }
 
     private void toggleDebugMode() {
-        MyDebugRenderer debugger = screen.game.getDebugger();
         debugger.debugMode = MyDebugRenderer.DebugMode.values()[(debugger.debugMode.ordinal() + 1) % MyDebugRenderer.DebugMode.values().length];
     }
 
