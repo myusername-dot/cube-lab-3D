@@ -88,10 +88,10 @@ public class Cell3D extends Entity {
     private void transformMdlInstVertsAndNormal(ModelInstanceBB instance) {
         Node node = instance.nodes.get(0);
 
-        node.translation.set(GravityControls.adjustWorldVecForGravity(node.translation));
+        GravityControls.adjustWorldVecForGravity(node.translation);
         Quaternion rotation = node.rotation;
         Vector3 rotationVec = new Vector3(rotation.x, rotation.y, rotation.z);
-        rotationVec = GravityControls.adjustWorldVecForGravity(rotationVec);
+        GravityControls.adjustWorldVecForGravity(rotationVec);
         rotation.set(rotationVec.x, rotationVec.y, rotationVec.z, rotation.w);
 
         MeshPart meshPart = node.parts.get(0).meshPart;
