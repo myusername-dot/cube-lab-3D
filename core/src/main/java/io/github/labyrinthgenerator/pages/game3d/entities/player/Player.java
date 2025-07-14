@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.math.Vector3;
 import io.github.labyrinthgenerator.pages.game3d.entities.Entity;
 import io.github.labyrinthgenerator.pages.game3d.entities.enemies.Firefly;
+import io.github.labyrinthgenerator.pages.game3d.entities.player.controls.PlayerControls;
 import io.github.labyrinthgenerator.pages.game3d.gravity.GravityDir;
 import io.github.labyrinthgenerator.pages.game3d.rect.RectanglePlus;
 import io.github.labyrinthgenerator.pages.game3d.rect.filters.RectanglePlusFilter;
@@ -26,10 +27,8 @@ public class Player extends Entity {
     public Player(Vector3 position, float rectWidth, float rectHeight, float rectDepth, final GameScreen screen) {
         super(position, screen);
         currentGravity = GravityDir.DOWN;
-
         playerCam = createCamera(screen, position);
         rect = createRectangle(position, rectWidth, rectHeight, rectDepth, screen);
-
         controls = new PlayerControls(screen, this);
     }
 
