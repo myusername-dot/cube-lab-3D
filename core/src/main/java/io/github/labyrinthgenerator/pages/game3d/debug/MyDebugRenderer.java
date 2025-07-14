@@ -1,7 +1,6 @@
 package io.github.labyrinthgenerator.pages.game3d.debug;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Mesh;
@@ -25,10 +24,15 @@ public class MyDebugRenderer {
 
     public DebugMode debugMode = DebugMode.DISABLE;
 
+    protected int u_projTrans;
+    protected int u_worldTrans;
+
     private ShaderProgram shader;
 
     public MyDebugRenderer() {
         createShader();
+        u_projTrans = shader.getUniformLocation("u_projTrans");
+        u_worldTrans = shader.getUniformLocation("u_worldTrans");
     }
 
     private void createShader() {
@@ -40,11 +44,9 @@ public class MyDebugRenderer {
         }
     }
 
-    public void render(Camera camera) {
-        Matrix4 combined = camera.combined.cpy();
-
+    public void render(Matrix4 combined) {
         shader.bind();
-        shader.setUniformMatrix("u_projectionView", combined);
+        shader.setUniformMatrix(u_projTrans, combined);
 
         renderLines();
 
@@ -57,7 +59,7 @@ public class MyDebugRenderer {
 
         for (RectanglePlus rect : shapes) {
             Matrix4 worldTrans = rect.getTransformMatrix();
-            shader.setUniformMatrix("u_worldTrans", worldTrans);
+            shader.setUniformMatrix(u_worldTrans, worldTrans);
             Color color = rect.overlaps ? JOINT_COLOR : SHAPE_COLOR;
             shader.setUniformf("u_color", color);
             Mesh rectMesh = rect.getMesh();
