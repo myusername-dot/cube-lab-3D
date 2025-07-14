@@ -46,11 +46,15 @@ public class Vector3f {
     }
 
     public Vector3f scl (float scalar) {
-        return this.set(this.x * scalar, this.y * scalar, this.z * scalar);
+        return set(this.x * scalar, this.y * scalar, this.z * scalar);
+    }
+
+    public Vector3f sub (Vector3 v) {
+        return set(x * v.x, y * v.y, z * v.z);
     }
 
     public Vector3f abs () {
-        return this.set(Math.abs(x), Math.abs(y), Math.abs(z));
+        return set(Math.abs(x), Math.abs(y), Math.abs(z));
     }
 
     public Vector3f back () {
@@ -58,15 +62,23 @@ public class Vector3f {
     }
 
     public Vector3f shiftR () {
-        return new Vector3f(z, x, y);
+        return set(z, x, y);
     }
 
     public Vector3f shiftL () {
-        return new Vector3f(y, z, x);
+        return set(y, z, x);
     }
 
     public Vector3f invZero (float val) {
         return new Vector3f(x == 0 ? val : 0, y == 0 ? val : 0, z == 0 ? val : 0);
+    }
+
+    public Vector3f add (Vector3 v) {
+        return set(x + v.x, y + v.y, z + v.z);
+    }
+
+    public Vector3f roundInt () {
+        return set((int) x, (int) y, (int) z);
     }
 
     public Vector3 vec3 () {
