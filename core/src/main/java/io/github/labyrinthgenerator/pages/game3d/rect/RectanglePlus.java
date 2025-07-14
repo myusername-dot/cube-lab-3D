@@ -1,5 +1,8 @@
 package io.github.labyrinthgenerator.pages.game3d.rect;
 
+import com.badlogic.gdx.graphics.Mesh;
+import com.badlogic.gdx.graphics.VertexAttribute;
+import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import io.github.labyrinthgenerator.pages.game3d.managers.RectManager;
@@ -26,6 +29,9 @@ public class RectanglePlus {
 
     public boolean overlaps = false;
 
+    private Mesh rectMesh;
+    private Matrix4 transform;
+
     public RectanglePlus(float x, float y, float z, float width, float height, float depth,
                          int connectedEntityId, RectanglePlusFilter filter, boolean isStatic,
                          RectManager rectMan) {
@@ -36,6 +42,8 @@ public class RectanglePlus {
         this.width = width;
         this.height = height;
         this.depth = depth;
+
+        createMeshAndTransform();
 
         this.connectedEntityId = connectedEntityId;
         this.filter = filter;
@@ -51,15 +59,6 @@ public class RectanglePlus {
 
     public Vector3 getPositionImmutable() {
         return new Vector3(x, y, z);
-    }
-
-    public Matrix4 getTransformMatrix() {
-        Matrix4 transform = new Matrix4();
-        // Позиционируем прямоугольник
-        transform.translate(x + width / 2, y + height / 2, z + depth / 2);
-        // Масштабируем прямоугольник
-        transform.scale(width, height, depth);
-        return transform;
     }
 
     public RectanglePlus set(Vector3 pos) {
@@ -138,5 +137,41 @@ public class RectanglePlus {
     @Override
     public String toString() {
         return "id: " + id + " [" + x + "," + y + "," + z + "; " + width + "," + height + "," + depth + ']';
+    }
+
+    private void createMeshAndTransform() {
+        rectMesh = new Mesh(true, 24, 0,
+            new VertexAttribute(VertexAttributes.Usage.Position, 3, "a_Position"));
+        float[] vertices = new float[]{
+            0, 0, 0, width, 0, 0, // Front bottom
+            width, 0, 0, width, 0, depth, // Right bottom
+            width, 0, depth, 0, 0, depth, // Back bottom
+            0, 0, depth, 0, 0, 0, // Left bottom
+            0, height, 0, width, height, 0, // Front top
+            width, height, 0, width, height, depth, // Right top
+            width, height, depth, 0, height, depth, // Back top
+            0, height, depth, 0, height, 0, // Left top
+            0, 0, 0, 0, height, 0, // Left front,
+            width, 0, 0, width, height, 0, // Right front
+            0, 0, depth, 0, height, depth, // Left back
+            width, 0, depth, width, height, depth // Right back
+        };
+        rectMesh.setVertices(vertices);
+
+        transform = new Matrix4();
+        transform.translate(x, -y, z);
+        transform.scale(1, 1, 1);
+    }
+
+    public Mesh getMesh() {
+        return rectMesh;
+    }
+
+    public Matrix4 getTransformMatrix() {
+        if (isStatic) return transform;
+        transform.idt();
+        transform.translate(x, -y, z);
+        transform.scale(1, 1, 1);
+        return transform;
     }
 }
