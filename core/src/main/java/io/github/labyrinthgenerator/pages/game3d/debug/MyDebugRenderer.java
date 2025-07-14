@@ -33,8 +33,8 @@ public class MyDebugRenderer {
 
     private void createShader() {
         shader = new ShaderProgram(
-            Gdx.files.internal("shaders/line.vertex.glsl"),
-            Gdx.files.internal("shaders/line.fragment.glsl"));
+            Gdx.files.internal("shaders/debug.vertex.glsl"),
+            Gdx.files.internal("shaders/debug.fragment.glsl"));
         if (!shader.isCompiled()) {
             throw new GdxRuntimeException("Error compiling shader: " + shader.getLog());
         }
@@ -56,7 +56,6 @@ public class MyDebugRenderer {
         Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
 
         for (RectanglePlus rect : shapes) {
-            // Получаем матрицу трансформации для текущего прямоугольника
             Matrix4 worldTrans = rect.getTransformMatrix();
             shader.setUniformMatrix("u_worldTrans", worldTrans);
             Color color = rect.overlaps ? JOINT_COLOR : SHAPE_COLOR;

@@ -10,7 +10,6 @@ uniform vec4 u_color;
 out vec4 v_color;
 
 void main() {
-    // Инвертируем Y-координату
     gl_Position = u_projectionView * u_worldTrans * vec4(a_position, 1.0);
     v_color = u_color;
 }
