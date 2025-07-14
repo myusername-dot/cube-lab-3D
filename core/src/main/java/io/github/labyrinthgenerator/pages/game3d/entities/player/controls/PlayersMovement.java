@@ -135,8 +135,8 @@ public class PlayersMovement {
             Vector3f goToFloor = GravityControls.gravity[GravityControls.currentGravity.ord].cpy();
             findNewPositionShift(newPosition, goToFloor);
             goToFloor.scl(0.5f);
-            goToFloor.add(goToFloor.vec3().sub(player.rect.getDims()));
-            newPosition.add(goToFloor.vec3());
+            goToFloor.add(goToFloor.cpy().sub(player.rect.getDims()));
+            newPosition.add(goToFloor);
         }
     }
 

@@ -87,7 +87,7 @@ public class PlayersCamera {
         currentHorizontalAngle = 0f;
         // Goto local gravity coords
         currentHorizontalAxis.set(GravityControls.swap(Vector3.Y));
-        player.playerCam.up.set(gravity[currentGravity.ord].vec3());
+        player.playerCam.up.set(gravity[currentGravity.ord]);
         player.playerCam.direction.set(GravityControls.swap(player.playerCam.direction));
         player.playerCam.update();
     }
