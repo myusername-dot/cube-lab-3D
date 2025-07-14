@@ -1,14 +1,12 @@
 package io.github.labyrinthgenerator.pages.game3d.debug;
 
-import com.badlogic.gdx.graphics.Camera;
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.*;
+import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.Matrix4;
-import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.utils.GdxRuntimeException;
 import io.github.labyrinthgenerator.pages.game3d.CubeLab3D;
-import io.github.labyrinthgenerator.pages.game3d.entities.player.Player;
 import io.github.labyrinthgenerator.pages.game3d.rect.RectanglePlus;
-import io.github.labyrinthgenerator.pages.game3d.vectors.Vector3i;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -25,60 +23,77 @@ public class MyDebugRenderer {
 
     public DebugMode debugMode = DebugMode.DISABLE;
 
-    protected ShapeRenderer renderer;
-
-    protected CubeLab3D game;
+    private ShaderProgram shader;
+    private Mesh lineMesh;
+    private final CubeLab3D game;
 
     public MyDebugRenderer(CubeLab3D game) {
         this.game = game;
-        renderer = new ShapeRenderer();
+        createShader();
+        createMesh();
+    }
+
+    private void createShader() {
+        shader = new ShaderProgram(
+            Gdx.files.internal("shaders/line.vertex.glsl"),
+            Gdx.files.internal("shaders/line.fragment.glsl"));
+        if (!shader.isCompiled()) {
+            throw new GdxRuntimeException("Error compiling shader: " + shader.getLog());
+        }
+    }
+
+    private void createMesh() {
+        lineMesh = new Mesh(true, 1_000_000, 0,
+            new VertexAttribute(VertexAttributes.Usage.Position, 3, "a_Position"),
+            new VertexAttribute(VertexAttributes.Usage.ColorPacked, 4, "a_Color"));
     }
 
     public void render(Camera camera) {
-        /*Player player = game.getScreen().getPlayer();
-        Vector3 horizontalAxis = new Vector3(1, 0, 1);
-        float horizontalAngle = 0;
-        if (player != null) {
-            horizontalAxis.set(player.controls.getHorizontalAxis());
-            horizontalAngle = player.controls.getCurrentHorizontalAngle();
-        }
-
-        if (player != null) {
-            camera.rotate(horizontalAxis, -horizontalAngle * 2);
-        }
-        //swapXZ(camera.direction);
-        //camera.direction.scl(-1);
-        camera.up.scl(-1);
-        camera.update();*/
-
         Matrix4 combined = camera.combined.cpy();
 
-        /*camera.up.scl(-1);
-        //camera.direction.scl(-1);
-        //swapXZ(camera.direction);
-        if (player != null) {
-            camera.rotate(horizontalAxis, horizontalAngle * 2);
-        }
-        camera.update();*/
+        // Устанавливаем матрицу проекции
+        shader.bind();
+        shader.setUniformMatrix("u_projectionView", combined);
 
-        renderer.setProjectionMatrix(combined);
+        // Рендерим линии
+        renderLines();
 
-        renderShapes();
+        shader.end();
     }
 
-    private void renderShapes() {
-        renderer.begin(ShapeRenderer.ShapeType.Line);
+    private void renderLines() {
+        Gdx.gl.glEnable(GL20.GL_BLEND);
+        Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
 
         for (RectanglePlus rect : shapes) {
-            renderer.setColor(rect.overlaps ? JOINT_COLOR : SHAPE_COLOR);
-            render3DRectangle(rect);
+            // Получаем матрицу трансформации для текущего прямоугольника
+            //Matrix4 worldTrans = rect.getTransformMatrix();
+
+            //shader.setUniformMatrix("u_worldTrans", worldTrans);
+
+            lineMesh.setVertices(getLineVertices(rect));
+
+            lineMesh.render(shader, GL20.GL_LINES);
         }
 
-        renderer.end();
+        Gdx.gl.glDisable(GL20.GL_BLEND);
     }
 
-    private void render3DRectangle(RectanglePlus rectanglePlus) {
-        Vector3i worldSize = game.getChunkMan().getWorldSize();
+    private float[] getLineVertices(RectanglePlus rectanglePlus) {
+        // Каждая прямоугольная форма добавляет 12 линий (по 2 вершины на линию)
+        // 12 линий * 2 вершины * 7 значений (3 позиции и 4 цвета)
+        float[] vertices = new float[12 * 2 * 7]; // 12 линий * 2 вершины * 7 значений
+        int index = 0;
+
+        Color color = rectanglePlus.overlaps ? JOINT_COLOR : SHAPE_COLOR;
+
+        // Добавляем вершины для рендеринга 3D прямоугольника
+        addRectangleVertices(rectanglePlus, color, vertices, index);
+
+        return vertices;
+    }
+
+    private void addRectangleVertices(RectanglePlus rectanglePlus, Color color, float[] vertices, int index) {
         float x = rectanglePlus.getX();
         float y = rectanglePlus.getY();
         float z = rectanglePlus.getZ();
@@ -86,26 +101,126 @@ public class MyDebugRenderer {
         float height = rectanglePlus.getHeight();
         float depth = rectanglePlus.getDepth();
 
-        //x = worldSize.x - x;
-        //z = worldSize.z - z;
-        y = -y;
-        height = -height;
+        // Добавляем вершины для линий (по периметру)
+        // Front bottom
+        vertices[index++] = x;
+        vertices[index++] = y;
+        vertices[index++] = z;
+        vertices[index++] = color.toFloatBits();
+        vertices[index++] = x + width;
+        vertices[index++] = y;
+        vertices[index++] = z;
+        vertices[index++] = color.toFloatBits();
 
-        // Рендеринг 3D прямоугольника в виде линий (по периметру)
-        renderer.line(x, y, z, x + width, y, z); // Front bottom
-        renderer.line(x + width, y, z, x + width, y, z + depth); // Right bottom
-        renderer.line(x + width, y, z + depth, x, y, z + depth); // Back bottom
-        renderer.line(x, y, z + depth, x, y, z); // Left bottom
+        // Right bottom
+        vertices[index++] = x + width;
+        vertices[index++] = y;
+        vertices[index++] = z;
+        vertices[index++] = color.toFloatBits();
+        vertices[index++] = x + width;
+        vertices[index++] = y;
+        vertices[index++] = z + depth;
+        vertices[index++] = color.toFloatBits();
 
-        renderer.line(x, y + height, z, x + width, y + height, z); // Front top
-        renderer.line(x + width, y + height, z, x + width, y + height, z + depth); // Right top
-        renderer.line(x + width, y + height, z + depth, x, y + height, z + depth); // Back top
-        renderer.line(x, y + height, z + depth, x, y + height, z); // Left top
+        // Back bottom
+        vertices[index++] = x + width;
+        vertices[index++] = y;
+        vertices[index++] = z + depth;
+        vertices[index++] = color.toFloatBits();
+        vertices[index++] = x;
+        vertices[index++] = y;
+        vertices[index++] = z + depth;
+        vertices[index++] = color.toFloatBits();
 
-        renderer.line(x, y, z, x, y + height, z); // Left front
-        renderer.line(x + width, y, z, x + width, y + height, z); // Right front
-        renderer.line(x, y, z + depth, x, y + height, z + depth); // Left back
-        renderer.line(x + width, y, z + depth, x + width, y + height, z + depth); // Right back
+        // Left bottom
+        vertices[index++] = x;
+        vertices[index++] = y;
+        vertices[index++] = z + depth;
+        vertices[index++] = color.toFloatBits();
+        vertices[index++] = x;
+        vertices[index++] = y;
+        vertices[index++] = z;
+        vertices[index++] = color.toFloatBits();
+
+        // Front top
+        vertices[index++] = x;
+        vertices[index++] = y + height;
+        vertices[index++] = z;
+        vertices[index++] = color.toFloatBits();
+        vertices[index++] = x + width;
+        vertices[index++] = y + height;
+        vertices[index++] = z;
+        vertices[index++] = color.toFloatBits();
+
+        // Right top
+        vertices[index++] = x + width;
+        vertices[index++] = y + height;
+        vertices[index++] = z;
+        vertices[index++] = color.toFloatBits();
+        vertices[index++] = x + width;
+        vertices[index++] = y + height;
+        vertices[index++] = z + depth;
+        vertices[index++] = color.toFloatBits();
+
+        // Back top
+        vertices[index++] = x + width;
+        vertices[index++] = y + height;
+        vertices[index++] = z + depth;
+        vertices[index++] = color.toFloatBits();
+        vertices[index++] = x;
+        vertices[index++] = y + height;
+        vertices[index++] = z + depth;
+        vertices[index++] = color.toFloatBits();
+
+        // Left top
+        vertices[index++] = x;
+        vertices[index++] = y + height;
+        vertices[index++] = z + depth;
+        vertices[index++] = color.toFloatBits();
+        vertices[index++] = x;
+        vertices[index++] = y + height;
+        vertices[index++] = z;
+        vertices[index++] = color.toFloatBits();
+
+        // Left front
+        vertices[index++] = x;
+        vertices[index++] = y;
+        vertices[index++] = z;
+        vertices[index++] = color.toFloatBits();
+        vertices[index++] = x;
+        vertices[index++] = y + height;
+        vertices[index++] = z;
+        vertices[index++] = color.toFloatBits();
+
+        // Right front
+        vertices[index++] = x + width;
+        vertices[index++] = y;
+        vertices[index++] = z;
+        vertices[index++] = color.toFloatBits();
+        vertices[index++] = x + width;
+        vertices[index++] = y + height;
+        vertices[index++] = z;
+        vertices[index++] = color.toFloatBits();
+
+        // Left back
+        vertices[index++] = x;
+        vertices[index++] = y;
+        vertices[index++] = z + depth;
+        vertices[index++] = color.toFloatBits();
+        vertices[index++] = x;
+        vertices[index++] = y + height;
+        vertices[index++] = z + depth;
+        vertices[index++] = color.toFloatBits();
+
+        // Right back
+        vertices[index++] = x + width;
+        vertices[index++] = y;
+        vertices[index++] = z + depth;
+        vertices[index++] = color.toFloatBits();
+        vertices[index++] = x + width;
+        vertices[index++] = y + height;
+        vertices[index++] = z + depth;
+        vertices[index++] = color.toFloatBits();
     }
 
     public final Color SHAPE_COLOR = Color.GREEN;

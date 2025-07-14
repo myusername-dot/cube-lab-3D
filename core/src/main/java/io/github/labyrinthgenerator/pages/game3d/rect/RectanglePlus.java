@@ -1,5 +1,6 @@
 package io.github.labyrinthgenerator.pages.game3d.rect;
 
+import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import io.github.labyrinthgenerator.pages.game3d.managers.RectManager;
 import io.github.labyrinthgenerator.pages.game3d.rect.filters.RectanglePlusFilter;
@@ -50,6 +51,15 @@ public class RectanglePlus {
 
     public Vector3 getPositionImmutable() {
         return new Vector3(x, y, z);
+    }
+
+    public Matrix4 getTransformMatrix() {
+        Matrix4 transform = new Matrix4();
+        // Позиционируем прямоугольник
+        transform.translate(x + width / 2, y + height / 2, z + depth / 2);
+        // Масштабируем прямоугольник
+        transform.scale(width, height, depth);
+        return transform;
     }
 
     public RectanglePlus set(Vector3 pos) {
