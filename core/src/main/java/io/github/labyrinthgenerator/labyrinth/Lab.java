@@ -6,11 +6,18 @@ import java.util.Set;
 
 public interface Lab {
     void create();
+
     boolean passage(boolean skip);
+
     int[][] get2D();
+
     int[][] get3D();
+
     boolean isFin();
+
     void convertTo3dGame();
+
     Set<Vector2i> getPrevPosses();
+
     Set<Vector2i> getPuffins();
 }

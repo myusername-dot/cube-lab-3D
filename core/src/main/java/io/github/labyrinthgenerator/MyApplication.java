@@ -4,7 +4,7 @@ import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import io.github.labyrinthgenerator.interfaces.ApplicationFacade;
-import io.github.labyrinthgenerator.pages.Page;
+import io.github.labyrinthgenerator.interfaces.Page;
 import io.github.labyrinthgenerator.pages.game2d.Labyrinth2D;
 
 /**
