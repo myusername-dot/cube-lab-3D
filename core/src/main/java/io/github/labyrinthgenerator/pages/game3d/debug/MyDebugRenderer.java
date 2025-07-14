@@ -39,8 +39,8 @@ public class MyDebugRenderer {
         Vector3 horizontalAxis = Vector3.Z.cpy().add(Vector3.X);
         float horizontalAngle = 0;
         if (player != null) {
-            horizontalAxis.set(player.getHorizontalAxis());
-            horizontalAngle = player.getCurrentHorizontalAngle();
+            horizontalAxis.set(player.controls.getHorizontalAxis());
+            horizontalAngle = player.controls.getCurrentHorizontalAngle();
         }
 
         //if (player != null) camera.rotate(horizontalAxis, -horizontalAngle * 2);

@@ -92,9 +92,9 @@ public class PlayScreen extends GameScreen {
     public void handleInput(final float delta) {
         super.handleInput(delta);
 
-        if (player.isDead) {
+        /*if (player.isDead) {
             showGuiMenu = true;
-        }
+        }*/
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
             toggleGuiMenu();
@@ -108,9 +108,9 @@ public class PlayScreen extends GameScreen {
             handleGuiMenuInput();
         } else {
             game.gameIsPaused = false;
-            if (!player.isDead) {
+            //if (!player.isDead) {
                 player.handleInput(delta);
-            }
+            //}
         }
     }
 
@@ -222,31 +222,31 @@ public class PlayScreen extends GameScreen {
             guiFont32.draw(game.getBatch(), "cam direction      : " + getCurrentCam().direction, viewport.getWorldWidth() / 8f, viewport.getWorldHeight() - (screenYShift += 16));
             guiFont32.draw(game.getBatch(), "cam back view      : " + getCamBackView(), viewport.getWorldWidth() / 8f, viewport.getWorldHeight() - (screenYShift += 16));
             guiFont32.draw(game.getBatch(), "rectangle         : " + player.rect, viewport.getWorldWidth() / 8f, viewport.getWorldHeight() - (screenYShift += 16));
-            guiFont32.draw(game.getBatch(), "is on ground      : " + player.isOnGround(), viewport.getWorldWidth() / 8f, viewport.getWorldHeight() - (screenYShift += 16));
-            guiFont32.draw(game.getBatch(), "movement dir     : " + player.getMovementDir(), viewport.getWorldWidth() / 8f, viewport.getWorldHeight() - (screenYShift += 16));
-            guiFont32.draw(game.getBatch(), "cam dir           : " + player.getDirection(), viewport.getWorldWidth() / 8f, viewport.getWorldHeight() - (screenYShift += 16));
-            guiFont32.draw(game.getBatch(), "velocity           : " + player.getHorizontalVelocity(), viewport.getWorldWidth() / 8f, viewport.getWorldHeight() - (screenYShift += 16));
-            guiFont32.draw(game.getBatch(), "velocity Y         : " + player.getVerticalVelocity(), viewport.getWorldWidth() / 8f, viewport.getWorldHeight() - (screenYShift += 16));
+            guiFont32.draw(game.getBatch(), "is on ground      : " + player.controls.isOnGround(), viewport.getWorldWidth() / 8f, viewport.getWorldHeight() - (screenYShift += 16));
+            guiFont32.draw(game.getBatch(), "movement dir     : " + player.controls.getMovementDir(), viewport.getWorldWidth() / 8f, viewport.getWorldHeight() - (screenYShift += 16));
+            guiFont32.draw(game.getBatch(), "cam dir           : " + player.controls.getDirection(), viewport.getWorldWidth() / 8f, viewport.getWorldHeight() - (screenYShift += 16));
+            guiFont32.draw(game.getBatch(), "velocity           : " + player.controls.getHorizontalVelocity(), viewport.getWorldWidth() / 8f, viewport.getWorldHeight() - (screenYShift += 16));
+            guiFont32.draw(game.getBatch(), "velocity Y         : " + player.controls.getVerticalVelocity(), viewport.getWorldWidth() / 8f, viewport.getWorldHeight() - (screenYShift += 16));
             guiFont32.draw(game.getBatch(), "gravity            : " + GravityControls.currentGravity, viewport.getWorldWidth() / 8f, viewport.getWorldHeight() - (screenYShift += 16));
-            guiFont32.draw(game.getBatch(), "horizontal axis    : " + player.getHorizontalAxis(), viewport.getWorldWidth() / 8f, viewport.getWorldHeight() - (screenYShift += 16));
-            guiFont32.draw(game.getBatch(), "vertical axis      : " + player.getVerticalAxis(), viewport.getWorldWidth() / 8f, viewport.getWorldHeight() - (screenYShift += 16));
+            guiFont32.draw(game.getBatch(), "horizontal axis    : " + player.controls.getHorizontalAxis(), viewport.getWorldWidth() / 8f, viewport.getWorldHeight() - (screenYShift += 16));
+            guiFont32.draw(game.getBatch(), "vertical axis      : " + player.controls.getVerticalAxis(), viewport.getWorldWidth() / 8f, viewport.getWorldHeight() - (screenYShift += 16));
             guiFont32.draw(game.getBatch(), "Exit distance      : " + player.getExitDistance(), viewport.getWorldWidth() / 8f, viewport.getWorldHeight() - (screenYShift += 16));
         }
     }
 
     private void renderGuiMenu() {
         if (showGuiMenu) {
-            if (player.isDead) {
+            /*if (player.isDead) {
                 float headsupDeadX = viewport.getWorldWidth() / 2f - glyphLayoutHeadsupDead.width / 2f;
                 guiFont64.draw(game.getBatch(), headsupDead, headsupDeadX, 188 + 64);
-            }
+            }*/
 
-            drawMenuOption(optionContinue, glyphLayoutOptionContinue, 188, !player.isDead);
+            drawMenuOption(optionContinue, glyphLayoutOptionContinue, 188, true/*!player.isDead*/);
             drawMenuOption(optionToMainMenu, glyphLayoutOptionToMainMenu, 188 - 32, true);
 
-            if (player.isDead) {
+            /*if (player.isDead) {
                 guiMenuSelection = 1;
-            }
+            }*/
 
             drawSelectedOptionMarker();
         }
