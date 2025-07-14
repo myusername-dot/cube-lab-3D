@@ -159,7 +159,7 @@ public class RectanglePlus {
         rectMesh.setVertices(vertices);
 
         transform = new Matrix4();
-        transform.translate(x, -y, z);
+        transform.translate(x, y, z);
         transform.scale(1, 1, 1);
     }
 
@@ -170,7 +170,7 @@ public class RectanglePlus {
     public Matrix4 getTransformMatrix() {
         if (isStatic) return transform;
         transform.idt();
-        transform.translate(x, -y, z);
+        transform.translate(x, y, z);
         transform.scale(1, 1, 1);
         return transform;
     }
