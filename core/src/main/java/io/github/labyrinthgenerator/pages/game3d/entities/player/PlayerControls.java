@@ -19,7 +19,7 @@ import static io.github.labyrinthgenerator.pages.game3d.gravity.GravityControls.
 
 @Slf4j
 public class PlayerControls {
-    private final Vector2 movementDir = new Vector2();
+    private final Vector2 horizontalMovementDir = new Vector2();
     private final RectManager rectMan;
 
     private final float cameraRotationSpeed = 25f;
@@ -122,12 +122,11 @@ public class PlayerControls {
         rotateCam(delta);
         handleHorizontalMovement(delta);
         handleVerticalMovement(delta);
-        updateHeadbob();
         updateRectNewPosition(delta);
     }
 
     private void resetMovementDir() {
-        movementDir.setZero();
+        horizontalMovementDir.setZero();
     }
 
     private void handleDebugInput() {
@@ -191,51 +190,54 @@ public class PlayerControls {
             velocityY = jumpStrength;
             isOnGround = false;
         }
+        updateHeadbob();
     }
 
     private void handleHorizontalMovement(float delta) {
         // local gravity x z, inv -y
         Vector3 localCamDir = GravityControls.swap(player.playerCam.direction);
         if (Gdx.input.isKeyPressed(Input.Keys.W)) {
-            movementDir.add(localCamDir.x, localCamDir.z);
+            horizontalMovementDir.add(localCamDir.x, localCamDir.z);
             headbob = true;
         }
         if (Gdx.input.isKeyPressed(Input.Keys.S)) {
-            movementDir.sub(localCamDir.x, localCamDir.z);
+            horizontalMovementDir.sub(localCamDir.x, localCamDir.z);
             headbob = true;
         }
-        applyMovement(localCamDir, handleStrafeMovement(), delta);
+        applyHorizontalMovement(handleStrafeMovement(), delta);
     }
 
     private boolean handleStrafeMovement() {
         Vector3 rightDir = GravityControls.swap(player.playerCam.direction.cpy().crs(player.playerCam.up));
         boolean horizontalMovement = false;
         if (Gdx.input.isKeyPressed(Input.Keys.A)) {
-            movementDir.sub(rightDir.x, rightDir.z);
+            horizontalMovementDir.sub(rightDir.x, rightDir.z);
             horizontalMovement = true;
             headbob = true;
         }
         if (Gdx.input.isKeyPressed(Input.Keys.D)) {
-            movementDir.add(rightDir.x, rightDir.z);
+            horizontalMovementDir.add(rightDir.x, rightDir.z);
             horizontalMovement = true;
             headbob = true;
         }
         return horizontalMovement;
     }
 
-    private void applyMovement(Vector3 localCamDir, boolean horizontalMovement, float delta) {
+    private void applyHorizontalMovement(boolean horizontalMovement, float delta) {
         // Нормализуем направление движения и применяем ускорение
-        if (movementDir.len() > 0) {
-            movementDir.nor();
-            horizontalVelocity.add(movementDir.cpy().scl(acceleration * delta));
+        if (horizontalMovementDir.len() > 0) {
+            horizontalMovementDir.nor();
+            horizontalVelocity.add(horizontalMovementDir.cpy().scl(acceleration * delta));
         } else {
             horizontalVelocity.scl(1 - deceleration * delta);
         }
 
-        limitHorizontalVelocity(localCamDir, horizontalMovement);
+        limitHorizontalVelocity(horizontalMovement);
     }
 
-    private void limitHorizontalVelocity(Vector3 localCamDir, boolean horizontalMovement) {
+    private void limitHorizontalVelocity(boolean horizontalMovement) {
+        Vector3 localCamDir = GravityControls.swap(player.playerCam.direction);
+
         // Ограничиваем скорость только в направлении камеры, чтобы игрока не заносило на поворотах
         Vector3 cameraForward = localCamDir.cpy().nor();//player.playerCam.direction.cpy().nor();
         float forwardVelocityScl = horizontalVelocity.cpy().dot(cameraForward.x, cameraForward.z); // Получаем скорость в направлении камеры
@@ -335,8 +337,8 @@ public class PlayerControls {
         player.rect.oldPosition.set(player.rect.getPositionImmutable());
     }
 
-    public Vector2 getMovementDir() {
-        return movementDir;
+    public Vector2 getHorizontalMovementDir() {
+        return horizontalMovementDir;
     }
 
     public Vector3 getDirection() {
