@@ -8,7 +8,6 @@ import com.badlogic.gdx.graphics.Mesh;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.utils.GdxRuntimeException;
-import io.github.labyrinthgenerator.pages.game3d.CubeLab3D;
 import io.github.labyrinthgenerator.pages.game3d.rect.RectanglePlus;
 
 import java.util.HashSet;
@@ -27,10 +26,8 @@ public class MyDebugRenderer {
     public DebugMode debugMode = DebugMode.DISABLE;
 
     private ShaderProgram shader;
-    private final CubeLab3D game;
 
-    public MyDebugRenderer(CubeLab3D game) {
-        this.game = game;
+    public MyDebugRenderer() {
         createShader();
     }
 
@@ -63,7 +60,7 @@ public class MyDebugRenderer {
             Matrix4 worldTrans = rect.getTransformMatrix();
             shader.setUniformMatrix("u_worldTrans", worldTrans);
             Color color = rect.overlaps ? JOINT_COLOR : SHAPE_COLOR;
-            shader.setUniformf("u_Color", color);
+            shader.setUniformf("u_color", color);
             Mesh rectMesh = rect.getMesh();
 
             rectMesh.render(shader, GL20.GL_LINES);

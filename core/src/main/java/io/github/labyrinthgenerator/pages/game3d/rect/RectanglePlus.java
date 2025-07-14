@@ -141,7 +141,7 @@ public class RectanglePlus {
 
     private void createMeshAndTransform() {
         rectMesh = new Mesh(true, 24, 0,
-            new VertexAttribute(VertexAttributes.Usage.Position, 3, "a_Position"));
+            new VertexAttribute(VertexAttributes.Usage.Position, 3, "a_position"));
         float[] vertices = new float[]{
             0, 0, 0, width, 0, 0, // Front bottom
             width, 0, 0, width, 0, depth, // Right bottom

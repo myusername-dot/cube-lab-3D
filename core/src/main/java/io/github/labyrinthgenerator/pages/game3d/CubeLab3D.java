@@ -78,7 +78,7 @@ public class CubeLab3D extends Game implements Page {
         batch = new SpriteBatch();
         mdlBatch = new ModelBatch(shaderProvider);
 
-		debugger = new MyDebugRenderer(this);
+		debugger = new MyDebugRenderer();
 	}
 
     @Override
