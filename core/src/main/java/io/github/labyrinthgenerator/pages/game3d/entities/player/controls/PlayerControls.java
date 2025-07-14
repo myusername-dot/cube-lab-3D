@@ -44,7 +44,6 @@ public class PlayerControls {
         cameraControls.rotateCam(delta);
         movementControls.handleMovement(delta);
         updateHeadBob();
-        movementControls.updateRectNewPosition(delta);
     }
 
     private void handleDebugInput() {

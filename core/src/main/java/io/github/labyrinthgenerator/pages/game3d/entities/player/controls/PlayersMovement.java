@@ -7,6 +7,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import io.github.labyrinthgenerator.pages.game3d.entities.player.Player;
 import io.github.labyrinthgenerator.pages.game3d.gravity.GravityControls;
+import io.github.labyrinthgenerator.pages.game3d.managers.ChunkManager;
 import io.github.labyrinthgenerator.pages.game3d.managers.RectManager;
 import io.github.labyrinthgenerator.pages.game3d.vectors.Vector3f;
 import io.github.labyrinthgenerator.pages.game3d.vectors.Vector3i;
@@ -14,6 +15,7 @@ import io.github.labyrinthgenerator.pages.game3d.vectors.Vector3i;
 public class PlayersMovement {
     private final Player player;
     private final PlayerControls controls;
+    private final ChunkManager chunkMan;
     private final RectManager rectMan;
 
     final float playerMoveSpeed = 4f;
@@ -30,6 +32,7 @@ public class PlayersMovement {
     PlayersMovement(Player player, PlayerControls controls) {
         this.player = player;
         this.controls = controls;
+        this.chunkMan = player.screen.game.getChunkMan();
         this.rectMan = player.screen.game.getRectMan();
     }
 
@@ -40,6 +43,7 @@ public class PlayersMovement {
     void handleMovement(float delta) {
         handleHorizontalMovement(delta);
         handleVerticalMovement(delta);
+        updateRectNewPosition(delta);
     }
 
     private void handleHorizontalMovement(float delta) {
@@ -78,7 +82,7 @@ public class PlayersMovement {
             verticalVelocity -= 9.81f * delta;
             verticalVelocity = MathUtils.clamp(verticalVelocity, -9.81f, 9.81f);
         }
-        if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE) && controls.isOnGround) {
+        if (controls.jumping && controls.isOnGround && Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
             verticalVelocity = jumpStrength;
             controls.isOnGround = false;
         }
@@ -117,7 +121,7 @@ public class PlayersMovement {
         }
     }
 
-    void updateRectNewPosition(float delta) {
+    private void updateRectNewPosition(float delta) {
         Vector3 velocity = GravityControls.reSwap(
             new Vector3(horizontalVelocity.x, verticalVelocity * GravityControls.getGravityScl() * -1, horizontalVelocity.y));
         Vector3 newPosition = player.rect.getPositionImmutable().add(velocity.cpy().scl(delta));
@@ -160,7 +164,7 @@ public class PlayersMovement {
 
 
     private void clampNewPosition(Vector3 newPosition) {
-        Vector3i worldSize = player.screen.game.getChunkMan().getWorldSize();
+        Vector3i worldSize = chunkMan.getWorldSize();
         float clampX = MathUtils.clamp(newPosition.x, -player.rect.getWidth() * 2f, worldSize.x + player.rect.getWidth());
         float clampY = MathUtils.clamp(newPosition.y, -player.rect.getHeight() * 2f, worldSize.y + player.rect.getHeight());
         float clampZ = MathUtils.clamp(newPosition.z, -player.rect.getDepth() * 2f, worldSize.z + player.rect.getDepth());
