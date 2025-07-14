@@ -223,7 +223,7 @@ public class PlayScreen extends GameScreen {
             guiFont32.draw(game.getBatch(), "cam back view      : " + getCamBackView(), viewport.getWorldWidth() / 8f, viewport.getWorldHeight() - (screenYShift += 16));
             guiFont32.draw(game.getBatch(), "rectangle         : " + player.rect, viewport.getWorldWidth() / 8f, viewport.getWorldHeight() - (screenYShift += 16));
             guiFont32.draw(game.getBatch(), "is on ground      : " + player.controls.isOnGround(), viewport.getWorldWidth() / 8f, viewport.getWorldHeight() - (screenYShift += 16));
-            guiFont32.draw(game.getBatch(), "movement dir     : " + player.controls.getMovementDir(), viewport.getWorldWidth() / 8f, viewport.getWorldHeight() - (screenYShift += 16));
+            guiFont32.draw(game.getBatch(), "movement dir     : " + player.controls.getHorizontalMovementDir(), viewport.getWorldWidth() / 8f, viewport.getWorldHeight() - (screenYShift += 16));
             guiFont32.draw(game.getBatch(), "cam dir           : " + player.controls.getDirection(), viewport.getWorldWidth() / 8f, viewport.getWorldHeight() - (screenYShift += 16));
             guiFont32.draw(game.getBatch(), "velocity           : " + player.controls.getHorizontalVelocity(), viewport.getWorldWidth() / 8f, viewport.getWorldHeight() - (screenYShift += 16));
             guiFont32.draw(game.getBatch(), "velocity Y         : " + player.controls.getVerticalVelocity(), viewport.getWorldWidth() / 8f, viewport.getWorldHeight() - (screenYShift += 16));
