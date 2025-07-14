@@ -30,7 +30,7 @@ public abstract class Entity {
     protected boolean isInFrustum = false;
 
     protected volatile boolean isTick = false;
-    protected volatile long transactionId = -1;
+    protected volatile long tickId = -1;
     protected volatile boolean isDestroyed = false;
 
     protected Entity collidedEntity = null;
@@ -143,8 +143,8 @@ public abstract class Entity {
     }
 
     public synchronized void beforeTick() {
-        long transactionId = entMan.getTransactionId();
-        if (!entMan.isTransaction() || this.transactionId != transactionId) this.transactionId = transactionId;
+        long tickId = entMan.getTickId();
+        if (!entMan.isTick() || this.tickId != tickId) this.tickId = tickId;
         else throw new AlreadyConnectedException(); // todo create exception
         isTick = true;
     }

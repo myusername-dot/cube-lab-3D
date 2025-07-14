@@ -22,8 +22,8 @@ public class EntityManager {
     private final ConcurrentHashMap<Integer, Entity> entitiesById = new ConcurrentHashMap<>();
     private final Object justObject = new Object();
 
-    private volatile boolean isTransaction = false;
-    private long transactionId = -1;
+    private volatile boolean isTick = false;
+    private long tickId = -1;
 
     private GameScreen screen;
     private ChunkManager chunkMan;
@@ -111,21 +111,18 @@ public class EntityManager {
     public synchronized void tickAllEntities(final float delta, final Vector3 pos) {
         long tickTime = System.currentTimeMillis();
         try {
-            startTransaction();
-            screen.game.getRectMan().joinTransaction(transactionId);
+            startTick();
+            screen.game.getRectMan().joinTick(tickId);
 
             List<Chunk> nearestChunks = chunkMan.getNearestChunks(pos, Constants.CHUNKS_UPDATE_RANGE_AROUND_CAM);
             executeTickInParallel(nearestChunks, delta);
 
-            screen.game.getRectMan().commitTransaction();
-            commitTransaction();
+            screen.game.getRectMan().endTick();
+            endTick();
             logTickDuration(tickTime);
 
         } catch (Exception e) {
             log.error("An error occurred during tickAllEntities()", e);
-            screen.game.getRectMan().rollbackTransaction();
-            rollbackTransaction();
-            log.error("Rollback transaction not supported.");
         }
     }
 
@@ -148,34 +145,27 @@ public class EntityManager {
         executorService.shutdown();
     }
 
-    public synchronized void startTransaction() {
-        if (isTransaction) {
-            throw new RuntimeException("Transaction has already started.");
+    public synchronized void startTick() {
+        if (isTick) {
+            throw new RuntimeException("Tick has already started.");
         }
-        transactionId = System.nanoTime();
-        isTransaction = true;
+        tickId = System.nanoTime();
+        isTick = true;
     }
 
-    public synchronized void commitTransaction() {
-        if (!isTransaction) {
-            throw new RuntimeException("Transaction has already committed.");
+    public synchronized void endTick() {
+        if (!isTick) {
+            throw new RuntimeException("Tick has already ended.");
         }
-        isTransaction = false;
+        isTick = false;
     }
 
-    public synchronized void rollbackTransaction() {
-        if (!isTransaction) {
-            throw new RuntimeException("Transaction has already committed.");
-        }
-        isTransaction = false;
+    public boolean isTick() {
+        return isTick;
     }
 
-    public boolean isTransaction() {
-        return isTransaction;
-    }
-
-    public long getTransactionId() {
-        return transactionId;
+    public long getTickId() {
+        return tickId;
     }
 
     private void logEntityStartChunkMovement(final Chunk oldChunk, final Chunk newChunk, final Entity ent) {

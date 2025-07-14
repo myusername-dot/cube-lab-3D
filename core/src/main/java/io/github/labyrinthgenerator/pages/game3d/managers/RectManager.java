@@ -24,8 +24,8 @@ public class RectManager {
     private final ConcurrentHashMap<Vector3i, RectanglePlus> staticRectsByPosition = new ConcurrentHashMap<>();
     private final Object justObject = new Object();
 
-    private volatile boolean isTransaction = false;
-    private volatile long transactionId = -1;
+    private volatile boolean isTick = false;
+    private volatile long tickId = -1;
 
     private final CubeLab3D game;
     private ChunkManager chunkMan;
@@ -169,26 +169,19 @@ public class RectManager {
         MyDebugRenderer.shapes.clear();
     }
 
-    public synchronized void joinTransaction(long transactionId) {
-        if (isTransaction) {
-            throw new RuntimeException("Transaction has already started.");
+    public synchronized void joinTick(long tickId) {
+        if (isTick) {
+            throw new RuntimeException("Tick has already started.");
         }
-        this.transactionId = transactionId;
-        isTransaction = true;
+        this.tickId = tickId;
+        isTick = true;
     }
 
-    public synchronized void commitTransaction() {
-        if (!isTransaction) {
-            throw new RuntimeException("Transaction has already committed.");
+    public synchronized void endTick() {
+        if (!isTick) {
+            throw new RuntimeException("Tick has already ended.");
         }
-        isTransaction = false;
-    }
-
-    public synchronized void rollbackTransaction() {
-        if (!isTransaction) {
-            throw new RuntimeException("Transaction has already committed.");
-        }
-        isTransaction = false;
+        isTick = false;
     }
 
     private void logRectStartChunkMovement(final Entity ent) {
