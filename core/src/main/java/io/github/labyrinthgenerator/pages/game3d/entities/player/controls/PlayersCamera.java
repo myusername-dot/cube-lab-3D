@@ -36,7 +36,7 @@ public class PlayersCamera {
     }
 
     void reSwapCameraDirection() {
-        player.playerCam.direction.set(GravityControls.reSwap(player.playerCam.direction));
+        GravityControls.reSwap(player.playerCam.direction);
     }
 
     void rotateCam(float delta) {
@@ -67,7 +67,7 @@ public class PlayersCamera {
         // Scl -x, z coords
         Vector3 axScl = new Vector3(-1, 0, 1);
         // Goto local gravity coords
-        axScl = GravityControls.swap(axScl);
+        GravityControls.swap(axScl);
         // Swap to z -x. Local y after scaling is 0
         currentVerticalAxis.set(swapNot0(axis.scl(axScl)));
 
@@ -86,9 +86,9 @@ public class PlayersCamera {
         currentVerticalAngle = 0f;
         currentHorizontalAngle = 0f;
         // Goto local gravity coords
-        currentHorizontalAxis.set(GravityControls.swap(Vector3.Y));
+        currentHorizontalAxis.set(GravityControls.swap(Vector3.Y.cpy()));
         player.playerCam.up.set(gravity[currentGravity.ord]);
-        player.playerCam.direction.set(GravityControls.swap(player.playerCam.direction));
+        GravityControls.swap(player.playerCam.direction);
         player.playerCam.update();
     }
 }

@@ -49,7 +49,7 @@ public class PlayersMovement {
     private void handleHorizontalMovement(float delta) {
         resetHorizontalMovementDir();
         // local gravity x z, inv -y
-        Vector3 localCamDir = GravityControls.swap(player.playerCam.direction);
+        Vector3 localCamDir = GravityControls.swap(player.playerCam.direction.cpy());
         if (Gdx.input.isKeyPressed(Input.Keys.W)) {
             horizontalMovementDir.add(localCamDir.x, localCamDir.z);
             controls.headBob = true;
@@ -100,7 +100,7 @@ public class PlayersMovement {
     }
 
     private void limitHorizontalVelocity(boolean horizontalMovement) {
-        Vector3 localCamDir = GravityControls.swap(player.playerCam.direction);
+        Vector3 localCamDir = GravityControls.swap(player.playerCam.direction.cpy());
 
         // Ограничиваем скорость только в направлении камеры, чтобы игрока не заносило на поворотах
         Vector3 cameraForward = localCamDir.cpy().nor();
