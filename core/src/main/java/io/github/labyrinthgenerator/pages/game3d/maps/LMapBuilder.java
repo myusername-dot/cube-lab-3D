@@ -146,6 +146,7 @@ public class LMapBuilder {
                             scl.x, scl.y, scl.z,
                             1, 1, 1,
                             currentCell3D.getId(), RectanglePlusFilter.WALL,
+                            true,
                             game.getRectMan());
 
                         cell3DList.add(currentCell3D);

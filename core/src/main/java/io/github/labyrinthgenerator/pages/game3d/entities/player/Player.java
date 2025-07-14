@@ -10,16 +10,20 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import io.github.labyrinthgenerator.pages.game3d.debug.MyDebugRenderer;
 import io.github.labyrinthgenerator.pages.game3d.entities.Entity;
+import io.github.labyrinthgenerator.pages.game3d.entities.cell.Cell3D;
 import io.github.labyrinthgenerator.pages.game3d.entities.enemies.Firefly;
 import io.github.labyrinthgenerator.pages.game3d.gravity.GravityControls;
 import io.github.labyrinthgenerator.pages.game3d.gravity.GravityDir;
+import io.github.labyrinthgenerator.pages.game3d.managers.RectManager;
 import io.github.labyrinthgenerator.pages.game3d.rect.RectanglePlus;
 import io.github.labyrinthgenerator.pages.game3d.rect.filters.RectanglePlusFilter;
 import io.github.labyrinthgenerator.pages.game3d.screens.GameScreen;
+import io.github.labyrinthgenerator.pages.game3d.vectors.Vector3f;
 import io.github.labyrinthgenerator.pages.game3d.vectors.Vector3i;
 import lombok.extern.slf4j.Slf4j;
 
-import static io.github.labyrinthgenerator.pages.game3d.constants.Constants.*;
+import static io.github.labyrinthgenerator.pages.game3d.constants.Constants.WINDOW_HEIGHT;
+import static io.github.labyrinthgenerator.pages.game3d.constants.Constants.WINDOW_WIDTH;
 import static io.github.labyrinthgenerator.pages.game3d.gravity.GravityControls.currentGravity;
 import static io.github.labyrinthgenerator.pages.game3d.gravity.GravityControls.gravity;
 
@@ -28,6 +32,7 @@ public class Player extends Entity {
     private final Vector2 movementDir = new Vector2();
 
     public final RectanglePlus rect;
+    private final RectManager rectMan;
 
     public final PerspectiveCamera playerCam;
 
@@ -67,6 +72,7 @@ public class Player extends Entity {
 
     public Player(Vector3 position, float rectWidth, float rectHeight, float rectDepth, final GameScreen screen) {
         super(position, screen);
+        this.rectMan = screen.game.getRectMan();
         this.debugger = screen.game.getDebugger();
 
         currentGravity = GravityDir.DOWN;
@@ -82,10 +88,11 @@ public class Player extends Entity {
             position.z - rectDepth / 2f,
             rectWidth, rectHeight, rectDepth,
             id, RectanglePlusFilter.PLAYER,
+            false,
             screen.game.getRectMan()
         );
-        rect.oldPosition.set(rect.getPosition());
-        rect.newPosition.set(rect.getPosition());
+        rect.oldPosition.set(rect.getPositionImmutable());
+        rect.newPosition.set(rect.getPositionImmutable());
     }
 
     private void setCamPosition() {
@@ -322,6 +329,14 @@ public class Player extends Entity {
     @Override
     public void tick(final float delta) {
 
+        if (!isOnGround && checkStaticRectAtPosition(rectMan, new Vector3f(rect.newPosition))) {
+            Vector3f goToFloor = gravity[currentGravity.ord].cpy();
+            findNewPositionShift(goToFloor);
+            goToFloor.scl(0.5f);
+            goToFloor.add(goToFloor.vec3().sub(rect.getDims()));
+            rect.newPosition.add(goToFloor.vec3());
+        }
+
         if (!cheats) {
             screen.checkOverlaps(rect);
         } else {
@@ -337,7 +352,7 @@ public class Player extends Entity {
         );
         setCamPosition();
 
-        rect.oldPosition.set(rect.getPosition());
+        rect.oldPosition.set(rect.getPositionImmutable());
     }
 
     @Override
@@ -351,6 +366,28 @@ public class Player extends Entity {
 		/*if (otherRect.filter == RectanglePlusFilter.ITEM) {
 			((PlayScreen) screen).playItemSound();
 		}*/
+    }
+
+    private void findNewPositionShift(Vector3f currentGravity) {
+        currentGravity.shiftR();
+        Vector3f newPosition = currentGravity.cpy().add(rect.newPosition);
+        if (!checkStaticRectAtPosition(rectMan, newPosition)) return;
+        currentGravity.shiftR();
+        newPosition = currentGravity.cpy().add(rect.newPosition);
+        if (!checkStaticRectAtPosition(rectMan, newPosition)) return;
+        currentGravity.scl(-1);
+        newPosition = currentGravity.cpy().add(rect.newPosition);
+        if (!checkStaticRectAtPosition(rectMan, newPosition)) return;
+        currentGravity.shiftL();
+        newPosition = currentGravity.cpy().add(rect.newPosition);
+        if (!checkStaticRectAtPosition(rectMan, newPosition)) return;
+
+        throw new RuntimeException("New Player position not find, rect.newPosition: " + rect.newPosition + ".");
+    }
+
+    private boolean checkStaticRectAtPosition(RectManager rectMan, Vector3f pos) {
+        Vector3 subY = GravityControls.swap(new Vector3(0, 1, 0)).scl(GravityControls.getGravityScl());
+        return rectMan.checkStaticPosition((int) (pos.x + subY.x), (int) (pos.y + subY.y), (int) (pos.z + subY.z));
     }
 
     @Override

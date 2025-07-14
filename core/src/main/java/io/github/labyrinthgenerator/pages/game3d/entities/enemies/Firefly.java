@@ -66,10 +66,12 @@ public class Firefly extends Enemy {
             position.x - rectWidth / 2f,
             position.y - rectHeight / 2f,
             position.z - rectDepth / 2f,
-            rectWidth, rectHeight, rectDepth, id, RectanglePlusFilter.ENTITY, screen.game.getRectMan()
+            rectWidth, rectHeight, rectDepth, id, RectanglePlusFilter.ENTITY,
+            false,
+            screen.game.getRectMan()
         );
-        rect.oldPosition.set(rect.getPosition());
-        rect.newPosition.set(rect.getPosition());
+        rect.oldPosition.set(rect.getPositionImmutable());
+        rect.newPosition.set(rect.getPositionImmutable());
 
         ai = new FireflyAI(this);
     }
@@ -102,7 +104,7 @@ public class Firefly extends Enemy {
 
         pointLight.setPosition(getPositionImmutable());
 
-        rect.oldPosition.set(rect.getPosition());
+        rect.oldPosition.set(rect.getPositionImmutable());
 
         if (isOnWave != wave.isOnWave(getPositionX(), getPositionZ())) {
             switchColor();

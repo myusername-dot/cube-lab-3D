@@ -9,6 +9,7 @@ import io.github.labyrinthgenerator.pages.game3d.entities.Entity;
 import io.github.labyrinthgenerator.pages.game3d.entities.player.Player;
 import io.github.labyrinthgenerator.pages.game3d.rect.RectanglePlus;
 import io.github.labyrinthgenerator.pages.game3d.rect.filters.RectanglePlusFilter;
+import io.github.labyrinthgenerator.pages.game3d.vectors.Vector3i;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
@@ -20,6 +21,7 @@ public class RectManager {
 
     private final ConcurrentHashMap<Chunk, ConcurrentHashMap<RectanglePlusFilter, ConcurrentHashMap<RectanglePlus, Object>>> rects = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<Integer, RectanglePlus> rectsByConnectedEntityId = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Vector3i, RectanglePlus> staticRectsByPosition = new ConcurrentHashMap<>();
     private final Object justObject = new Object();
 
     private volatile boolean isTransaction = false;
@@ -48,6 +50,9 @@ public class RectManager {
 
         if (rect.getConnectedEntityId() >= 0) {
             rectsByConnectedEntityId.put(rect.getConnectedEntityId(), rect);
+        }
+        if (rect.isStatic) {
+            staticRectsByPosition.put(new Vector3i(rect.getPositionImmutable()), rect);
         }
         MyDebugRenderer.shapes.add(rect);
     }
@@ -133,9 +138,14 @@ public class RectManager {
         }
     }
 
+    public boolean checkStaticPosition(int x, int y, int z) {
+        return staticRectsByPosition.containsKey(new Vector3i(x, y, z));
+    }
+
     public void removeRect(final RectanglePlus rect) {
         rects.values().forEach(c -> c.values().forEach(l -> l.remove(rect)));
         rectsByConnectedEntityId.remove(rect.getConnectedEntityId());
+        staticRectsByPosition.remove(new Vector3i(rect.getPositionImmutable()));
         MyDebugRenderer.shapes.remove(rect);
     }
 
@@ -155,6 +165,7 @@ public class RectManager {
     public void clear() {
         rects.clear();
         rectsByConnectedEntityId.clear();
+        staticRectsByPosition.clear();
         MyDebugRenderer.shapes.clear();
     }
 

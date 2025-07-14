@@ -21,10 +21,13 @@ public class RectanglePlus {
     private final int connectedEntityId;
     public final RectanglePlusFilter filter;
 
+    public final boolean isStatic;
+
     public boolean overlaps = false;
 
     public RectanglePlus(float x, float y, float z, float width, float height, float depth,
-                         int connectedEntityId, RectanglePlusFilter filter, RectManager rectMan) {
+                         int connectedEntityId, RectanglePlusFilter filter, boolean isStatic,
+                         RectManager rectMan) {
         this.id = maxId.getAndIncrement();
         this.x = x;
         this.y = y;
@@ -36,6 +39,8 @@ public class RectanglePlus {
         this.connectedEntityId = connectedEntityId;
         this.filter = filter;
 
+        this.isStatic = isStatic;
+
         rectMan.addRect(this);
     }
 
@@ -43,19 +48,12 @@ public class RectanglePlus {
         return x < r.x + r.width && x + width > r.x && y < r.y + r.height && y + height > r.y && z < r.z + r.depth && z + depth > r.z;
     }
 
-    public Vector3 getPosition() {
+    public Vector3 getPositionImmutable() {
         return new Vector3(x, y, z);
     }
 
-    public RectanglePlus set(float x, float y, float z) {
-        this.x = x;
-        this.y = y;
-        this.z = z;
-
-        return this;
-    }
-
     public RectanglePlus set(Vector3 pos) {
+        checkStatic();
         this.x = pos.x;
         this.y = pos.y;
         this.z = pos.z;
@@ -63,12 +61,12 @@ public class RectanglePlus {
         return this;
     }
 
-    public RectanglePlus add(Vector3 v) {
-        x += v.x;
-        y += v.y;
-        z += v.z;
+    public Vector3 getDims() {
+        return new Vector3(width, height, depth);
+    }
 
-        return this;
+    public void checkStatic() {
+        if (isStatic) throw new UnsupportedOperationException("Rect " + this + " is static.");
     }
 
     public int getConnectedEntityId() {
@@ -88,14 +86,17 @@ public class RectanglePlus {
     }
 
     public void setY(float y) {
+        checkStatic();
         this.y = y;
     }
 
     public void setX(float x) {
+        checkStatic();
         this.x = x;
     }
 
     public void setZ(float z) {
+        checkStatic();
         this.z = z;
     }
 
@@ -126,6 +127,6 @@ public class RectanglePlus {
 
     @Override
     public String toString() {
-        return "[" + x + "," + y + "," + z + "; " + width + "," + height + "," + depth + ']';
+        return "id: " + id + " [" + x + "," + y + "," + z + "; " + width + "," + height + "," + depth + ']';
     }
 }
