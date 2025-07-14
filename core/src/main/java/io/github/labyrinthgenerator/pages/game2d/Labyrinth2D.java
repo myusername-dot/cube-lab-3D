@@ -11,7 +11,7 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 import io.github.labyrinthgenerator.MyApplication;
 import io.github.labyrinthgenerator.interfaces.ApplicationFacade;
 import io.github.labyrinthgenerator.labyrinth.Lab;
-import io.github.labyrinthgenerator.pages.Page;
+import io.github.labyrinthgenerator.interfaces.Page;
 import io.github.labyrinthgenerator.pages.game2d.utils.Tools2d;
 import io.github.labyrinthgenerator.pages.game3d.CubeLab3D;
 import io.github.labyrinthgenerator.pages.game3d.vectors.Vector2i;

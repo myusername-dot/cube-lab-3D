@@ -1,4 +1,4 @@
-package io.github.labyrinthgenerator.pages;
+package io.github.labyrinthgenerator.interfaces;
 
 import com.badlogic.gdx.graphics.Camera;
 
