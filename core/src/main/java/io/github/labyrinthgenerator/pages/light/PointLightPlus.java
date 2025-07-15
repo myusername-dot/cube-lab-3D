@@ -1,5 +1,6 @@
 package io.github.labyrinthgenerator.pages.light;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.g3d.environment.PointLight;
 import com.badlogic.gdx.math.Vector3;
@@ -9,12 +10,15 @@ public class PointLightPlus extends PointLight {
     public float camDistance;
 
     public void calculateScreenTransforms(Camera camera) {
-        screenPosition.set(worldToScreen(position, camera));
+        screenPosition.set(worldToScreen(position.cpy(), camera));
     }
 
     public Vector3 worldToScreen(final Vector3 worldPosition, final Camera camera) {
-        Vector3 worldPositionBug = worldPosition.cpy();
-        //worldPositionBug.y -= 1f;
-        return camera.project(worldPositionBug); // Возвращаем экранные координаты
+        Vector3 screenPos = camera.project(worldPosition);
+        screenPos.x /= Gdx.graphics.getWidth();
+        screenPos.y /= Gdx.graphics.getHeight();
+        screenPos.x *= camera.viewportWidth;
+        screenPos.y *= camera.viewportHeight;
+        return screenPos;
     }
 }
