@@ -16,6 +16,7 @@ import io.github.labyrinthgenerator.labyrinth.Labyrinth;
 import io.github.labyrinthgenerator.labyrinth.Labyrinth2;
 import lombok.extern.slf4j.Slf4j;
 
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -236,12 +237,12 @@ public class Tools2d {
     public Texture createBlurredBackground() {
         Texture blurredBackground = null;
         try {
-            Pixmap originalPixmap = Pixmap.createFromFrameBuffer(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+            Pixmap originalPixmap = Pixmap.createFromFrameBuffer(0, 0, viewport.getScreenWidth(), viewport.getScreenHeight());
             BufferedImage originalImage = ImageBlender.pixmapToBufferedImage(originalPixmap);
 
-            /*Image smallImage = originalImage.getScaledInstance(originalImage.getWidth() / 8, originalImage.getHeight() / 8, SCALE_SMOOTH);
-            Image originalSizeImage = smallImage.getScaledInstance(originalImage.getWidth(), originalImage.getHeight(), SCALE_SMOOTH);
-            BufferedImage blurredImage = ImageBlender.imageToBufferedImage(originalSizeImage);*/
+            /*originalImage = ImageBlender.imageToBufferedImage(
+                originalImage.getScaledInstance(
+                    viewport.getScreenWidth(), viewport.getScreenHeight(), Image.SCALE_SMOOTH));*/
             BufferedImage blurredImage = ImageBlender.applyGaussianBlur(originalImage);
 
             int maskARGB = (0xff << 24) | (0 << 16) | (0 << 8) | 0xff; // Blue color
@@ -281,6 +282,14 @@ public class Tools2d {
 
     public OrthographicCamera getCamera() {
         return camera;
+    }
+
+    public int getViewportWidth() {
+        return viewport.getScreenWidth();
+    }
+
+    public int getViewportHeight() {
+        return viewport.getScreenHeight();
     }
 
     public void dispose() {
