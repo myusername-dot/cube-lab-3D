@@ -11,7 +11,9 @@ import io.github.labyrinthgenerator.pages.game3d.managers.ChunkManager;
 import io.github.labyrinthgenerator.pages.game3d.managers.RectManager;
 import io.github.labyrinthgenerator.pages.game3d.vectors.Vector3f;
 import io.github.labyrinthgenerator.pages.game3d.vectors.Vector3i;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class PlayersMovement {
     private final Player player;
     private final PlayerControls controls;
@@ -155,7 +157,7 @@ public class PlayersMovement {
         shiftedPosition = currentGravity.cpy().add(newPosition);
         if (!checkStaticRectAtPosition(rectMan, shiftedPosition)) return;
 
-        throw new RuntimeException("New Player position not find, rect.newPosition: " + newPosition + ".");
+        log.warn("New Player position not find, rect.newPosition: " + newPosition + ".");
     }
 
     private boolean checkStaticRectAtPosition(RectManager rectMan, Vector3f pos) {
