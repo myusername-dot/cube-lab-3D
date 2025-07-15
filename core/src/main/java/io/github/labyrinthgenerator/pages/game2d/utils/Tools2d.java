@@ -1,6 +1,7 @@
 package io.github.labyrinthgenerator.pages.game2d.utils;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -8,17 +9,18 @@ import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import io.github.labyrinthgenerator.MyApplication;
+import io.github.labyrinthgenerator.additional.image.ImageBlender;
 import io.github.labyrinthgenerator.interfaces.ApplicationFacade;
 import io.github.labyrinthgenerator.labyrinth.Lab;
 import io.github.labyrinthgenerator.labyrinth.Labyrinth;
 import io.github.labyrinthgenerator.labyrinth.Labyrinth2;
 import lombok.extern.slf4j.Slf4j;
 
-import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.awt.image.ConvolveOp;
-import java.awt.image.Kernel;
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.UUID;
 import java.util.zip.Deflater;
 
@@ -231,78 +233,26 @@ public class Tools2d {
         }
     }
 
-    public static BufferedImage pixmapToBufferedImage(Pixmap pixmap) throws IOException {
-        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-            PixmapIO.PNG writer = new PixmapIO.PNG(pixmap.getWidth() * pixmap.getHeight() * 4);
-            try {
-                writer.setFlipY(false);
-                writer.setCompression(Deflater.NO_COMPRESSION);
-                writer.write(baos, pixmap);
-            } finally {
-                writer.dispose();
-            }
-            return ImageIO.read(new ByteArrayInputStream(baos.toByteArray()));
-        }
-    }
-
     public Texture createBlurredBackground() {
         Texture blurredBackground = null;
         try {
-            Pixmap pixmap = Pixmap.createFromFrameBuffer(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-            BufferedImage originalImage = Tools2d.pixmapToBufferedImage(pixmap);
-            blurredBackground = applyGaussianBlur(originalImage);
-            pixmap.dispose();
+            Pixmap originalPixmap = Pixmap.createFromFrameBuffer(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+            BufferedImage originalImage = ImageBlender.pixmapToBufferedImage(originalPixmap);
+
+            /*Image smallImage = originalImage.getScaledInstance(originalImage.getWidth() / 8, originalImage.getHeight() / 8, SCALE_SMOOTH);
+            Image originalSizeImage = smallImage.getScaledInstance(originalImage.getWidth(), originalImage.getHeight(), SCALE_SMOOTH);
+            BufferedImage blurredImage = ImageBlender.imageToBufferedImage(originalSizeImage);*/
+            BufferedImage blurredImage = ImageBlender.applyGaussianBlur(originalImage);
+
+            int maskARGB = (0xff << 24) | (0 << 16) | (0 << 8) | 0xff; // Blue color
+            Pixmap blurredPixmap = ImageBlender.bufferedImageToPixmap(blurredImage, maskARGB);
+            blurredBackground = new Texture(blurredPixmap);
+            originalPixmap.dispose();
+            blurredPixmap.dispose();
         } catch (IOException e) {
             log.error("An error occurred during createBlurredBackground()", e);
         }
         return blurredBackground;
-    }
-
-    private Texture applyGaussianBlur(BufferedImage originalImage) throws IOException {
-        float sigma = 1.0f;
-        int kernelRadius = 10;
-        int size = kernelRadius * 2 + 1;
-        float[] data = new float[size * size];
-        float normalization = 1.0f / (float) (Math.PI * 2 * sigma * sigma);
-        float sum = 0.0f;
-
-        for (int i = -kernelRadius; i <= kernelRadius; i++) {
-            for (int j = -kernelRadius; j <= kernelRadius; j++) {
-                float value = normalization * (float) Math.exp(-(i * i + j * j) / (2 * sigma * sigma));
-                data[(i + kernelRadius) * size + (j + kernelRadius)] = value;
-                sum += value;
-            }
-        }
-
-        for (int i = 0; i < data.length; i++) {
-            data[i] /= sum;
-        }
-
-        Kernel kernel = new Kernel(size, size, data);
-        ConvolveOp op = new ConvolveOp(kernel, ConvolveOp.EDGE_NO_OP, null);
-        BufferedImage blurredImage = new BufferedImage(originalImage.getWidth(), originalImage.getHeight(), originalImage.getType());
-        op.filter(originalImage, blurredImage);
-
-        int maskARGB = (0xff << 24) | (0 << 16) | (0 << 8) | 0xff; // Blue color
-        Pixmap blurredImagePixmap = Tools2d.bufferedImageToPixmap(blurredImage, maskARGB);
-        return new Texture(blurredImagePixmap);
-    }
-
-    public static Pixmap bufferedImageToPixmap(BufferedImage image, int maskARGB) throws IOException {
-        Pixmap pixmap = new Pixmap(image.getWidth(), image.getHeight(), Pixmap.Format.RGBA8888);
-        for (int i = 0; i < image.getWidth(); i++) {
-            for (int j = 0; j < image.getHeight(); j++) {
-                int rgb = image.getRGB(i, j);
-                // @formatter:off
-                int a = (rgb >> 24) & (0xff & maskARGB >> 24);
-                int r = (rgb >> 16) & (0xff & maskARGB >> 16);
-                int g = (rgb >> 8 ) & (0xff & maskARGB >> 8);
-                int b =  rgb        &  0xff & maskARGB;
-                // @formatter:on
-                pixmap.drawPixel(i, j, (r << 24) | (g << 16) | (b << 8) | a);
-            }
-        }
-        return pixmap;
     }
 
     public SpriteBatch getSpriteBatch() {

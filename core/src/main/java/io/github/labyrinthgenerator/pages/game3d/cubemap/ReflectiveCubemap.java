@@ -14,7 +14,7 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 import com.badlogic.gdx.utils.ScreenUtils;
-import io.github.labyrinthgenerator.colors.ColorBlender;
+import io.github.labyrinthgenerator.additional.colors.ColorBlender;
 import io.github.labyrinthgenerator.pages.game3d.CubeLab3D;
 import io.github.labyrinthgenerator.pages.game3d.mesh.NormalMapAttribute;
 import io.github.labyrinthgenerator.pages.game3d.mesh.NormalMappedMesh;
