@@ -10,8 +10,8 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import io.github.labyrinthgenerator.MyApplication;
 import io.github.labyrinthgenerator.interfaces.ApplicationFacade;
-import io.github.labyrinthgenerator.labyrinth.Lab;
 import io.github.labyrinthgenerator.interfaces.Page;
+import io.github.labyrinthgenerator.labyrinth.Lab;
 import io.github.labyrinthgenerator.pages.game2d.utils.Tools2d;
 import io.github.labyrinthgenerator.pages.game3d.CubeLab3D;
 import io.github.labyrinthgenerator.pages.game3d.vectors.Vector2i;
@@ -204,7 +204,11 @@ public class Labyrinth2D implements Page {
 
     private void handlePauseDraw(SpriteBatch spriteBatch) {
         if (blurredBackground != null) {
-            spriteBatch.draw(blurredBackground, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+            float width = blurredBackground.getWidth();
+            float height = blurredBackground.getHeight();
+            width *= (float) tools.getViewportWidth() / Gdx.graphics.getWidth();
+            height *= (float) tools.getViewportHeight() / Gdx.graphics.getHeight();
+            spriteBatch.draw(blurredBackground, 0, 0, width, height);
         } else {
             tools.drawLabyrinth();
             handleSaving();
