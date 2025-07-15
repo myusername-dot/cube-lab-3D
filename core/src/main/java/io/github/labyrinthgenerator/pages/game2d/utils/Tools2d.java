@@ -285,11 +285,11 @@ public class Tools2d {
     }
 
     public int getViewportWidth() {
-        return viewport.getScreenWidth();
+        return (int) viewport.getWorldWidth();
     }
 
     public int getViewportHeight() {
-        return viewport.getScreenHeight();
+        return (int) viewport.getWorldHeight();
     }
 
     public void dispose() {

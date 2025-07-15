@@ -204,10 +204,8 @@ public class Labyrinth2D implements Page {
 
     private void handlePauseDraw(SpriteBatch spriteBatch) {
         if (blurredBackground != null) {
-            float width = blurredBackground.getWidth();
-            float height = blurredBackground.getHeight();
-            width *= (float) tools.getViewportWidth() / Gdx.graphics.getWidth();
-            height *= (float) tools.getViewportHeight() / Gdx.graphics.getHeight();
+            float width = tools.getViewportWidth();
+            float height = tools.getViewportHeight();
             spriteBatch.draw(blurredBackground, 0, 0, width, height);
         } else {
             tools.drawLabyrinth();
