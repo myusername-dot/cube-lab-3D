@@ -59,6 +59,9 @@ public class MainMenuScreen extends GameScreen {
             "MOVE: ARROW KEYS",
             "ROTATE: MOUSE",
             "USE: E  INVENTORY: 1->6",
+            //"DEBUG: K",
+            "VERTICAL CAMERA MOVEMENT: H",
+            "GRAVITY CHANGE: LEFT SHIFT",
             "SPACE/ENTER/ESCAPE GO BACK"
         };
         controlsGlyphLayouts = createGlyphLayouts(controlsOptions);
