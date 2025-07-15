@@ -1,6 +1,7 @@
 package io.github.labyrinthgenerator;
 
 import com.badlogic.gdx.ApplicationAdapter;
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import io.github.labyrinthgenerator.interfaces.ApplicationFacade;
@@ -46,7 +47,7 @@ public class MyApplication extends ApplicationAdapter implements ApplicationFaca
 
     @Override
     public void resize(int width, int height) {
-        viewport.update(width, height, true);
+        viewport.update(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), true);
     }
 
     @Override
