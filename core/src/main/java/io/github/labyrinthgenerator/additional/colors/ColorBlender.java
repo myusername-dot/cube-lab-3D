@@ -1,4 +1,4 @@
-package io.github.labyrinthgenerator.colors;
+package io.github.labyrinthgenerator.additional.colors;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.MathUtils;
