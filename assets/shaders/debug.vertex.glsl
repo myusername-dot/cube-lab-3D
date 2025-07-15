@@ -11,5 +11,6 @@ out vec4 v_color;
 
 void main() {
     gl_Position = u_projTrans * u_worldTrans * vec4(a_position, 1.0);
+    gl_Position.y = -gl_Position.y;
     v_color = u_color;
 }
