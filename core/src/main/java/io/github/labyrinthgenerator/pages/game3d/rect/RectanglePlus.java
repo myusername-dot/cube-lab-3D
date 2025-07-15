@@ -160,7 +160,6 @@ public class RectanglePlus {
 
         transform = new Matrix4();
         transform.translate(x, y, z);
-        transform.scale(1, 1, 1);
     }
 
     public Mesh getMesh() {
@@ -171,7 +170,6 @@ public class RectanglePlus {
         if (isStatic) return transform;
         transform.idt();
         transform.translate(x, y, z);
-        transform.scale(1, 1, 1);
         return transform;
     }
 }
