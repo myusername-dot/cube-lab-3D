@@ -131,7 +131,8 @@ public class PlayersMovement {
     }
 
     private void preventOnWallPosition(Vector3 newPosition) {
-        if (!controls.isOnGround && checkStaticRectAtPosition(rectMan, new Vector3f(newPosition))) {
+        if (!controls.isOnGround && verticalVelocity < 0
+            && checkStaticRectAtPosition(rectMan, new Vector3f(newPosition))) {
             Vector3f goToFloor = GravityControls.gravity[GravityControls.currentGravity.ord].cpy();
             findNewPositionShift(newPosition, goToFloor);
             goToFloor.scl(0.5f);
