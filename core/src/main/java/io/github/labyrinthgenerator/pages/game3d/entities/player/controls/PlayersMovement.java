@@ -9,6 +9,7 @@ import io.github.labyrinthgenerator.pages.game3d.entities.player.Player;
 import io.github.labyrinthgenerator.pages.game3d.gravity.GravityControls;
 import io.github.labyrinthgenerator.pages.game3d.managers.ChunkManager;
 import io.github.labyrinthgenerator.pages.game3d.managers.RectManager;
+import io.github.labyrinthgenerator.pages.game3d.vectors.Vector3f;
 import io.github.labyrinthgenerator.pages.game3d.vectors.Vector3i;
 import lombok.extern.slf4j.Slf4j;
 
@@ -130,8 +131,42 @@ public class PlayersMovement {
         Vector3 velocity = GravityControls.reSwap(
             new Vector3(horizontalVelocity.x, verticalVelocity * GravityControls.getGravityScl() * -1, horizontalVelocity.y));
         Vector3 newPosition = player.rect.getPositionImmutable().add(velocity.cpy().scl(delta));
+        preventOnWallPosition(newPosition);
         clampNewPosition(newPosition);
         player.rect.set(newPosition);
+    }
+
+    private void preventOnWallPosition(Vector3 newPosition) {
+        if (!controls.isOnGround && verticalVelocity < 0
+            && checkStaticRectAtPosition(rectMan, new Vector3f(newPosition))) {
+            Vector3f goToFloor = GravityControls.gravity[GravityControls.currentGravity.ord].cpy();
+            findNewPositionShift(newPosition, goToFloor);
+            goToFloor.scl(0.5f);
+            goToFloor.add(goToFloor.cpy().sub(player.rect.getDims()));
+            newPosition.add(goToFloor);
+        }
+    }
+
+    private void findNewPositionShift(Vector3 newPosition, Vector3f currentGravity) {
+        currentGravity.shiftR();
+        Vector3f shiftedPosition = currentGravity.cpy().add(newPosition);
+        if (!checkStaticRectAtPosition(rectMan, shiftedPosition)) return;
+        currentGravity.shiftR();
+        shiftedPosition = currentGravity.cpy().add(newPosition);
+        if (!checkStaticRectAtPosition(rectMan, shiftedPosition)) return;
+        currentGravity.scl(-1);
+        shiftedPosition = currentGravity.cpy().add(newPosition);
+        if (!checkStaticRectAtPosition(rectMan, shiftedPosition)) return;
+        currentGravity.shiftL();
+        shiftedPosition = currentGravity.cpy().add(newPosition);
+        if (!checkStaticRectAtPosition(rectMan, shiftedPosition)) return;
+
+        log.warn("New Player position not find, rect.newPosition: " + newPosition + ".");
+    }
+
+    private boolean checkStaticRectAtPosition(RectManager rectMan, Vector3f pos) {
+        Vector3 subY = GravityControls.swap(new Vector3(0, 1, 0)).scl(GravityControls.getGravityScl());
+        return rectMan.checkStaticPosition((int) (pos.x + subY.x), (int) (pos.y + subY.y), (int) (pos.z + subY.z));
     }
 
     private void clampNewPosition(Vector3 newPosition) {
