@@ -23,7 +23,7 @@ public class Labyrinth2 implements Lab {
 
     private final int heightFin;
     private final int widthFin;
-    public final int[][] gridFin;
+    public final int[][][] gridFin;
 
     private boolean dirty;
 
@@ -44,7 +44,7 @@ public class Labyrinth2 implements Lab {
         Labyrinth2 labyrinth2 = new Labyrinth2(0, 0, 50, 10);
         labyrinth2.create();
         while (!labyrinth2.puffinsStack.empty()) labyrinth2.passageStack();
-        labyrinth2.convert();
+        labyrinth2.convert(0);
         labyrinth2.printMaze();
     }
 
@@ -63,7 +63,7 @@ public class Labyrinth2 implements Lab {
         assert heightFin == height;
         assert widthFin == width;
         grid = new int[this.depth][this.height][this.width];
-        gridFin = new int[widthFin][heightFin];
+        gridFin = new int[this.depth][widthFin][heightFin];
         puffinsStack = new Stack<>();
         prevPosses = new ArrayList<>();
         puffins = new ArrayList<>();
@@ -77,13 +77,6 @@ public class Labyrinth2 implements Lab {
 
     @Override
     public void create() {
-        for (int i = 0; i < depth; i++) {
-            for (int y = 0; y < height; y++) {
-                for (int x = 0; x < width; x++) {
-                    grid[i][y][x] = 0;
-                }
-            }
-        }
         pushPuffin(startX, startY, startI, startX, startY, startI);
     }
 
@@ -173,46 +166,46 @@ public class Labyrinth2 implements Lab {
         }
     }
 
-    private void convert() {
+    private void convert(int i) {
         if (!dirty) return;
         // convert grid
         int[][] gridPlus = new int[height + 1][width];
-        System.arraycopy(this.grid[currentI], 0, gridPlus, 1, height);
+        System.arraycopy(this.grid[i], 0, gridPlus, 1, height);
         Arrays.fill(gridPlus[0], Dirs.E.value);
         gridPlus[0][width - 1] = Dirs.N.value;
 
         for (int yf = 0; yf < heightFin; yf++) {
             int y = yf / 2;
-            gridFin[0][yf] = 2;
+            gridFin[i][0][yf] = 2;
             for (int x = 0; x < width; x++) {
-                gridFin[x * 2 + 1][yf] = (gridPlus[y][x] & Dirs.S.value) != 0 ? 0 : 1 - yf % 2;
+                gridFin[i][x * 2 + 1][yf] = (gridPlus[y][x] & Dirs.S.value) != 0 ? 0 : 1 - yf % 2;
                 if (yf % 2 == 0 && (gridPlus[y][x] & Dirs.E.value) != 0) {
-                    gridFin[x * 2 + 2][yf] = ((gridPlus[y][x] & gridPlus[y][x + 1]) & Dirs.S.value) != 0 ? 0 : 1;
+                    gridFin[i][x * 2 + 2][yf] = ((gridPlus[y][x] & gridPlus[y][x + 1]) & Dirs.S.value) != 0 ? 0 : 1;
                 } else if (yf % 2 == 0) {
-                    gridFin[x * 2 + 2][yf] = /*yf != height * 2 ? 2 :*/ 1;
+                    gridFin[i][x * 2 + 2][yf] = /*yf != height * 2 ? 2 :*/ 1;
                 } else if ((gridPlus[y + 1][x] & (Dirs.E.value)) == 0) {
-                    gridFin[x * 2 + 2][yf] = 2;
+                    gridFin[i][x * 2 + 2][yf] = 2;
                 } else {
-                    gridFin[x * 2 + 2][yf] = 0;
+                    gridFin[i][x * 2 + 2][yf] = 0;
                 }
             }
         }
-        gridFin[0][0] = 1;
-        gridFin[0][heightFin - 1] = 1;
+        gridFin[i][0][0] = 1;
+        gridFin[i][0][heightFin - 1] = 1;
 
-        dirty = false;
+        if (i == depth -1) dirty = false;
     }
 
     @Override
-    public int[][] get2D() {
-        convert();
-        return gridFin;
+    public int[][] get2D(int i) {
+        convert(i);
+        return gridFin[i];
     }
 
     @Override
-    public int[][] get3D() {
-        convert();
-        return gridFin;
+    public int[][] get3D(int i) {
+        convert(i);
+        return gridFin[i];
     }
 
     @Override
@@ -226,16 +219,17 @@ public class Labyrinth2 implements Lab {
         puffinsStack.clear();
         prevPosses.clear();
         puffins.clear();
-        convert();
+        convert(0);
+        convert(1);
     }
 
     @Override
-    public Set<Vector2i> getPrevPosses() {
-        return prevPosses.get(currentI);
+    public Set<Vector2i> getPrevPosses(int i) {
+        return prevPosses.get(i);
     }
 
     @Override
-    public Set<Vector2i> getPuffins() {
-        return puffins.get(currentI);
+    public Set<Vector2i> getPuffins(int i) {
+        return puffins.get(i);
     }
 }

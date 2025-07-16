@@ -96,8 +96,8 @@ public class Tools2d {
     }
 
     private void createLabyrinths() {
-        labyrinth = new Lab[6];
-        for (int edge = 0; edge < 6; edge++) {
+        labyrinth = new Lab[6 / 2];
+        for (int edge = 0; edge < 6 / 2; edge++) {
             labyrinth[edge] = new Labyrinth2(0, 0, labyrinthWidthHeight, labyrinthWidthHeight);
             labyrinth[edge].create();
         }
@@ -125,7 +125,7 @@ public class Tools2d {
     private void drawEdgeLabyrinth(int edge) {
         int offsetX = getEdgeOffsetX(edge);
         int offsetY = getEdgeOffsetY(edge);
-        int[][] labyrinthArray = labyrinth[edge].get2D();
+        int[][] labyrinthArray = labyrinth[edge / 2].get2D(edge % 2);
 
         for (int j = 0; j < labyrinthWidthHeight; j++) {
             for (int i = 0; i < labyrinthWidthHeight; i++) {
@@ -219,7 +219,7 @@ public class Tools2d {
     private void writeLabyrinthToFile(File txtFile) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(txtFile))) {
             for (int edge = 0; edge < 6; edge++) {
-                int[][] labyrinthArray = labyrinth[edge].get3D();
+                int[][] labyrinthArray = labyrinth[edge / 2].get3D(edge % 2);
                 for (int j = labyrinthWidthHeight - 1; j >= 0; j--) {
                     for (int i = 0; i < labyrinthWidthHeight; i++) {
                         writer.write(Integer.toString(labyrinthArray[i][j]));

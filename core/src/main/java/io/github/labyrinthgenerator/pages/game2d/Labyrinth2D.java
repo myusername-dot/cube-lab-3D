@@ -38,8 +38,8 @@ public class Labyrinth2D implements Page {
     private int frame;
     private static final int FRAMERATE = 60;
 
-    private boolean[] escape = new boolean[6];
-    private boolean[] puffPuffins = new boolean[6];
+    private boolean[] escape = new boolean[6 / 2];
+    private boolean[] puffPuffins = new boolean[6 / 2];
     private boolean skip;
     private boolean isFinished;
     private boolean isGameInPause;
@@ -77,10 +77,10 @@ public class Labyrinth2D implements Page {
         prevPoses = new ArrayList<>(6);
         puffins = new ArrayList<>(6);
         for (int edge = 0; edge < 6; edge++) {
-            prevPoses.add(lab[edge].getPrevPosses());
-            puffins.add(lab[edge].getPuffins());
-            puffPuffins[edge] = true;
-            escape[edge] = false;
+            prevPoses.add(lab[edge / 2].getPrevPosses(edge % 2));
+            puffins.add(lab[edge / 2].getPuffins(edge % 2));
+            puffPuffins[edge / 2] = true;
+            escape[edge / 2] = false;
         }
         skip = false;
         isFinished = false;
@@ -163,7 +163,7 @@ public class Labyrinth2D implements Page {
         if (!isLogicFrame()) return;
 
         boolean finalize = true;
-        for (int edge = 0; edge < 6; edge++) {
+        for (int edge = 0; edge < 6 / 2; edge++) {
             if (puffPuffins[edge]) {
                 handlePuffPuffinsLogic(edge);
                 finalize = false;
@@ -177,14 +177,14 @@ public class Labyrinth2D implements Page {
     private void handlePuffPuffinsLogic(int edge) {
         escape[edge] = lab[edge].passage(skip);
         puffPuffins[edge] = !lab[edge].isFin();
-        prevPoses.remove(edge);
+        /*prevPoses.remove(edge);
         prevPoses.add(edge, lab[edge].getPrevPosses());
         puffins.remove(edge);
-        puffins.add(edge, lab[edge].getPuffins());
+        puffins.add(edge, lab[edge].getPuffins());*/
     }
 
     private void finalizeLabyrinth() {
-        for (int edge = 0; edge < 6; edge++) {
+        for (int edge = 0; edge < 6 / 2; edge++) {
             lab[edge].convertTo3dGame();
             escape[edge] = true;
         }
@@ -236,7 +236,7 @@ public class Labyrinth2D implements Page {
 
     private void drawPreviousPoses(SpriteBatch spriteBatch, float scaleX, float scaleY, int screenX, int screenY) {
         for (int edge = 0; edge < 6; edge++) {
-            drawPoses(spriteBatch, scaleX, scaleY, screenX, screenY, edge, prevPoses.get(edge), escape[edge] ? prefPoseAcceptEscapeTexture : prefPoseTexture);
+            drawPoses(spriteBatch, scaleX, scaleY, screenX, screenY, edge, prevPoses.get(edge), escape[edge / 2] ? prefPoseAcceptEscapeTexture : prefPoseTexture);
         }
     }
 

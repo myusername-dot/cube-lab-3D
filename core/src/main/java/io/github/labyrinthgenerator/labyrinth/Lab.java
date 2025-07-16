@@ -9,15 +9,15 @@ public interface Lab {
 
     boolean passage(boolean skip);
 
-    int[][] get2D();
+    int[][] get2D(int i);
 
-    int[][] get3D();
+    int[][] get3D(int i);
 
     boolean isFin();
 
     void convertTo3dGame();
 
-    Set<Vector2i> getPrevPosses();
+    Set<Vector2i> getPrevPosses(int i);
 
-    Set<Vector2i> getPuffins();
+    Set<Vector2i> getPuffins(int i);
 }

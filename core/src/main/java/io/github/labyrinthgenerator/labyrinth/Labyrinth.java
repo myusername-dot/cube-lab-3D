@@ -9,7 +9,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
-public class Labyrinth implements Lab {
+public class Labyrinth {
 
     public static int maxDistance;
 
@@ -52,7 +52,6 @@ public class Labyrinth implements Lab {
         create();
     }
 
-    @Override
     public void create() {
         initializeLabyrinth();
         printLabyrinth();
@@ -125,7 +124,6 @@ public class Labyrinth implements Lab {
             .collect(Collectors.toList());
     }
 
-    @Override
     public boolean passage(boolean skip) {
         return passage(false, false);
     }
@@ -174,22 +172,18 @@ public class Labyrinth implements Lab {
         return puffinsSet;
     }
 
-    @Override
     public int[][] get2D() {
         return labyrinth;
     }
 
-    @Override
     public int[][] get3D() {
         return labyrinthFin;
     }
 
-    @Override
     public boolean isFin() {
         return puffins.isEmpty();
     }
 
-    @Override
     public void convertTo3dGame() {
         prevPosses.clear();
         puffins.clear();
@@ -399,12 +393,10 @@ public class Labyrinth implements Lab {
         return labyrinthFin;
     }
 
-    @Override
     public Set<Vector2i> getPrevPosses() {
         return prevPosses;
     }
 
-    @Override
     public Set<Vector2i> getPuffins() {
         return puffins;
     }
