@@ -41,7 +41,7 @@ public class Player extends Entity {
     }
 
     private RectanglePlus createRectangle(Vector3 position, float rectWidth, float rectHeight, float rectDepth, GameScreen screen) {
-        RectanglePlus rectangle = new RectanglePlus(
+        return new RectanglePlus(
             position.x - rectWidth / 2f,
             position.y - rectHeight / 2f,
             position.z - rectDepth / 2f,
@@ -50,9 +50,6 @@ public class Player extends Entity {
             false,
             screen.game.getRectMan()
         );
-        rectangle.oldPosition.set(rectangle.getPositionImmutable());
-        rectangle.newPosition.set(rectangle.getPositionImmutable());
-        return rectangle;
     }
 
     public void handleInput(final float delta) {

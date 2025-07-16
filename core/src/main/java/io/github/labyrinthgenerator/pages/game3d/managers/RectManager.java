@@ -12,7 +12,9 @@ import io.github.labyrinthgenerator.pages.game3d.rect.filters.RectanglePlusFilte
 import io.github.labyrinthgenerator.pages.game3d.vectors.Vector3i;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -76,16 +78,15 @@ public class RectManager {
         logRectEndChunkMovement(ent);
     }
 
-    public List<RectanglePlus> getNearestRectsByFilters(final Vector3 camPos, final RectanglePlus rect) {
+    public void processingRectOverlapsByFilters(final Vector3 camPos, final RectanglePlus rect) {
         List<RectanglePlusFilter> filters = game.getOverlapFilterMan().getFiltersOverlap(rect.filter);
-        if (filters.isEmpty()) return Collections.emptyList();
+        if (filters.isEmpty()) return;
 
         List<Chunk> nearestChunks = chunkMan.getNearestChunks(camPos, Constants.CHUNKS_UPDATE_RANGE_AROUND_CAM);
         if (nearestChunks == null || nearestChunks.isEmpty()) {
             throw new NullPointerException("nearestChunks == null || nearestChunks.isEmpty() at position " + camPos + ".");
         }
 
-        List<RectanglePlus> nearestRects = new ArrayList<>();
         for (Chunk chunk : nearestChunks) {
             if (!rects.containsKey(chunk)) {
                 //log.warn("Method getNearestRectsByFilters: !rects.containsKey(chunk).");
@@ -95,40 +96,19 @@ public class RectManager {
                 Map<RectanglePlus, Object> otherRects = rects.get(chunk).get(filter);
                 if (otherRects == null) continue;
                 for (final RectanglePlus otherRect : otherRects.keySet()) {
-                    if (overlapsPlusDistance(rect, otherRect)) {
-                        nearestRects.add(otherRect);
+                    if (rect != otherRect && rect.overlaps(otherRect)) {
+                        Vector3 diff = rect.diff(otherRect);
+                        rect.add(diff);
+                        rect.overlaps = true;
+                        otherRect.overlaps = true;
+                        handleCollision(rect, otherRect);
                     }
                 }
             }
         }
-        return nearestRects;
-    }
-
-    private boolean overlapsPlusDistance(final RectanglePlus r1, final RectanglePlus r2) {
-        float distance = 0.5f;
-        return r1.getX() - distance < r2.getX() + r2.getWidth() + distance
-            && r1.getX() + distance + r1.getWidth() > r2.getX() - distance
-            && r1.getY() - distance < r2.getY() + r2.getHeight() + distance
-            && r1.getY() + distance + r1.getHeight() > r2.getY() - distance
-            && r1.getZ() - distance < r2.getZ() + r2.getDepth() + distance
-            && r1.getZ() + distance + r1.getDepth() > r2.getZ() - distance;
-    }
-
-    public boolean checkCollisions(final RectanglePlus rect, final List<RectanglePlus> nearestRects) {
-        return nearestRects.stream().anyMatch(otherRect -> checkCollision(rect, otherRect));
-    }
-
-    private boolean checkCollision(final RectanglePlus rect, final RectanglePlus otherRect) {
-        if (!otherRect.equals(rect) && rect.overlaps(otherRect)) {
-            handleCollision(rect, otherRect);
-            return true;
-        }
-        return false;
     }
 
     private void handleCollision(final RectanglePlus rect, final RectanglePlus otherRect) {
-        otherRect.overlaps = true;
-
         if (game.getEntMan().getEntityById(rect.getConnectedEntityId()) != null) {
             game.getEntMan().getEntityById(rect.getConnectedEntityId()).onCollision(otherRect);
         }

@@ -93,8 +93,6 @@ public class PlayerControls {
     public void tick() {
         if (!cheats) {
             screen.checkOverlaps(player.rect);
-        } else {
-            player.rect.set(player.rect.newPosition);
         }
 
         player.setPosition(
@@ -103,8 +101,6 @@ public class PlayerControls {
             player.rect.getZ() + player.rect.getDepth() / 2f
         );
         cameraControls.setCamPosition();
-
-        player.rect.oldPosition.set(player.rect.getPositionImmutable());
     }
 
     public Vector2 getHorizontalMovementDir() {

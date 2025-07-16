@@ -19,9 +19,6 @@ public class RectanglePlus {
     private float x, y, z;
     private final float width, height, depth;
 
-    public final Vector3 oldPosition = new Vector3();
-    public final Vector3 newPosition = new Vector3();
-
     private final int connectedEntityId;
     public final RectanglePlusFilter filter;
 
@@ -57,6 +54,54 @@ public class RectanglePlus {
         return x < r.x + r.width && x + width > r.x && y < r.y + r.height && y + height > r.y && z < r.z + r.depth && z + depth > r.z;
     }
 
+    public Vector3 diff(RectanglePlus r) {
+        // Получаем центры обоих прямоугольников
+        Vector3 centerA = getCenter();
+        Vector3 centerB = r.getCenter();
+
+        // Вычисляем половину размеров обоих прямоугольников
+        Vector3 halfDimsA = getDims().scl(0.5f);
+        Vector3 halfDimsB = r.getDims().scl(0.5f);
+
+        // Вычисляем разницу между центрами
+        Vector3 diff = centerA.sub(centerB);
+
+        // Вычисляем минимальное расстояние для устранения пересечения
+        float overlapX = halfDimsA.x + halfDimsB.x - Math.abs(diff.x);
+        float overlapY = halfDimsA.y + halfDimsB.y - Math.abs(diff.y);
+        float overlapZ = halfDimsA.z + halfDimsB.z - Math.abs(diff.z);
+
+        // Если пересечение происходит, определяем направление, в котором нужно двигаться
+        if (overlapX > 0 && overlapY > 0 && overlapZ > 0) {
+            // Определяем минимальное значение пересечения
+            if (overlapX < overlapY && overlapX < overlapZ) {
+                // Двигаем rect по оси X
+                diff.x = (diff.x > 0 ? overlapX : -overlapX); // Если положительное, значит, нужно сдвинуть влево
+                diff.y = 0; // Не двигаем по Y
+                diff.z = 0; // Не двигаем по Z
+            } else if (overlapY < overlapX && overlapY < overlapZ) {
+                // Двигаем rect по оси Y
+                diff.x = 0; // Не двигаем по X
+                diff.y = (diff.y > 0 ? overlapY : -overlapY); // Если положительное, значит, нужно сдвинуть вниз
+                diff.z = 0; // Не двигаем по Z
+            } else {
+                // Двигаем rect по оси Z
+                diff.x = 0; // Не двигаем по X
+                diff.y = 0; // Не двигаем по Y
+                diff.z = (diff.z > 0 ? overlapZ : -overlapZ); // Если положительное, значит, нужно сдвинуть назад
+            }
+        } else {
+            // Если нет пересечения, возвращаем нулевой вектор
+            return new Vector3(0, 0, 0);
+        }
+
+        return diff;
+    }
+
+    public Vector3 getCenter() {
+        return new Vector3(x + width / 2f, y + height / 2f, z + depth / 2f);
+    }
+
     public Vector3 getPositionImmutable() {
         return new Vector3(x, y, z);
     }
@@ -66,6 +111,15 @@ public class RectanglePlus {
         this.x = pos.x;
         this.y = pos.y;
         this.z = pos.z;
+
+        return this;
+    }
+
+    public RectanglePlus add(Vector3 pos) {
+        checkStatic();
+        this.x += pos.x;
+        this.y += pos.y;
+        this.z += pos.z;
 
         return this;
     }

@@ -91,7 +91,7 @@ public class FireflyAI extends EnemyAI {
         if (distanceSquared < inRangeDistanceSquared) {
             resetTargetPosition();
         } else {
-            parent.getRect().newPosition.add(direction);
+            parent.getRect().add(direction);
         }
     }
 }

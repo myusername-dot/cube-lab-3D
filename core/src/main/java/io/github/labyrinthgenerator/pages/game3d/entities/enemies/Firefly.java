@@ -70,8 +70,6 @@ public class Firefly extends Enemy {
             false,
             screen.game.getRectMan()
         );
-        rect.oldPosition.set(rect.getPositionImmutable());
-        rect.newPosition.set(rect.getPositionImmutable());
 
         ai = new FireflyAI(this);
     }
@@ -103,8 +101,6 @@ public class Firefly extends Enemy {
         );
 
         pointLight.setPosition(getPositionImmutable());
-
-        rect.oldPosition.set(rect.getPositionImmutable());
 
         if (isOnWave != wave.isOnWave(getPositionX(), getPositionZ())) {
             switchColor();

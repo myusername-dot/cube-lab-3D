@@ -16,8 +16,6 @@ import io.github.labyrinthgenerator.pages.game3d.models.ModelInstanceBB;
 import io.github.labyrinthgenerator.pages.game3d.rect.RectanglePlus;
 import io.github.labyrinthgenerator.pages.game3d.shaders.FogFreeShader;
 
-import java.util.List;
-
 import static io.github.labyrinthgenerator.pages.game3d.constants.Constants.HALF_UNIT;
 
 public abstract class GameScreen implements Screen {
@@ -43,72 +41,11 @@ public abstract class GameScreen implements Screen {
     }
 
     public void checkOverlaps(final RectanglePlus rect) {
-        List<RectanglePlus> nearestRects = game.getRectMan().getNearestRectsByFilters(currentCam.position, rect);
-
-        boolean overlapsX = checkOverlapX(rect, nearestRects);
-        boolean overlapsY = checkOverlapY(rect, nearestRects);
-        boolean overlapsZ = checkOverlapZ(rect, nearestRects);
-
-        if (overlapsX) rect.newPosition.x = rect.oldPosition.x;
-        if (overlapsY) rect.newPosition.y = rect.oldPosition.y;
-        if (overlapsZ) rect.newPosition.z = rect.oldPosition.z;
-
-        rect.set(rect.newPosition);
-
-        rect.overlaps = overlapsX || overlapsY || overlapsZ;
-    }
-
-    /**
-     * Check for overlap in angle X.
-     */
-    private boolean checkOverlapX(final RectanglePlus rect, List<RectanglePlus> nearestRects) {
-        boolean overlaps = false;
-        rect.setX(rect.newPosition.x);
-
-        // остановка у стен
-        if (game.getRectMan().checkCollisions(rect, nearestRects)) {
-            overlaps = true;
-        }
-
-        rect.setX(rect.oldPosition.x);
-        return overlaps;
-    }
-
-    /**
-     * Check for overlap in angle Y.
-     */
-    private boolean checkOverlapY(final RectanglePlus rect, List<RectanglePlus> nearestRects) {
-        boolean overlaps = false;
-        rect.setY(rect.newPosition.y);
-
-        // остановка у стен
-        if (game.getRectMan().checkCollisions(rect, nearestRects)) {
-            overlaps = true;
-        }
-
-        rect.setY(rect.oldPosition.y);
-        return overlaps;
-    }
-
-    /**
-     * Check for overlap in angle Z.
-     */
-    private boolean checkOverlapZ(final RectanglePlus rect, List<RectanglePlus> nearestRects) {
-        boolean overlaps = false;
-        rect.setZ(rect.newPosition.z);
-
-        // остановка у стен
-        if (game.getRectMan().checkCollisions(rect, nearestRects)) {
-            overlaps = true;
-        }
-
-        rect.setZ(rect.oldPosition.z);
-        return overlaps;
+        game.getRectMan().processingRectOverlapsByFilters(currentCam.position, rect);
     }
 
     @Override
     public void dispose() {
-
     }
 
     public boolean frustumCull(final Camera cam, final ModelInstanceBB modelInst) {
