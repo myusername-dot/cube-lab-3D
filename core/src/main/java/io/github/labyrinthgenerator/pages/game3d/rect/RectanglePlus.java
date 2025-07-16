@@ -54,7 +54,7 @@ public class RectanglePlus {
         return x < r.x + r.width && x + width > r.x && y < r.y + r.height && y + height > r.y && z < r.z + r.depth && z + depth > r.z;
     }
 
-    public Vector3 diff(RectanglePlus r) {
+    public Vector3 overlapsDiff(RectanglePlus r) {
         Vector3 centerA = getCenter();
         Vector3 centerB = r.getCenter();
 

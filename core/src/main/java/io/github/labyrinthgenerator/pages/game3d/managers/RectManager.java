@@ -97,7 +97,7 @@ public class RectManager {
                 if (otherRects == null) continue;
                 for (final RectanglePlus otherRect : otherRects.keySet()) {
                     if (rect != otherRect && rect.overlaps(otherRect)) {
-                        Vector3 diff = rect.diff(otherRect);
+                        Vector3 diff = rect.overlapsDiff(otherRect);
                         rect.add(diff);
                         rect.overlaps = true;
                         otherRect.overlaps = true;
