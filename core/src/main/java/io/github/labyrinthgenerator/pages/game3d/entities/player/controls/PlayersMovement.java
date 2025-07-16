@@ -49,6 +49,10 @@ public class PlayersMovement {
     }
 
     private void handleHorizontalMovement(float delta) {
+        if (!controls.isOnGround && !controls.jumping && !controls.cheats) {
+            horizontalVelocity.set(0, 0);
+            return;
+        }
         resetHorizontalMovementDir();
         // local gravity x z, inv -y
         Vector3 localCamDir = GravityControls.swap(player.playerCam.direction.cpy());
