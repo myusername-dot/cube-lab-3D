@@ -40,6 +40,7 @@ public class Labyrinth2D implements Page {
 
     private boolean[] escape = new boolean[6];
     private boolean[] puffPuffins = new boolean[6];
+    private boolean skip;
     private boolean isFinished;
     private boolean isGameInPause;
     private boolean screenshot;
@@ -81,6 +82,7 @@ public class Labyrinth2D implements Page {
             puffPuffins[edge] = true;
             escape[edge] = false;
         }
+        skip = false;
         isFinished = false;
         isGameInPause = false;
         screenshot = false;
@@ -118,6 +120,9 @@ public class Labyrinth2D implements Page {
 
     @Override
     public void input() {
+        if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
+            skip = true;
+        }
         if (isGameInPause) {
             handleMenuNavigation();
         }
@@ -170,7 +175,7 @@ public class Labyrinth2D implements Page {
     }
 
     private void handlePuffPuffinsLogic(int edge) {
-        escape[edge] = lab[edge].passage(false);
+        escape[edge] = lab[edge].passage(skip);
         puffPuffins[edge] = !lab[edge].isFin();
     }
 
