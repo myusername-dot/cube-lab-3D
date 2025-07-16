@@ -79,6 +79,7 @@ public class RectManager {
     }
 
     public void processingRectOverlapsByFilters(final Vector3 camPos, final RectanglePlus rect) {
+        rect.overlaps = false;
         List<RectanglePlusFilter> filters = game.getOverlapFilterMan().getFiltersOverlap(rect.filter);
         if (filters.isEmpty()) return;
 
