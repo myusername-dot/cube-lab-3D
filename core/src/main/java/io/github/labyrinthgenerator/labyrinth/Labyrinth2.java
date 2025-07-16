@@ -16,7 +16,9 @@ public class Labyrinth2 implements Lab {
             this.value = value;
         }
     }
-    private final int depth;
+
+    public static final int depth = 2;
+
     private final int width;
     private final int height;
     private final int[][][] grid;
@@ -26,8 +28,6 @@ public class Labyrinth2 implements Lab {
     public final int[][][] gridFin;
 
     private boolean dirty;
-
-    private int currentI;
 
     private final int startX, startY, startI;
     private boolean exit;
@@ -44,7 +44,6 @@ public class Labyrinth2 implements Lab {
         Labyrinth2 labyrinth2 = new Labyrinth2(0, 0, 50, 10);
         labyrinth2.create();
         while (!labyrinth2.puffinsStack.empty()) labyrinth2.passageStack();
-        labyrinth2.convert(0);
         labyrinth2.printMaze();
     }
 
@@ -52,18 +51,16 @@ public class Labyrinth2 implements Lab {
         this.startX = startX;
         this.startY = startY;
         this.startI = 0;
-        this.currentI = startI;
 
         this.width = width / 2;
         this.height = height / 2;
-        this.depth = 2;
         exitPos = new Vector2i(this.width - startX - 1, this.height - startY - 1);
         heightFin = this.height * 2 + 1;
         widthFin = this.width * 2 + 1;
         assert heightFin == height;
         assert widthFin == width;
-        grid = new int[this.depth][this.height][this.width];
-        gridFin = new int[this.depth][widthFin][heightFin];
+        grid = new int[depth][this.height][this.width];
+        gridFin = new int[depth][widthFin][heightFin];
         puffinsStack = new Stack<>();
         prevPosses = new ArrayList<>();
         puffins = new ArrayList<>();
@@ -115,7 +112,6 @@ public class Labyrinth2 implements Lab {
             if (ny >= 0 && ny < height && nx >= 0 && nx < width && ni >= 0 && ni < depth && grid[ni][ny][nx] == 0) {
                 grid[ci][cy][cx] |= Dirs.values()[direction].value;
                 grid[ni][ny][nx] |= Dirs.values()[OP[direction]].value;
-                currentI = ni;
                 dirty = true;
                 pushPuffin(cx, cy, ci, nx, ny, ni);
             }
@@ -151,16 +147,19 @@ public class Labyrinth2 implements Lab {
     }
 
     private void printMaze() {
-        System.out.println(new String(new char[width * 2 + 1]).replace("\0", "_"));
-        for (int y = 0; y < height; y++) {
-            System.out.print("|");
-            for (int x = 0; x < width; x++) {
-                System.out.print((grid[currentI][y][x] & Dirs.S.value) != 0 ? " " : "_");
-                if ((grid[currentI][y][x] & Dirs.E.value) != 0) {
-                    System.out.print(((grid[currentI][y][x] | grid[currentI][y][x + 1]) & Dirs.S.value) != 0 ? " " : "_");
-                } else {
-                    System.out.print("|");
+        for (int i = 0; i < depth; i++) {
+            System.out.println(new String(new char[width * 2 + 1]).replace("\0", "_"));
+            for (int y = 0; y < height; y++) {
+                System.out.print("|");
+                for (int x = 0; x < width; x++) {
+                    System.out.print((grid[i][y][x] & Dirs.S.value) != 0 ? " " : "_");
+                    if ((grid[i][y][x] & Dirs.E.value) != 0) {
+                        System.out.print(((grid[i][y][x] | grid[i][y][x + 1]) & Dirs.S.value) != 0 ? " " : "_");
+                    } else {
+                        System.out.print("|");
+                    }
                 }
+                System.out.print("\n");
             }
             System.out.print("\n");
         }
@@ -219,8 +218,9 @@ public class Labyrinth2 implements Lab {
         puffinsStack.clear();
         prevPosses.clear();
         puffins.clear();
-        convert(0);
-        convert(1);
+        for (int i = 0; i < depth; i++) {
+            convert(i);
+        }
     }
 
     @Override
