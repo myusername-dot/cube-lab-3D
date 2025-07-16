@@ -16,7 +16,7 @@ public abstract class Constants {
 
     public static final float CAMERA_FAR = 100f;
 
-    public static final int CHUNK_SIZE = 10;
+    public static final int CHUNK_SIZE = 5;
     public static final int CHUNKS_UPDATE_RANGE_AROUND_CAM = 1;
     public static final int CHUNKS_RANGE_AROUND_CAM = MathUtils.ceil(CAMERA_FAR / CHUNK_SIZE);
 

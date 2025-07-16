@@ -55,10 +55,10 @@ public class ChunkManager {
         List<Chunk> nearestChunks = new ArrayList<>();
         Vector3i position = getChunkPosition(pos.x, pos.y, pos.z);
         int x1 = Math.max(0, position.x - offsetChunks);
-        int y1 = Math.max(0, position.y - offsetChunks / 2);
+        int y1 = Math.max(0, position.y - offsetChunks);
         int z1 = Math.max(0, position.z - offsetChunks);
         int x2 = Math.min(chunksSize.x - 1, position.x + offsetChunks);
-        int y2 = Math.min(chunksSize.y - 1, position.y + offsetChunks / 2);
+        int y2 = Math.min(chunksSize.y - 1, position.y + offsetChunks);
         int z2 = Math.min(chunksSize.z - 1, position.z + offsetChunks);
 
         for (int i = x1; i <= x2; i++)
