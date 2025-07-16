@@ -1,13 +1,14 @@
 package io.github.labyrinthgenerator.labyrinth;
 
 import io.github.labyrinthgenerator.pages.game3d.vectors.Vector2i;
+import io.github.labyrinthgenerator.pages.game3d.vectors.Vector3i;
 
 import java.util.*;
 
 public class Labyrinth2 implements Lab {
 
     private enum Dirs {
-        N(1), S(2), E(4), W(8);
+        N(1), S(2), E(4), W(8), IN(16), IS(32);
 
         public final int value;
 
@@ -15,10 +16,10 @@ public class Labyrinth2 implements Lab {
             this.value = value;
         }
     }
-
+    private final int depth;
     private final int width;
     private final int height;
-    private final int[][] grid;
+    private final int[][][] grid;
 
     private final int heightFin;
     private final int widthFin;
@@ -26,16 +27,18 @@ public class Labyrinth2 implements Lab {
 
     private boolean dirty;
 
-    private final int startX, startY;
+    private int currentI;
+
+    private final int startX, startY, startI;
     private boolean exit;
     private final Vector2i exitPos;
 
     private final Random random;
 
-    private final Stack<Pair<Vector2i, Stack<Integer>>> puffinsStack;
+    private final Stack<Pair<Vector3i, Stack<Integer>>> puffinsStack;
 
-    private final Set<Vector2i> prevPosses;
-    private final Set<Vector2i> puffins;
+    private final List<Set<Vector2i>> prevPosses;
+    private final List<Set<Vector2i>> puffins;
 
     public static void main(String[] args) {
         Labyrinth2 labyrinth2 = new Labyrinth2(0, 0, 50, 10);
@@ -48,30 +51,40 @@ public class Labyrinth2 implements Lab {
     public Labyrinth2(int startX, int startY, int width, int height) {
         this.startX = startX;
         this.startY = startY;
+        this.startI = 0;
+        this.currentI = startI;
+
         this.width = width / 2;
         this.height = height / 2;
+        this.depth = 2;
         exitPos = new Vector2i(this.width - startX - 1, this.height - startY - 1);
         heightFin = this.height * 2 + 1;
         widthFin = this.width * 2 + 1;
         assert heightFin == height;
         assert widthFin == width;
-        grid = new int[this.height][this.width];
+        grid = new int[this.depth][this.height][this.width];
         gridFin = new int[widthFin][heightFin];
         puffinsStack = new Stack<>();
-        prevPosses = new HashSet<>();
-        puffins = new HashSet<>();
+        prevPosses = new ArrayList<>();
+        puffins = new ArrayList<>();
+        for (int i = 0; i < depth; i++) {
+            prevPosses.add(new HashSet<>());
+            puffins.add(new HashSet<>());
+        }
         int randomSeed = (int) (Math.random() * 10_000_000);
         random = new Random(randomSeed);
     }
 
     @Override
     public void create() {
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-                grid[y][x] = 0;
+        for (int i = 0; i < depth; i++) {
+            for (int y = 0; y < height; y++) {
+                for (int x = 0; x < width; x++) {
+                    grid[i][y][x] = 0;
+                }
             }
         }
-        pushPuffin(startX, startY, startX, startY);
+        pushPuffin(startX, startY, startI, startX, startY, startI);
     }
 
     @Override
@@ -82,14 +95,20 @@ public class Labyrinth2 implements Lab {
     }
 
     public boolean passageStack() {
-        int[] DX = {0, 0, 1, -1};
-        int[] DY = {-1, 1, 0, 0};
-        int[] OP = {Dirs.S.ordinal(), Dirs.N.ordinal(), Dirs.W.ordinal(), Dirs.E.ordinal()};
+        int[] DX = {0, 0, 1, -1, 0, 0};
+        int[] DY = {-1, 1, 0, 0, 0, 0};
+        int[] DI = {0, 0, 0, 0, -1, 1};
+        int[] OP = {
+            Dirs.S.ordinal(), Dirs.N.ordinal(),
+            Dirs.W.ordinal(), Dirs.E.ordinal(),
+            Dirs.IS.ordinal(), Dirs.IN.ordinal()
+        };
 
-        Pair<Vector2i, Stack<Integer>> currentPos = this.puffinsStack.peek();
+        Pair<Vector3i, Stack<Integer>> currentPos = this.puffinsStack.peek();
 
         int cx = currentPos.fst.x;
         int cy = currentPos.fst.y;
+        int ci = currentPos.fst.z;
 
         Stack<Integer> dirsStack = currentPos.snd;
 
@@ -98,12 +117,14 @@ public class Labyrinth2 implements Lab {
 
             int nx = cx + DX[direction];
             int ny = cy + DY[direction];
+            int ni = ci + DI[direction];
 
-            if (ny >= 0 && ny < height && nx >= 0 && nx < width && grid[ny][nx] == 0) {
-                grid[cy][cx] |= Dirs.values()[direction].value;
-                grid[ny][nx] |= Dirs.values()[OP[direction]].value;
+            if (ny >= 0 && ny < height && nx >= 0 && nx < width && ni >= 0 && ni < depth && grid[ni][ny][nx] == 0) {
+                grid[ci][cy][cx] |= Dirs.values()[direction].value;
+                grid[ni][ny][nx] |= Dirs.values()[OP[direction]].value;
+                currentI = ni;
                 dirty = true;
-                pushPuffin(cx, cy, nx, ny);
+                pushPuffin(cx, cy, ci, nx, ny, ni);
             }
         } else {
             this.puffinsStack.pop();
@@ -113,9 +134,12 @@ public class Labyrinth2 implements Lab {
         return exit;
     }
 
-    private void pushPuffin(int cx, int cy, int nx, int ny) {
-        Vector2i currentPos = new Vector2i(nx, ny);
-        List<Integer> directions = Arrays.asList(Dirs.N.ordinal(), Dirs.S.ordinal(), Dirs.E.ordinal(), Dirs.W.ordinal());
+    private void pushPuffin(int cx, int cy, int ci, int nx, int ny, int ni) {
+        Vector3i currentPos = new Vector3i(nx, ny, ni);
+        List<Integer> directions = Arrays.asList(
+            Dirs.N.ordinal(), Dirs.S.ordinal(),
+            Dirs.E.ordinal(), Dirs.W.ordinal(),
+            Dirs.IN.ordinal(), Dirs.IS.ordinal());
         Collections.shuffle(directions, random);
         Stack<Integer> dirsStack = new Stack<>();
         dirsStack.addAll(directions);
@@ -127,10 +151,10 @@ public class Labyrinth2 implements Lab {
         cy = cy * 2 + 1;
         nx = nx * 2 + 1;
         ny = ny * 2 + 1;
-        prevPosses.add(new Vector2i(cx + dx, cy + dy));
-        prevPosses.add(new Vector2i(nx, ny));
-        puffins.clear();
-        puffins.add(new Vector2i(nx, ny));
+        prevPosses.get(ci).add(new Vector2i(cx + dx, cy + dy));
+        prevPosses.get(ni).add(new Vector2i(nx, ny));
+        puffins.get(ni).clear();
+        puffins.get(ni).add(new Vector2i(nx, ny));
     }
 
     private void printMaze() {
@@ -138,9 +162,9 @@ public class Labyrinth2 implements Lab {
         for (int y = 0; y < height; y++) {
             System.out.print("|");
             for (int x = 0; x < width; x++) {
-                System.out.print((grid[y][x] & Dirs.S.value) != 0 ? " " : "_");
-                if ((grid[y][x] & Dirs.E.value) != 0) {
-                    System.out.print(((grid[y][x] | grid[y][x + 1]) & Dirs.S.value) != 0 ? " " : "_");
+                System.out.print((grid[currentI][y][x] & Dirs.S.value) != 0 ? " " : "_");
+                if ((grid[currentI][y][x] & Dirs.E.value) != 0) {
+                    System.out.print(((grid[currentI][y][x] | grid[currentI][y][x + 1]) & Dirs.S.value) != 0 ? " " : "_");
                 } else {
                     System.out.print("|");
                 }
@@ -153,7 +177,7 @@ public class Labyrinth2 implements Lab {
         if (!dirty) return;
         // convert grid
         int[][] gridPlus = new int[height + 1][width];
-        System.arraycopy(this.grid, 0, gridPlus, 1, height);
+        System.arraycopy(this.grid[currentI], 0, gridPlus, 1, height);
         Arrays.fill(gridPlus[0], Dirs.E.value);
         gridPlus[0][width - 1] = Dirs.N.value;
 
@@ -207,11 +231,11 @@ public class Labyrinth2 implements Lab {
 
     @Override
     public Set<Vector2i> getPrevPosses() {
-        return prevPosses;
+        return prevPosses.get(currentI);
     }
 
     @Override
     public Set<Vector2i> getPuffins() {
-        return puffins;
+        return puffins.get(currentI);
     }
 }

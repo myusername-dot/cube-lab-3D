@@ -177,6 +177,10 @@ public class Labyrinth2D implements Page {
     private void handlePuffPuffinsLogic(int edge) {
         escape[edge] = lab[edge].passage(skip);
         puffPuffins[edge] = !lab[edge].isFin();
+        prevPoses.remove(edge);
+        prevPoses.add(edge, lab[edge].getPrevPosses());
+        puffins.remove(edge);
+        puffins.add(edge, lab[edge].getPuffins());
     }
 
     private void finalizeLabyrinth() {
