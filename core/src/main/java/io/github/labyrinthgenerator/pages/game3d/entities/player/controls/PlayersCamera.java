@@ -58,7 +58,9 @@ public class PlayersCamera {
     private void rotateCamVertical(float delta) {
         float gScl = GravityControls.getGravityScl() * (currentGravity == GravityDir.UP || currentGravity == GravityDir.DOWN ? 1 : -1);
         float angle = Gdx.input.getDeltaY() * -cameraRotationSpeed * gScl * delta;
-        currentVerticalAngle = MathUtils.clamp(currentVerticalAngle + angle, -MAX_VERTICAL_ANGLE, MAX_VERTICAL_ANGLE);
+        float verticalAngle = MathUtils.clamp(currentVerticalAngle + angle, -MAX_VERTICAL_ANGLE, MAX_VERTICAL_ANGLE);
+        angle = verticalAngle - currentVerticalAngle;
+        currentVerticalAngle = verticalAngle;
         player.playerCam.rotate(setCurrentVerticalAxis(), angle);
     }
 
@@ -83,9 +85,6 @@ public class PlayersCamera {
     }
 
     void updateCameraRotation() {
-        currentVerticalAngle = 0f;
-        currentHorizontalAngle = 0f;
-        // Goto local gravity coords
         currentHorizontalAxis.set(GravityControls.swap(Vector3.Y.cpy()));
         player.playerCam.up.set(gravity[currentGravity.ord]);
         GravityControls.swap(player.playerCam.direction);
