@@ -1,4 +1,4 @@
-package io.github.labyrinthgenerator.pages.game3d.filters;
+package io.github.labyrinthgenerator.pages.game3d.managers;
 
 import io.github.labyrinthgenerator.pages.game3d.rect.filters.RectanglePlusFilter;
 

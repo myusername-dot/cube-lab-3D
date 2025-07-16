@@ -12,7 +12,7 @@ import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 import io.github.labyrinthgenerator.interfaces.Page;
 import io.github.labyrinthgenerator.pages.game3d.constants.Constants;
 import io.github.labyrinthgenerator.pages.game3d.debug.MyDebugRenderer;
-import io.github.labyrinthgenerator.pages.game3d.filters.OverlapFilterManager;
+import io.github.labyrinthgenerator.pages.game3d.managers.OverlapFilterManager;
 import io.github.labyrinthgenerator.pages.game3d.input.GameInputProcessor;
 import io.github.labyrinthgenerator.pages.game3d.managers.*;
 import io.github.labyrinthgenerator.pages.game3d.maps.LMapBuilder;
