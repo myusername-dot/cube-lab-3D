@@ -58,9 +58,11 @@ public class RectanglePlus {
         Vector3 centerA = getCenter();
         Vector3 centerB = r.getCenter();
 
+        // Вычисляем половину размеров обоих прямоугольников
         Vector3 halfDimsA = getDims().scl(0.5f);
         Vector3 halfDimsB = r.getDims().scl(0.5f);
 
+        // Вычисляем разницу между центрами
         Vector3 diff = centerA.sub(centerB);
 
         // Вычисляем минимальное расстояние для устранения пересечения
@@ -68,29 +70,23 @@ public class RectanglePlus {
         float overlapY = halfDimsA.y + halfDimsB.y - Math.abs(diff.y);
         float overlapZ = halfDimsA.z + halfDimsB.z - Math.abs(diff.z);
 
+        // Проверяем на пересечение
         if (overlapX > 0 && overlapY > 0 && overlapZ > 0) {
             // Определяем минимальное значение пересечения
             if (overlapX < overlapY && overlapX < overlapZ) {
                 // Двигаем rect по оси X
-                diff.x = (diff.x > 0 ? overlapX : -overlapX); // Если положительное, значит, нужно сдвинуть влево
-                diff.y = 0;
-                diff.z = 0;
+                return new Vector3((diff.x > 0 ? overlapX : -overlapX), 0, 0);
             } else if (overlapY < overlapX && overlapY < overlapZ) {
                 // Двигаем rect по оси Y
-                diff.x = 0;
-                diff.y = (diff.y > 0 ? overlapY : -overlapY); // Если положительное, значит, нужно сдвинуть вниз
-                diff.z = 0;
+                return new Vector3(0, (diff.y > 0 ? overlapY : -overlapY), 0);
             } else {
                 // Двигаем rect по оси Z
-                diff.x = 0;
-                diff.y = 0;
-                diff.z = (diff.z > 0 ? overlapZ : -overlapZ); // Если положительное, значит, нужно сдвинуть назад
+                return new Vector3(0, 0, (diff.z > 0 ? overlapZ : -overlapZ));
             }
         } else {
+            // Если нет пересечения, возвращаем нулевой вектор
             return new Vector3(0, 0, 0);
         }
-
-        return diff;
     }
 
     public Vector3 getCenter() {
