@@ -48,8 +48,7 @@
 
     <appender name="CONSOLE_WARN_IMPL" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>[%d{HH:mm:ss.SSS}] %yellow(%-5level) [%-20(%file):%-4line] [%thread] -
-                %yellow(%m%n)
+            <pattern>[%d{HH:mm:ss.SSS}] %yellow(%-5level) [%-20(%file):%-4line] [%thread] - %yellow(%m%n)
             </pattern>
         </encoder>
         <filter class="ch.qos.logback.classic.filter.LevelFilter">
@@ -65,8 +64,7 @@
 
     <appender name="CONSOLE_ERROR_IMPL" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>[%d{HH:mm:ss.SSS}] %red(%-5level) [%-20(%file):%-4line] [%thread] -
-                %red(%m%n)
+            <pattern>[%d{HH:mm:ss.SSS}] %red(%-5level) [%-20(%file):%-4line] [%thread] - %red(%m%n)
             </pattern>
         </encoder>
         <filter class="ch.qos.logback.classic.filter.LevelFilter">
