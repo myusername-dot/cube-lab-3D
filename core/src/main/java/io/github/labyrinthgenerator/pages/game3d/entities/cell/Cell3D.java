@@ -17,32 +17,32 @@ import io.github.labyrinthgenerator.pages.game3d.models.ModelInstanceBB;
 import io.github.labyrinthgenerator.pages.game3d.screens.GameScreen;
 
 public class Cell3D extends Entity {
-    private Model mdlWallNorth;
-    private Model mdlWallSouth;
-    private Model mdlWallWest;
-    private Model mdlWallEast;
-    private Model mdlFloor;
-    private Model mdlCeiling;
+    private final Model mdlWallNorth;
+    private final Model mdlWallSouth;
+    private final Model mdlWallWest;
+    private final Model mdlWallEast;
+    private final Model mdlCeiling;
+    private final Model mdlFloor;
 
     private ModelInstanceBB mdlInstWallNorth;
     private ModelInstanceBB mdlInstWallSouth;
     private ModelInstanceBB mdlInstWallWest;
     private ModelInstanceBB mdlInstWallEast;
-    private ModelInstanceBB mdlInstFloor;
     private ModelInstanceBB mdlInstCeiling;
+    private ModelInstanceBB mdlInstFloor;
 
     // @formatter:off
     public boolean hasWallNorth = false;
     public boolean hasWallSouth = false;
     public boolean hasWallWest  = false;
     public boolean hasWallEast  = false;
-    public boolean hasFloor     = false;
     public boolean hasCeiling   = false;
+    public boolean hasFloor     = false;
 
     public boolean hasWalls     = false;
     public boolean mobSpawn     = false;
 
-    public Texture texRegNorth, texRegSouth, texRegWest, texRegEast, texRegFloor, texRegCeiling;
+    public Texture texRegNorth, texRegSouth, texRegWest, texRegEast, texRegCeiling, texRegFloor;
 
     public Cell3D(final Vector3 position, final GameScreen screen) {
         super(position, screen);
@@ -51,8 +51,8 @@ public class Cell3D extends Entity {
         mdlWallSouth = screen.game.getCellBuilder().mdlWallSouth;
         mdlWallWest  = screen.game.getCellBuilder().mdlWallWest;
         mdlWallEast  = screen.game.getCellBuilder().mdlWallEast;
-        mdlFloor     = screen.game.getCellBuilder().mdlFloor;
         mdlCeiling   = screen.game.getCellBuilder().mdlCeiling;
+        mdlFloor     = screen.game.getCellBuilder().mdlFloor;
     }
     // @formatter:on
 
@@ -72,8 +72,8 @@ public class Cell3D extends Entity {
         if (hasWallSouth) mdlInstWallSouth = createModelInstance(mdlWallSouth, texRegSouth,   getPositionImmutable());
         if (hasWallWest ) mdlInstWallWest  = createModelInstance(mdlWallWest,  texRegWest,    getPositionImmutable());
         if (hasWallEast ) mdlInstWallEast  = createModelInstance(mdlWallEast,  texRegEast,    getPositionImmutable());
-        if (hasFloor    ) mdlInstFloor     = createModelInstance(mdlFloor,     texRegFloor,   getPositionImmutable());
         if (hasCeiling  ) mdlInstCeiling   = createModelInstance(mdlCeiling,   texRegCeiling, getPositionImmutable());
+        if (hasFloor    ) mdlInstFloor     = createModelInstance(mdlFloor,     texRegFloor,   getPositionImmutable());
         // @formatter:on
     }
 
@@ -136,8 +136,8 @@ public class Cell3D extends Entity {
         if (hasWallSouth) setInFrustum(mdlInstWallSouth, mdlBatch, env, shader);
         if (hasWallWest ) setInFrustum(mdlInstWallWest,  mdlBatch, env, shader);
         if (hasWallEast ) setInFrustum(mdlInstWallEast,  mdlBatch, env, shader);
-        if (hasFloor    ) setInFrustum(mdlInstFloor,     mdlBatch, env, shader);
         if (hasCeiling  ) setInFrustum(mdlInstCeiling,   mdlBatch, env, shader);
+        if (hasFloor    ) setInFrustum(mdlInstFloor,     mdlBatch, env, shader);
         // @formatter:on
     }
 }
