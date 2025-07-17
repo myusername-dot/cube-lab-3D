@@ -100,13 +100,16 @@ public class EntityManager {
     }
 
     public synchronized void tickAllEntities(final float delta, final Vector3 pos) {
-        long tickTime = System.currentTimeMillis();
+        long tickTime = System.nanoTime();
         try {
             startTick();
             screen.game.getRectMan().joinTick(tickId);
 
+            long prepareChunksTime = System.nanoTime();
             List<Chunk> nearestChunks = chunkMan.getNearestChunks(pos, Constants.CHUNKS_UPDATE_RANGE_AROUND_CAM);
             nearestChunks.forEach(Chunk::updateRectsRoundPositions);
+            logPrepareChunksDuration(prepareChunksTime);
+
             executeTickInParallel(nearestChunks, delta);
 
             screen.game.getRectMan().endTick();
@@ -175,6 +178,11 @@ public class EntityManager {
         else log.debug("Entity id: " + ent.getId() + " is moving to the other chunk!");
     }
 
+    private void logPrepareChunksDuration(long prepareChunksTime) {
+        prepareChunksTime = System.nanoTime() - prepareChunksTime;
+        log.info("Prepare chunks time sec: " + prepareChunksTime / 1_000_000_000.0d + ".");
+    }
+
     private void logTickDuration(long tickTime) {
         AtomicInteger entitiesSize = new AtomicInteger(entitiesById.size());
         //entitiesByChunks.forEach((key, value) -> entitiesSize.addAndGet(value.size()));
@@ -182,7 +190,7 @@ public class EntityManager {
             throw new RuntimeException("Entity count mismatch: " + entitiesSize.get() + " vs " + entitiesById.size());
         }
         int rectsCount = rectMan.rectsCount();
-        tickTime = System.currentTimeMillis() - tickTime;
-        log.info("Tick complete. Entity count: " + entitiesSize.get() + ", rectangle count: " + rectsCount + ". Time spent seconds: " + tickTime / 1000d + ".");
+        tickTime = System.nanoTime() - tickTime;
+        log.info("Tick complete. Entity count: " + entitiesSize.get() + ", rectangle count: " + rectsCount + ". Time spent seconds: " + tickTime / 1_000_000_000.0d + ".");
     }
 }
