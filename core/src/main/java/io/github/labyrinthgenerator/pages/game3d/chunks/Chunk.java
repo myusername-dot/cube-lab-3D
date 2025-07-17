@@ -37,12 +37,11 @@ public class Chunk {
         this.x = x;
         this.y = y;
         this.z = z;
-        center = new Vector3(x + width / 2f, y + height / 2f, z + depth / 2f);
+        this.center = new Vector3(x + width / 2f, y + height / 2f, z + depth / 2f);
 
-        rects = new ConcurrentHashMap<>();
-        entities = new ConcurrentHashMap<>();
-
-        rectsRoundCenter = new HashMap<>();
+        this.rects = new ConcurrentHashMap<>();
+        this.entities = new ConcurrentHashMap<>();
+        this.rectsRoundCenter = new HashMap<>();
     }
 
     public boolean contains(float x, float y, float z) {
@@ -62,7 +61,9 @@ public class Chunk {
             for (RectanglePlus rect : rectsEntry.getValue().keySet()) {
                 rect.nearestChunk = true;
                 Vector3i positionRound = getRectRoundPosition(rect);
-                rectsRoundCenter.get(rectsEntry.getKey()).computeIfAbsent(positionRound, p -> new ArrayList<>()).add(rect);
+                rectsRoundCenter.get(rectsEntry.getKey())
+                    .computeIfAbsent(positionRound, p -> new ArrayList<>())
+                    .add(rect);
             }
         }
     }
@@ -70,14 +71,16 @@ public class Chunk {
     public void getNearestRectsByFilter(RectanglePlus rect, RectanglePlusFilter filter, Collection<RectanglePlus> nearestRects) {
         HashMap<Vector3i, List<RectanglePlus>> roundRectsByFilter = rectsRoundCenter.get(filter);
         if (roundRectsByFilter == null) return;
+
         Vector3i roundPos = getRectRoundPosition(rect);
         Vector3i pos = new Vector3i(0, 0, 0);
         for (int i = roundPos.x - 1; i <= roundPos.x + 1; i++) {
             for (int j = roundPos.y - 1; j <= roundPos.y + 1; j++) {
                 for (int k = roundPos.z - 1; k <= roundPos.z + 1; k++) {
                     pos.set(i, j, k);
-                    if (roundRectsByFilter.containsKey(pos)) {
-                        nearestRects.addAll(roundRectsByFilter.get(pos));
+                    List<RectanglePlus> rects = roundRectsByFilter.get(pos);
+                    if (rects != null) {
+                        nearestRects.addAll(rects);
                     }
                 }
             }
@@ -94,7 +97,9 @@ public class Chunk {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Chunk chunk = (Chunk) o;
-        return x == chunk.x && y == chunk.y && z == chunk.z;
+        return Float.compare(chunk.x, x) == 0
+            && Float.compare(chunk.y, y) == 0
+            && Float.compare(chunk.z, z) == 0;
     }
 
     @Override
@@ -104,6 +109,6 @@ public class Chunk {
 
     @Override
     public String toString() {
-        return "Chunk[" + "x=" + x + ", y=" + y + ", z=" + z + ']';
+        return "Chunk[x=" + x + ", y=" + y + ", z=" + z + ']';
     }
 }
