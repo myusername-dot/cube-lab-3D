@@ -57,13 +57,12 @@ public class Chunk {
     public void updateRectsRoundPositions() {
         rectsRoundCenter.clear();
         for (Map.Entry<RectanglePlusFilter, ConcurrentHashMap<RectanglePlus, Object>> rectsEntry : rects.entrySet()) {
-            rectsRoundCenter.put(rectsEntry.getKey(), new HashMap<>(rectsEntry.getValue().size()));
+            HashMap<Vector3i, List<RectanglePlus>> rectsRoundByFilter = new HashMap<>(rectsEntry.getValue().size());
+            rectsRoundCenter.put(rectsEntry.getKey(), rectsRoundByFilter);
             for (RectanglePlus rect : rectsEntry.getValue().keySet()) {
                 rect.nearestChunk = true;
                 Vector3i positionRound = getRectRoundPosition(rect);
-                rectsRoundCenter.get(rectsEntry.getKey())
-                    .computeIfAbsent(positionRound, p -> new ArrayList<>())
-                    .add(rect);
+                rectsRoundByFilter.computeIfAbsent(positionRound, p -> new ArrayList<>()).add(rect);
             }
         }
     }
