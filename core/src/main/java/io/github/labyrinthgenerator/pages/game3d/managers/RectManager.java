@@ -12,10 +12,7 @@ import io.github.labyrinthgenerator.pages.game3d.rect.filters.RectanglePlusFilte
 import io.github.labyrinthgenerator.pages.game3d.vectors.Vector3i;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -109,6 +106,19 @@ public class RectManager {
 
         if (game.getEntMan().getEntityById(otherRect.getConnectedEntityId()) != null) {
             game.getEntMan().getEntityById(otherRect.getConnectedEntityId()).onCollision(rect);
+        }
+    }
+
+    public void updateRectsRoundPositions(Chunk chunk) {
+        chunk.rectsRoundCenter.clear();
+        for (Map.Entry<RectanglePlusFilter, ConcurrentHashMap<RectanglePlus, Object>> rectsEntry : chunk.rects.entrySet()) {
+            HashMap<Vector3i, List<RectanglePlus>> rectsRoundByFilter = new HashMap<>(rectsEntry.getValue().size());
+            chunk.rectsRoundCenter.put(rectsEntry.getKey(), rectsRoundByFilter);
+            for (RectanglePlus rect : rectsEntry.getValue().keySet()) {
+                rect.nearestChunk = true;
+                Vector3i positionRound = chunk.getRectRoundPosition(rect);
+                rectsRoundByFilter.computeIfAbsent(positionRound, p -> new ArrayList<>()).add(rect);
+            }
         }
     }
 

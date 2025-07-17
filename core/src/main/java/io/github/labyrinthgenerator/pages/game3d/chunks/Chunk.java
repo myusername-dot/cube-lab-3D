@@ -29,7 +29,7 @@ public class Chunk {
     public final ConcurrentHashMap<Entity, Object> entities;
 
     private final float roundDist = 1f;
-    private final HashMap<RectanglePlusFilter, HashMap<Vector3i, List<RectanglePlus>>> rectsRoundCenter;
+    public final HashMap<RectanglePlusFilter, HashMap<Vector3i, List<RectanglePlus>>> rectsRoundCenter;
 
     public Chunk(final ChunkManager chunkMan, float x, float y, float z) {
         this.chunkMan = chunkMan;
@@ -54,19 +54,6 @@ public class Chunk {
             && this.z <= z && this.z + this.depth >= z;
     }
 
-    public void updateRectsRoundPositions() {
-        rectsRoundCenter.clear();
-        for (Map.Entry<RectanglePlusFilter, ConcurrentHashMap<RectanglePlus, Object>> rectsEntry : rects.entrySet()) {
-            HashMap<Vector3i, List<RectanglePlus>> rectsRoundByFilter = new HashMap<>(rectsEntry.getValue().size());
-            rectsRoundCenter.put(rectsEntry.getKey(), rectsRoundByFilter);
-            for (RectanglePlus rect : rectsEntry.getValue().keySet()) {
-                rect.nearestChunk = true;
-                Vector3i positionRound = getRectRoundPosition(rect);
-                rectsRoundByFilter.computeIfAbsent(positionRound, p -> new ArrayList<>()).add(rect);
-            }
-        }
-    }
-
     public void getNearestRectsByFilter(RectanglePlus rect, RectanglePlusFilter filter, Collection<RectanglePlus> nearestRects) {
         HashMap<Vector3i, List<RectanglePlus>> roundRectsByFilter = rectsRoundCenter.get(filter);
         if (roundRectsByFilter == null) return;
@@ -86,7 +73,7 @@ public class Chunk {
         }
     }
 
-    private Vector3i getRectRoundPosition(RectanglePlus rect) {
+    public Vector3i getRectRoundPosition(RectanglePlus rect) {
         Vector3 center = rect.getCenter();
         return new Vector3i((int) (center.x / roundDist), (int) (center.y / roundDist), (int) (center.z / roundDist));
     }
