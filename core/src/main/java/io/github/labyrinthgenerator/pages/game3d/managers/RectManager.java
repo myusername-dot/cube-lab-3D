@@ -127,8 +127,11 @@ public class RectManager {
     }
 
     public void removeRect(final RectanglePlus rect) {
-        Chunk chunk = chunkMan.get(rect.getX(), rect.getY(), rect.getZ()); // FIXME
-        chunk.rects.values().forEach(l -> l.remove(rect));
+        Entity entity = game.getEntMan().getEntityById(rect.getConnectedEntityId());
+        Chunk chunk;
+        if (entity != null) chunk = entity.getChunk();
+        else chunk = chunkMan.get(rect.getX(), rect.getY(), rect.getZ());
+        chunk.rects.get(rect.filter).remove(rect);
         rectsByConnectedEntityId.remove(rect.getConnectedEntityId());
         staticRectsByPosition.remove(new Vector3i(rect.getPositionImmutable()));
         MyDebugRenderer.shapes.remove(rect);
