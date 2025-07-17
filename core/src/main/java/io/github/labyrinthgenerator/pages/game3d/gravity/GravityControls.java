@@ -82,47 +82,37 @@ public class GravityControls {
         return in;
     }
 
+    public static float getGravityScl() {
+        return gravity[currentGravity.ord].sum();
+    }
+
+    // @formatter:off
     public static Vector3 swap(Vector3 v) {
         switch (currentGravity) {
-            case UP:
-            case DOWN:
-            default:
+            case UP: case DOWN: default:
                 break;
-            case FORWARD:
-            case BACK:
+            case FORWARD: case BACK:
                 v.set(v.y, v.x, v.z);
                 break;
-            case LEFT:
-            case RIGHT:
+            case LEFT: case RIGHT:
                 v.set(v.x, v.z, v.y);
-                break;
         }
         return v;
     }
 
     public static Vector3 reSwap(final Vector3 in) {
         switch (currentGravity) {
-            case UP:
-            case DOWN:
-            default:
+            case UP: case DOWN: default:
                 break;
-            case FORWARD:
-            case BACK:
+            case FORWARD: case BACK:
                 in.set(in.y, in.x, in.z);
                 break;
-            case LEFT:
-            case RIGHT:
+            case LEFT: case RIGHT:
                 in.set(in.x, in.z, in.y);
-                break;
         }
         return in;
     }
 
-    public static float getGravityScl() {
-        return gravity[currentGravity.ord].sum();
-    }
-
-    // @formatter:off
     public static void swapVerticalGravityDir() {
         switch (currentGravity) {
             case DOWN: currentGravity = UP; break;
@@ -133,6 +123,7 @@ public class GravityControls {
             case FORWARD: currentGravity = BACK; break;
         }
     }
+
     public static void randomGravityDir() {
         switch (currentGravity) {
             case DOWN: currentGravity = BACK; break;
