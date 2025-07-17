@@ -9,7 +9,7 @@ import io.github.labyrinthgenerator.pages.game3d.rect.RectanglePlus;
 import io.github.labyrinthgenerator.pages.game3d.rect.filters.RectanglePlusFilter;
 import io.github.labyrinthgenerator.pages.game3d.vectors.Vector3i;
 
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class Chunk {
@@ -28,6 +28,9 @@ public class Chunk {
     public final ConcurrentHashMap<RectanglePlusFilter, ConcurrentHashMap<RectanglePlus, Object>> rects;
     public final ConcurrentHashMap<Entity, Object> entities;
 
+    private final float roundDist = 1f;
+    private final HashMap<RectanglePlusFilter, HashMap<Vector3i, List<RectanglePlus>>> rectsRoundCenter;
+
     public Chunk(final ChunkManager chunkMan, float x, float y, float z) {
         this.chunkMan = chunkMan;
         this.worldSize = chunkMan.getWorldSize();
@@ -38,6 +41,8 @@ public class Chunk {
 
         rects = new ConcurrentHashMap<>();
         entities = new ConcurrentHashMap<>();
+
+        rectsRoundCenter = new HashMap<>();
     }
 
     public boolean contains(float x, float y, float z) {
@@ -48,6 +53,40 @@ public class Chunk {
         return this.x <= x && this.x + this.width >= x
             && this.y <= y && this.y + this.height >= y
             && this.z <= z && this.z + this.depth >= z;
+    }
+
+    public void updateRectsRoundPositions() {
+        rectsRoundCenter.clear();
+        for (Map.Entry<RectanglePlusFilter, ConcurrentHashMap<RectanglePlus, Object>> rectsEntry : rects.entrySet()) {
+            rectsRoundCenter.put(rectsEntry.getKey(), new HashMap<>(rectsEntry.getValue().size()));
+            for (RectanglePlus rect : rectsEntry.getValue().keySet()) {
+                rect.nearestChunk = true;
+                Vector3i positionRound = getRectRoundPosition(rect);
+                rectsRoundCenter.get(rectsEntry.getKey()).computeIfAbsent(positionRound, p -> new ArrayList<>()).add(rect);
+            }
+        }
+    }
+
+    public void getNearestRectsByFilter(RectanglePlus rect, RectanglePlusFilter filter, Collection<RectanglePlus> nearestRects) {
+        HashMap<Vector3i, List<RectanglePlus>> roundRectsByFilter = rectsRoundCenter.get(filter);
+        if (roundRectsByFilter == null) return;
+        Vector3i roundPos = getRectRoundPosition(rect);
+        Vector3i pos = new Vector3i(0, 0, 0);
+        for (int i = roundPos.x - 1; i <= roundPos.x + 1; i++) {
+            for (int j = roundPos.y - 1; j <= roundPos.y + 1; j++) {
+                for (int k = roundPos.z - 1; k <= roundPos.z + 1; k++) {
+                    pos.set(i, j, k);
+                    if (roundRectsByFilter.containsKey(pos)) {
+                        nearestRects.addAll(roundRectsByFilter.get(pos));
+                    }
+                }
+            }
+        }
+    }
+
+    private Vector3i getRectRoundPosition(RectanglePlus rect) {
+        Vector3 center = rect.getCenter();
+        return new Vector3i((int) (center.x / roundDist), (int) (center.y / roundDist), (int) (center.z / roundDist));
     }
 
     @Override

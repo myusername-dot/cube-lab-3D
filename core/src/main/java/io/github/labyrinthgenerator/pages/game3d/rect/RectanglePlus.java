@@ -25,6 +25,8 @@ public class RectanglePlus {
     public final boolean isStatic;
 
     public boolean overlaps = false;
+    public boolean nearest = false;
+    public boolean nearestChunk = false;
 
     private Mesh rectMesh;
     private Matrix4 transform;

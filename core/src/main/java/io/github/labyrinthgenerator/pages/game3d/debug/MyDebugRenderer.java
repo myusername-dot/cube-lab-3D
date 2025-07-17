@@ -55,7 +55,10 @@ public class MyDebugRenderer {
         for (RectanglePlus rect : shapes) {
             Matrix4 worldTrans = rect.getTransformMatrix();
             shader.setUniformMatrix("u_worldTrans", worldTrans);
-            Color color = rect.overlaps ? JOINT_COLOR : SHAPE_COLOR;
+            Color color = rect.overlaps ? JOINT_COLOR : rect.nearest ? NEAREST_COLOR : rect.nearestChunk ? NEAREST_CHUNK_COLOR : SHAPE_COLOR;
+            rect.overlaps = false;
+            rect.nearest = false;
+            rect.nearestChunk = false;
             shader.setUniformf("u_color", color);
             Mesh rectMesh = rect.getMesh();
 
@@ -67,4 +70,6 @@ public class MyDebugRenderer {
 
     public final Color SHAPE_COLOR = Color.GREEN;
     public final Color JOINT_COLOR = new Color(0.5f, 0.8f, 0.8f, 1);
+    public final Color NEAREST_COLOR = Color.RED;
+    public final Color NEAREST_CHUNK_COLOR = new Color(0f, 0.5f, 0f, 1);
 }

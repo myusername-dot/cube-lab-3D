@@ -12,9 +12,10 @@ import io.github.labyrinthgenerator.pages.game3d.rect.filters.RectanglePlusFilte
 import io.github.labyrinthgenerator.pages.game3d.vectors.Vector3i;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -74,7 +75,6 @@ public class RectManager {
     }
 
     public void processingRectOverlapsByFilters(final Vector3 camPos, final RectanglePlus rect) {
-        rect.overlaps = false;
         List<RectanglePlusFilter> filters = game.getOverlapFilterMan().getFiltersOverlap(rect.filter);
         if (filters.isEmpty()) return;
 
@@ -82,20 +82,22 @@ public class RectManager {
         if (nearestChunks == null || nearestChunks.isEmpty()) {
             throw new NullPointerException("nearestChunks == null || nearestChunks.isEmpty() at position " + camPos + ".");
         }
-
+        Set<RectanglePlus> otherRects = new HashSet<>();
         for (Chunk chunk : nearestChunks) {
             for (RectanglePlusFilter filter : filters) {
-                Map<RectanglePlus, Object> otherRects = chunk.rects.get(filter);
-                if (otherRects == null) continue;
-                for (final RectanglePlus otherRect : otherRects.keySet()) {
-                    if (rect != otherRect && rect.overlaps(otherRect)) {
-                        Vector3 diff = rect.overlapsDiff(otherRect);
-                        rect.add(diff);
-                        rect.overlaps = true;
-                        otherRect.overlaps = true;
-                        handleCollision(rect, otherRect);
-                    }
-                }
+                chunk.getNearestRectsByFilter(rect, filter, otherRects);
+            }
+        }
+        if (rect.filter.equals(RectanglePlusFilter.PLAYER)) {
+            otherRects.forEach(r -> r.nearest = true);
+        }
+        for (final RectanglePlus otherRect : otherRects) {
+            if (rect != otherRect && rect.overlaps(otherRect)) {
+                Vector3 diff = rect.overlapsDiff(otherRect);
+                rect.add(diff);
+                rect.overlaps = true;
+                otherRect.overlaps = true;
+                handleCollision(rect, otherRect);
             }
         }
     }

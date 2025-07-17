@@ -106,6 +106,7 @@ public class EntityManager {
             screen.game.getRectMan().joinTick(tickId);
 
             List<Chunk> nearestChunks = chunkMan.getNearestChunks(pos, Constants.CHUNKS_UPDATE_RANGE_AROUND_CAM);
+            nearestChunks.forEach(Chunk::updateRectsRoundPositions);
             executeTickInParallel(nearestChunks, delta);
 
             screen.game.getRectMan().endTick();
@@ -157,11 +158,13 @@ public class EntityManager {
 
     private void logEntityStartChunkMovement(final Chunk oldChunk, final Chunk newChunk, final Entity ent) {
         Player player = screen.getPlayer();
-        if (player != null && player.getId() == ent.getId()) log.debug("Try to move the Player from: " + oldChunk + " to: " + newChunk + ".");
+        if (player != null && player.getId() == ent.getId())
+            log.debug("Try to move the Player from: " + oldChunk + " to: " + newChunk + ".");
         else log.debug("Entity id: " + ent.getId() + " is trying to move from: " + oldChunk + " to: " + newChunk + ".");
 
         if (!oldChunk.entities.containsKey(ent)) {
-            if (player != null && player.getId() == ent.getId()) log.error("Player: !entitiesByChunks.get(oldChunk).containsKey(ent).");
+            if (player != null && player.getId() == ent.getId())
+                log.error("Player: !entitiesByChunks.get(oldChunk).containsKey(ent).");
             else log.error("Entity id: " + ent.getId() + " !entitiesByChunks.get(oldChunk).containsKey(ent).");
         }
     }
