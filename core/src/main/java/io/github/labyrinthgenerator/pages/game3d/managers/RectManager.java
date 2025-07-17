@@ -21,7 +21,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Slf4j
 public class RectManager {
 
-    private final ConcurrentHashMap<Chunk, ConcurrentHashMap<RectanglePlusFilter, ConcurrentHashMap<RectanglePlus, Object>>> rects = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<Integer, RectanglePlus> rectsByConnectedEntityId = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<Vector3i, RectanglePlus> staticRectsByPosition = new ConcurrentHashMap<>();
     private final Object justObject = new Object();
@@ -46,9 +45,7 @@ public class RectManager {
             rect.getY() + rect.getHeight() / 2f,
             rect.getZ() + rect.getDepth() / 2f
         );
-        rects.computeIfAbsent(chunk, k -> new ConcurrentHashMap<>())
-            .computeIfAbsent(rect.filter, k -> new ConcurrentHashMap<>())
-            .put(rect, justObject);
+        chunk.rects.computeIfAbsent(rect.filter, k -> new ConcurrentHashMap<>()).put(rect, justObject);
 
         if (rect.getConnectedEntityId() >= 0) {
             rectsByConnectedEntityId.put(rect.getConnectedEntityId(), rect);
@@ -70,10 +67,8 @@ public class RectManager {
 
         validateOldChunkContainsRect(oldChunk, newChunk, rect, ent);
 
-        rects.get(oldChunk).get(rect.filter).remove(rect);
-        rects.computeIfAbsent(newChunk, k -> new ConcurrentHashMap<>())
-            .computeIfAbsent(rect.filter, k -> new ConcurrentHashMap<>())
-            .put(rect, justObject);
+        oldChunk.rects.get(rect.filter).remove(rect);
+        newChunk.rects.computeIfAbsent(rect.filter, k -> new ConcurrentHashMap<>()).put(rect, justObject);
 
         logRectEndChunkMovement(ent);
     }
@@ -89,12 +84,8 @@ public class RectManager {
         }
 
         for (Chunk chunk : nearestChunks) {
-            if (!rects.containsKey(chunk)) {
-                //log.warn("Method getNearestRectsByFilters: !rects.containsKey(chunk).");
-                continue;
-            }
             for (RectanglePlusFilter filter : filters) {
-                Map<RectanglePlus, Object> otherRects = rects.get(chunk).get(filter);
+                Map<RectanglePlus, Object> otherRects = chunk.rects.get(filter);
                 if (otherRects == null) continue;
                 for (final RectanglePlus otherRect : otherRects.keySet()) {
                     if (rect != otherRect && rect.overlaps(otherRect)) {
@@ -124,15 +115,21 @@ public class RectManager {
     }
 
     public void removeRect(final RectanglePlus rect) {
-        rects.values().forEach(c -> c.values().forEach(l -> l.remove(rect)));
+        Chunk chunk = chunkMan.get(rect.getX(), rect.getY(), rect.getZ()); // FIXME
+        chunk.rects.values().forEach(l -> l.remove(rect));
         rectsByConnectedEntityId.remove(rect.getConnectedEntityId());
         staticRectsByPosition.remove(new Vector3i(rect.getPositionImmutable()));
         MyDebugRenderer.shapes.remove(rect);
     }
 
+    public int rectsCount() {
+        return rectsByConnectedEntityId.size();
+    }
+
     public int rectsCountAndCheck() {
         AtomicInteger rectsCount = new AtomicInteger();
-        rects.forEach((c, m) -> m.forEach((f, s) -> rectsCount.addAndGet(s.size())));
+        List<Chunk> chunks = chunkMan.getChunks();
+        chunks.forEach(c -> c.rects.forEach((f, s) -> rectsCount.addAndGet(s.size())));
         checkRectCountConsistency(rectsCount);
         return rectsCount.get();
     }
@@ -144,7 +141,6 @@ public class RectManager {
     }
 
     public void clear() {
-        rects.clear();
         rectsByConnectedEntityId.clear();
         staticRectsByPosition.clear();
         MyDebugRenderer.shapes.clear();
@@ -179,19 +175,19 @@ public class RectManager {
     }
 
     private void validateOldChunkContainsRect(Chunk oldChunk, Chunk newChunk, RectanglePlus rect, Entity ent) {
-        if (!rects.get(oldChunk).containsKey(rect.filter)) {
+        if (!oldChunk.rects.containsKey(rect.filter)) {
             throw new RuntimeException("Entity id: " + ent.getId() + " !rects.get(oldChunk).containsKey(rect.filter)");
         }
-        if (!rects.get(oldChunk).get(rect.filter).containsKey(rect)) {
+        if (!oldChunk.rects.get(rect.filter).containsKey(rect)) {
             throwWhyChunkDoesNotContainRect(ent.getId(), oldChunk, newChunk, rect);
         }
     }
 
     private void throwWhyChunkDoesNotContainRect(int entId, Chunk oldChunk, Chunk newChunk, RectanglePlus rect) {
-        Optional<Chunk> chunk = this.rects.entrySet()
+        Optional<Chunk> chunk = chunkMan.getChunks()
             .stream()
-            .filter(e -> e.getValue().values().stream().anyMatch(s -> s.keySet().stream().anyMatch(r -> r.equals(rect))))
-            .map(Map.Entry::getKey).findAny();
+            .filter(c -> c.rects.values().stream().anyMatch(s -> s.keySet().stream().anyMatch(r -> r.equals(rect))))
+            .findAny();
 
         throw new RuntimeException(
             "Entity id: " + entId + " !rects.get(oldChunk).get(rect.filter).contains(rect). " +

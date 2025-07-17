@@ -16,6 +16,7 @@ public class ChunkManager {
 
     private final Vector3i chunksSize;
     private final Chunk[][][] chunks;
+    private final List<Chunk> chunksList;
 
     public ChunkManager(Vector3i worldSize) {
         this.worldSize = worldSize.cpy();
@@ -25,6 +26,7 @@ public class ChunkManager {
             worldSize.z / CHUNK_SIZE + 1
         );
         this.chunks = new Chunk[chunksSize.x][chunksSize.y][chunksSize.z];
+        this.chunksList = new ArrayList<>();
     }
 
     public Chunk add(float x, float y, float z) {
@@ -32,6 +34,7 @@ public class ChunkManager {
         if (chunks[position.x][position.y][position.z] == null) {
             Chunk chunk = createChunk(position);
             chunks[position.x][position.y][position.z] = chunk;
+            chunksList.add(chunk);
             return chunk;
         } else {
             throw new RuntimeException("Chunk at position: " + position + " already exists.");
@@ -39,7 +42,7 @@ public class ChunkManager {
     }
 
     private Chunk createChunk(Vector3i position) {
-        return new Chunk(this,position.x * CHUNK_SIZE, position.y * CHUNK_SIZE, position.z * CHUNK_SIZE);
+        return new Chunk(this, position.x * CHUNK_SIZE, position.y * CHUNK_SIZE, position.z * CHUNK_SIZE);
     }
 
     public Chunk get(float x, float y, float z) {
@@ -49,6 +52,10 @@ public class ChunkManager {
             throw new NullPointerException("Chunk at position " + x + ", " + y + ", " + z + " is null.");
         }
         return chunk;
+    }
+
+    public List<Chunk> getChunks() {
+        return chunksList;
     }
 
     public List<Chunk> getNearestChunks(final Vector3 pos, int offsetChunks) {

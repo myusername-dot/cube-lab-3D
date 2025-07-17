@@ -3,12 +3,17 @@ package io.github.labyrinthgenerator.pages.game3d.chunks;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector3;
 import io.github.labyrinthgenerator.pages.game3d.constants.Constants;
+import io.github.labyrinthgenerator.pages.game3d.entities.Entity;
 import io.github.labyrinthgenerator.pages.game3d.managers.ChunkManager;
+import io.github.labyrinthgenerator.pages.game3d.rect.RectanglePlus;
+import io.github.labyrinthgenerator.pages.game3d.rect.filters.RectanglePlusFilter;
 import io.github.labyrinthgenerator.pages.game3d.vectors.Vector3i;
 
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class Chunk {
+
     public final float x;
     public final float y;
     public final float z;
@@ -20,6 +25,9 @@ public class Chunk {
     private final ChunkManager chunkMan;
     private final Vector3i worldSize;
 
+    public final ConcurrentHashMap<RectanglePlusFilter, ConcurrentHashMap<RectanglePlus, Object>> rects;
+    public final ConcurrentHashMap<Entity, Object> entities;
+
     public Chunk(final ChunkManager chunkMan, float x, float y, float z) {
         this.chunkMan = chunkMan;
         this.worldSize = chunkMan.getWorldSize();
@@ -27,6 +35,9 @@ public class Chunk {
         this.y = y;
         this.z = z;
         center = new Vector3(x + width / 2f, y + height / 2f, z + depth / 2f);
+
+        rects = new ConcurrentHashMap<>();
+        entities = new ConcurrentHashMap<>();
     }
 
     public boolean contains(float x, float y, float z) {

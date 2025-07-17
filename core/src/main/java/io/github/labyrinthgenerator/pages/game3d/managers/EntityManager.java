@@ -18,7 +18,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Slf4j
 public class EntityManager {
     private final AtomicInteger nextId = new AtomicInteger(0);
-    private final ConcurrentHashMap<Chunk, ConcurrentHashMap<Entity, Object>> entitiesByChunks = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<Integer, Entity> entitiesById = new ConcurrentHashMap<>();
     private final Object justObject = new Object();
 
@@ -45,15 +44,15 @@ public class EntityManager {
             throw new NullPointerException("Chunk at position " + pos + " is null.");
         }
 
-        entitiesByChunks.computeIfAbsent(chunk, k -> new ConcurrentHashMap<>()).put(ent, justObject);
+        chunk.entities.put(ent, justObject);
         return chunk;
     }
 
     public void updateEntityChunk(final Chunk oldChunk, final Chunk newChunk, final Entity ent) {
         logEntityStartChunkMovement(oldChunk, newChunk, ent);
 
-        entitiesByChunks.get(oldChunk).remove(ent);
-        entitiesByChunks.computeIfAbsent(newChunk, k -> new ConcurrentHashMap<>()).put(ent, justObject);
+        oldChunk.entities.remove(ent);
+        newChunk.entities.put(ent, justObject);
 
         logEntityEndChunkMovement(ent);
     }
@@ -66,11 +65,7 @@ public class EntityManager {
 
         List<Entity> nearestEntities = new ArrayList<>();
         for (Chunk chunk : nearestChunks) {
-            if (!entitiesByChunks.containsKey(chunk)) {
-                log.warn("Method getNearestEntities: !entitiesByChunks.containsKey(chunk).");
-                continue;
-            }
-            nearestEntities.addAll(entitiesByChunks.get(chunk).keySet());
+            nearestEntities.addAll(chunk.entities.keySet());
         }
         return nearestEntities;
     }
@@ -85,22 +80,18 @@ public class EntityManager {
 
     public void removeEntity(Entity ent) {
         entitiesById.remove(ent.getId());
-        entitiesByChunks.values().forEach(c -> c.remove(ent));
+        Chunk chunk = chunkMan.get(ent.getPositionX(), ent.getPositionY(), ent.getPositionZ());
+        chunk.entities.remove(ent);
     }
 
     public void clear() {
-        entitiesByChunks.clear();
         entitiesById.clear();
     }
 
     public void render3DAllEntities(final ModelBatch mdlBatch, final Environment env, final float delta, final Vector3 pos, boolean nearest) {
-        Collection<Chunk> chunks = nearest ? chunkMan.getNearestChunks(pos, Constants.CHUNKS_RANGE_AROUND_CAM) : entitiesByChunks.keySet();
+        Collection<Chunk> chunks = nearest ? chunkMan.getNearestChunks(pos, Constants.CHUNKS_RANGE_AROUND_CAM) : chunkMan.getChunks();
         for (Chunk chunk : chunks) {
-            if (!entitiesByChunks.containsKey(chunk)) {
-                //log.warn("Method render3DAllEntities: !entitiesByChunks.containsKey(chunk).");
-                continue;
-            }
-            for (final Entity ent : entitiesByChunks.get(chunk).keySet()) {
+            for (final Entity ent : chunk.entities.keySet()) {
                 if (ent.shouldRender3D()) {
                     ent.render3D(mdlBatch, env, delta);
                 }
@@ -131,11 +122,7 @@ public class EntityManager {
         List<Future<Boolean>> futures = new ArrayList<>();
 
         for (Chunk chunk : nearestChunks) {
-            if (!entitiesByChunks.containsKey(chunk)) {
-                log.warn("Method getNearestEntities: !entitiesByChunks.containsKey(chunk).");
-                continue;
-            }
-            Set<Entity> entitiesByChunkClone = new HashSet<>(entitiesByChunks.get(chunk).keySet());
+            Set<Entity> entitiesByChunkClone = new HashSet<>(chunk.entities.keySet());
             futures.add(executorService.submit(new TickChunk(entitiesByChunkClone, delta)));
         }
 
@@ -173,7 +160,7 @@ public class EntityManager {
         if (player != null && player.getId() == ent.getId()) log.debug("Try to move the Player from: " + oldChunk + " to: " + newChunk + ".");
         else log.debug("Entity id: " + ent.getId() + " is trying to move from: " + oldChunk + " to: " + newChunk + ".");
 
-        if (!entitiesByChunks.get(oldChunk).containsKey(ent)) {
+        if (!oldChunk.entities.containsKey(ent)) {
             if (player != null && player.getId() == ent.getId()) log.error("Player: !entitiesByChunks.get(oldChunk).containsKey(ent).");
             else log.error("Entity id: " + ent.getId() + " !entitiesByChunks.get(oldChunk).containsKey(ent).");
         }
@@ -186,12 +173,12 @@ public class EntityManager {
     }
 
     private void logTickDuration(long tickTime) {
-        AtomicInteger entitiesSize = new AtomicInteger();
-        entitiesByChunks.forEach((key, value) -> entitiesSize.addAndGet(value.size()));
+        AtomicInteger entitiesSize = new AtomicInteger(entitiesById.size());
+        //entitiesByChunks.forEach((key, value) -> entitiesSize.addAndGet(value.size()));
         if (entitiesSize.get() != entitiesById.size()) {
             throw new RuntimeException("Entity count mismatch: " + entitiesSize.get() + " vs " + entitiesById.size());
         }
-        int rectsCount = rectMan.rectsCountAndCheck();
+        int rectsCount = rectMan.rectsCount();
         tickTime = System.currentTimeMillis() - tickTime;
         log.info("Tick complete. Entity count: " + entitiesSize.get() + ", rectangle count: " + rectsCount + ". Time spent seconds: " + tickTime / 1000d + ".");
     }
