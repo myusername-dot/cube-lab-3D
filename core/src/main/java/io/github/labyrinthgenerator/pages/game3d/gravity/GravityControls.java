@@ -43,43 +43,43 @@ public class GravityControls {
 
     public static GravityDir currentGravity = DOWN;
 
-    public static Vector3 adjustWorldVecForGravity(Vector3 in) {
-        return adjustWorldVecForGravity(in, null);
+    public static Vector3 adjustWorldVecForGravity(Vector3 dst) {
+        return adjustWorldVecForGravity(dst, null);
     }
 
-    public static Vector3 adjustWorldVecForGravity(Vector3 in, Vector3i worldSize) {
+    public static Vector3 adjustWorldVecForGravity(Vector3 dst, Vector3i worldSize) {
         switch (currentGravity) {
             case DOWN:
-                in.scl(worldGravityScl[DOWN.ord]);
+                dst.scl(worldGravityScl[DOWN.ord]);
                 break;
             case UP:
-                in.set(in.z, in.y, in.x).scl(worldGravityScl[UP.ord]);
+                dst.set(dst.z, dst.y, dst.x).scl(worldGravityScl[UP.ord]);
                 if (worldSize != null) {
-                    in.add(new Vector3(0, worldSize.y, 0));
+                    dst.add(new Vector3(0, worldSize.y, 0));
                 }
                 break;
             case FORWARD:
-                in.set(in.z, in.x, in.y).scl(worldGravityScl[FORWARD.ord]);
+                dst.set(dst.z, dst.x, dst.y).scl(worldGravityScl[FORWARD.ord]);
                 break;
             case BACK:
-                in.set(in.z, in.x, in.y).scl(worldGravityScl[BACK.ord]);
+                dst.set(dst.z, dst.x, dst.y).scl(worldGravityScl[BACK.ord]);
                 if (worldSize != null) {
-                    in.add(new Vector3(worldSize.x, 0, worldSize.z));
+                    dst.add(new Vector3(worldSize.x, 0, worldSize.z));
                 }
                 break;
             case LEFT:
-                in.set(in.y, in.z, in.x).scl(worldGravityScl[LEFT.ord]);
+                dst.set(dst.y, dst.z, dst.x).scl(worldGravityScl[LEFT.ord]);
                 break;
             case RIGHT:
-                in.set(in.y, in.z, in.x).scl(worldGravityScl[RIGHT.ord]);
+                dst.set(dst.y, dst.z, dst.x).scl(worldGravityScl[RIGHT.ord]);
                 if (worldSize != null) {
-                    in.add(worldSize.x, 0, worldSize.z);
+                    dst.add(worldSize.x, 0, worldSize.z);
                 }
                 break;
             default:
                 break;
         }
-        return in;
+        return dst;
     }
 
     public static float getGravityScl() {
@@ -87,30 +87,30 @@ public class GravityControls {
     }
 
     // @formatter:off
-    public static Vector3 swap(Vector3 v) {
+    public static Vector3 swap(Vector3 dst) {
         switch (currentGravity) {
             case UP: case DOWN: default:
                 break;
             case FORWARD: case BACK:
-                v.set(v.y, v.x, v.z);
+                dst.set(dst.y, dst.x, dst.z);
                 break;
             case LEFT: case RIGHT:
-                v.set(v.x, v.z, v.y);
+                dst.set(dst.x, dst.z, dst.y);
         }
-        return v;
+        return dst;
     }
 
-    public static Vector3 reSwap(final Vector3 in) {
+    public static Vector3 reSwap(final Vector3 dst) {
         switch (currentGravity) {
             case UP: case DOWN: default:
                 break;
             case FORWARD: case BACK:
-                in.set(in.y, in.x, in.z);
+                dst.set(dst.y, dst.x, dst.z);
                 break;
             case LEFT: case RIGHT:
-                in.set(in.x, in.z, in.y);
+                dst.set(dst.x, dst.z, dst.y);
         }
-        return in;
+        return dst;
     }
 
     public static void swapVerticalGravityDir() {
