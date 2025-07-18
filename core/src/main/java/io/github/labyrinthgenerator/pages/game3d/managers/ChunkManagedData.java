@@ -17,7 +17,7 @@ public class ChunkManagedData {
 
     final HashMap<RectanglePlusFilter, HashMap<Vector3i, List<RectanglePlus>>> rectsRoundCenter;
 
-    final float roundDist = 1f;
+    //final float roundDist = 1f;
 
     public ChunkManagedData() {
         this.rects = new ConcurrentHashMap<>();
@@ -26,6 +26,6 @@ public class ChunkManagedData {
     }
 
     Vector3i getChunkRoundPosition(Vector3 centerPos) {
-        return new Vector3i((int) (centerPos.x / roundDist), (int) (centerPos.y / roundDist), (int) (centerPos.z / roundDist));
+        return new Vector3i((int) (centerPos.x/* / roundDist*/), (int) (centerPos.y/* / roundDist*/), (int) (centerPos.z/* / roundDist*/));
     }
 }
