@@ -23,6 +23,8 @@ public class RectManager {
     private final ConcurrentHashMap<Vector3i, RectanglePlus> staticRectsByPosition = new ConcurrentHashMap<>();
     private final Object justObject = new Object();
 
+    public final float roundDist = 1f;
+
     private volatile boolean isTick = false;
     private volatile long tickId = -1;
 
@@ -82,7 +84,7 @@ public class RectManager {
         Set<RectanglePlus> otherRects = new HashSet<>();
         for (Chunk chunk : nearestChunks) {
             for (RectanglePlusFilter filter : filters) {
-                chunk.getNearestRectsByFilter(rect, filter, otherRects);
+                getNearestRectsByChunkByFilter(chunk, rect.getCenter(), filter, otherRects);
             }
         }
         if (rect.filter.equals(RectanglePlusFilter.PLAYER)) {
@@ -109,17 +111,40 @@ public class RectManager {
         }
     }
 
-    public void updateRectsRoundPositions(Chunk chunk) {
+    public void updateChunkNearestRectsPositions(Chunk chunk) {
         chunk.rectsRoundCenter.clear();
         for (Map.Entry<RectanglePlusFilter, ConcurrentHashMap<RectanglePlus, Object>> rectsEntry : chunk.rects.entrySet()) {
             HashMap<Vector3i, List<RectanglePlus>> rectsRoundByFilter = new HashMap<>(rectsEntry.getValue().size());
             chunk.rectsRoundCenter.put(rectsEntry.getKey(), rectsRoundByFilter);
             for (RectanglePlus rect : rectsEntry.getValue().keySet()) {
                 rect.nearestChunk = true;
-                Vector3i positionRound = chunk.getRectRoundPosition(rect);
+                Vector3i positionRound = getChunkRoundPosition(rect.getCenter());
                 rectsRoundByFilter.computeIfAbsent(positionRound, p -> new ArrayList<>()).add(rect);
             }
         }
+    }
+
+    public void getNearestRectsByChunkByFilter(Chunk chunk, Vector3 centerPos, RectanglePlusFilter filter, Collection<RectanglePlus> dst) {
+        HashMap<Vector3i, List<RectanglePlus>> roundRectsByFilter = chunk.rectsRoundCenter.get(filter);
+        if (roundRectsByFilter == null) return;
+
+        Vector3i roundPos = getChunkRoundPosition(centerPos);
+        Vector3i shiftedRoundPos = new Vector3i(0, 0, 0);
+        for (int i = roundPos.x - 1; i <= roundPos.x + 1; i++) {
+            for (int j = roundPos.y - 1; j <= roundPos.y + 1; j++) {
+                for (int k = roundPos.z - 1; k <= roundPos.z + 1; k++) {
+                    shiftedRoundPos.set(i, j, k);
+                    List<RectanglePlus> rects = roundRectsByFilter.get(shiftedRoundPos);
+                    if (rects != null) {
+                        dst.addAll(rects);
+                    }
+                }
+            }
+        }
+    }
+
+    private Vector3i getChunkRoundPosition(Vector3 centerPos) {
+        return new Vector3i((int) (centerPos.x / roundDist), (int) (centerPos.y / roundDist), (int) (centerPos.z / roundDist));
     }
 
     public boolean checkStaticPosition(int x, int y, int z) {

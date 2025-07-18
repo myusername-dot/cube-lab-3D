@@ -28,7 +28,6 @@ public class Chunk {
     public final ConcurrentHashMap<RectanglePlusFilter, ConcurrentHashMap<RectanglePlus, Object>> rects;
     public final ConcurrentHashMap<Entity, Object> entities;
 
-    private final float roundDist = 1f;
     public final HashMap<RectanglePlusFilter, HashMap<Vector3i, List<RectanglePlus>>> rectsRoundCenter;
 
     public Chunk(final ChunkManager chunkMan, float x, float y, float z) {
@@ -48,34 +47,11 @@ public class Chunk {
         x = MathUtils.clamp(x, 0, worldSize.x);
         y = MathUtils.clamp(y, 0, worldSize.y);
         z = MathUtils.clamp(z, 0, worldSize.z);
-
-        return this.x <= x && this.x + this.width >= x
+        // @formatter:off
+        return this.x <= x && this.x + this.width  >= x
             && this.y <= y && this.y + this.height >= y
-            && this.z <= z && this.z + this.depth >= z;
-    }
-
-    public void getNearestRectsByFilter(RectanglePlus rect, RectanglePlusFilter filter, Collection<RectanglePlus> nearestRects) {
-        HashMap<Vector3i, List<RectanglePlus>> roundRectsByFilter = rectsRoundCenter.get(filter);
-        if (roundRectsByFilter == null) return;
-
-        Vector3i roundPos = getRectRoundPosition(rect);
-        Vector3i pos = new Vector3i(0, 0, 0);
-        for (int i = roundPos.x - 1; i <= roundPos.x + 1; i++) {
-            for (int j = roundPos.y - 1; j <= roundPos.y + 1; j++) {
-                for (int k = roundPos.z - 1; k <= roundPos.z + 1; k++) {
-                    pos.set(i, j, k);
-                    List<RectanglePlus> rects = roundRectsByFilter.get(pos);
-                    if (rects != null) {
-                        nearestRects.addAll(rects);
-                    }
-                }
-            }
-        }
-    }
-
-    public Vector3i getRectRoundPosition(RectanglePlus rect) {
-        Vector3 center = rect.getCenter();
-        return new Vector3i((int) (center.x / roundDist), (int) (center.y / roundDist), (int) (center.z / roundDist));
+            && this.z <= z && this.z + this.depth  >= z;
+        // @formatter:on
     }
 
     @Override
@@ -83,9 +59,11 @@ public class Chunk {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Chunk chunk = (Chunk) o;
+        // @formatter:off
         return Float.compare(chunk.x, x) == 0
             && Float.compare(chunk.y, y) == 0
             && Float.compare(chunk.z, z) == 0;
+        // @formatter:on
     }
 
     @Override

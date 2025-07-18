@@ -107,7 +107,7 @@ public class EntityManager {
 
             long prepareChunksTime = System.nanoTime();
             List<Chunk> nearestChunks = chunkMan.getNearestChunks(pos, Constants.CHUNKS_UPDATE_RANGE_AROUND_CAM);
-            nearestChunks.forEach(c -> rectMan.updateRectsRoundPositions(c));
+            nearestChunks.forEach(c -> rectMan.updateChunkNearestRectsPositions(c));
             logPrepareChunksDuration(prepareChunksTime);
 
             executeTickInParallel(nearestChunks, delta);
