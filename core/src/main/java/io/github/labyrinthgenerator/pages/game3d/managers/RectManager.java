@@ -1,5 +1,6 @@
 package io.github.labyrinthgenerator.pages.game3d.managers;
 
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector3;
 import io.github.labyrinthgenerator.pages.game3d.CubeLab3D;
 import io.github.labyrinthgenerator.pages.game3d.chunks.Chunk;
@@ -39,9 +40,9 @@ public class RectManager {
 
     public void addRect(final RectanglePlus rect) {
         Chunk chunk = chunkMan.get(
-            rect.getX() + rect.getWidth() / 2f,
-            rect.getY() + rect.getHeight() / 2f,
-            rect.getZ() + rect.getDepth() / 2f
+                rect.getX() + rect.getWidth() / 2f,
+                rect.getY() + rect.getHeight() / 2f,
+                rect.getZ() + rect.getDepth() / 2f
         );
         chunk.data.rects.computeIfAbsent(rect.filter, k -> new ConcurrentHashMap<>()).put(rect, justObject);
 
@@ -116,10 +117,25 @@ public class RectManager {
             chunk.data.rectsRoundCenter.put(rectsEntry.getKey(), rectsRoundByFilter);
             for (RectanglePlus rect : rectsEntry.getValue().keySet()) {
                 rect.nearestChunk = true;
-                Vector3i positionRound = chunk.data.getChunkRoundPosition(rect.getCenter());
-                rectsRoundByFilter.computeIfAbsent(positionRound, p -> new ArrayList<>()).add(rect);
+                Set<Vector3i> roundPoses = splitToRoundPositions(rect);
+                for (Vector3i positionRound : roundPoses) {
+                    rectsRoundByFilter.computeIfAbsent(positionRound, p -> new ArrayList<>()).add(rect);
+                }
             }
         }
+    }
+
+    private Set<Vector3i> splitToRoundPositions(RectanglePlus rect) {
+        Set<Vector3i> roundPoses = new HashSet<>();
+        Vector3 pos = rect.getPositionImmutable();
+        for (int i = (int) pos.x; i <= MathUtils.ceil(pos.x + rect.getWidth()); i++) {
+            for (int j = (int) pos.y; j <= MathUtils.ceil(pos.y + rect.getHeight()); j++) {
+                for (int k = (int) pos.z; k <= MathUtils.ceil(pos.z + rect.getDepth()); k++) {
+                    roundPoses.add(new Vector3i(i, j, k));
+                }
+            }
+        }
+        return roundPoses;
     }
 
     public void getNearestRectsByChunkByFilter(Chunk chunk, Vector3 centerPos, RectanglePlusFilter filter, Collection<RectanglePlus> dst) {
@@ -198,8 +214,8 @@ public class RectManager {
     private void logRectStartChunkMovement(final Entity ent) {
         Player player = game.getScreen().getPlayer();
         log.debug(player != null && player.getId() == ent.getId() ?
-            "Try to move the Player's rectangle to the other chunk." :
-            "Entity id: " + ent.getId() + " rectangle is trying to move to the other chunk.");
+                "Try to move the Player's rectangle to the other chunk." :
+                "Entity id: " + ent.getId() + " rectangle is trying to move to the other chunk.");
     }
 
     private void handleEntityNotFound(Entity ent) {
@@ -219,21 +235,21 @@ public class RectManager {
 
     private void throwWhyChunkDoesNotContainRect(int entId, Chunk oldChunk, Chunk newChunk, RectanglePlus rect) {
         Optional<Chunk> chunk = chunkMan.getChunks()
-            .stream()
-            .filter(c -> c.data.rects.values().stream().anyMatch(s -> s.keySet().stream().anyMatch(r -> r.equals(rect))))
-            .findAny();
+                .stream()
+                .filter(c -> c.data.rects.values().stream().anyMatch(s -> s.keySet().stream().anyMatch(r -> r.equals(rect))))
+                .findAny();
 
         throw new RuntimeException(
-            "Entity id: " + entId + " !rects.get(oldChunk).get(rect.filter).contains(rect). " +
-                "Old is: " + oldChunk + ", new is: " + newChunk +
-                ", is: " + chunk.orElse(null)
+                "Entity id: " + entId + " !rects.get(oldChunk).get(rect.filter).contains(rect). " +
+                        "Old is: " + oldChunk + ", new is: " + newChunk +
+                        ", is: " + chunk.orElse(null)
         );
     }
 
     private void logRectEndChunkMovement(final Entity ent) {
         Player player = game.getScreen().getPlayer();
         log.debug(player != null && player.getId() == ent.getId() ?
-            "The Player's rectangle has been moved to the other chunk!" :
-            "Entity id: " + ent.getId() + " rectangle has been moved to the other chunk!");
+                "The Player's rectangle has been moved to the other chunk!" :
+                "Entity id: " + ent.getId() + " rectangle has been moved to the other chunk!");
     }
 }
