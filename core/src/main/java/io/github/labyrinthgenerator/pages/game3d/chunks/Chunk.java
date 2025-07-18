@@ -3,14 +3,11 @@ package io.github.labyrinthgenerator.pages.game3d.chunks;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector3;
 import io.github.labyrinthgenerator.pages.game3d.constants.Constants;
-import io.github.labyrinthgenerator.pages.game3d.entities.Entity;
+import io.github.labyrinthgenerator.pages.game3d.managers.ChunkManagedData;
 import io.github.labyrinthgenerator.pages.game3d.managers.ChunkManager;
-import io.github.labyrinthgenerator.pages.game3d.rect.RectanglePlus;
-import io.github.labyrinthgenerator.pages.game3d.rect.filters.RectanglePlusFilter;
 import io.github.labyrinthgenerator.pages.game3d.vectors.Vector3i;
 
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Objects;
 
 public class Chunk {
 
@@ -25,10 +22,7 @@ public class Chunk {
     private final ChunkManager chunkMan;
     private final Vector3i worldSize;
 
-    public final ConcurrentHashMap<RectanglePlusFilter, ConcurrentHashMap<RectanglePlus, Object>> rects;
-    public final ConcurrentHashMap<Entity, Object> entities;
-
-    public final HashMap<RectanglePlusFilter, HashMap<Vector3i, List<RectanglePlus>>> rectsRoundCenter;
+    public final ChunkManagedData data;
 
     public Chunk(final ChunkManager chunkMan, float x, float y, float z) {
         this.chunkMan = chunkMan;
@@ -37,10 +31,7 @@ public class Chunk {
         this.y = y;
         this.z = z;
         this.center = new Vector3(x + width / 2f, y + height / 2f, z + depth / 2f);
-
-        this.rects = new ConcurrentHashMap<>();
-        this.entities = new ConcurrentHashMap<>();
-        this.rectsRoundCenter = new HashMap<>();
+        data = new ChunkManagedData();
     }
 
     public boolean contains(float x, float y, float z) {

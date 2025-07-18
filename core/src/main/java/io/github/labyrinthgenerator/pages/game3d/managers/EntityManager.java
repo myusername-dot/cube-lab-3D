@@ -44,15 +44,15 @@ public class EntityManager {
             throw new NullPointerException("Chunk at position " + pos + " is null.");
         }
 
-        chunk.entities.put(ent, justObject);
+        chunk.data.entities.put(ent, justObject);
         return chunk;
     }
 
     public void updateEntityChunk(final Chunk oldChunk, final Chunk newChunk, final Entity ent) {
         logEntityStartChunkMovement(oldChunk, newChunk, ent);
 
-        oldChunk.entities.remove(ent);
-        newChunk.entities.put(ent, justObject);
+        oldChunk.data.entities.remove(ent);
+        newChunk.data.entities.put(ent, justObject);
 
         logEntityEndChunkMovement(ent);
     }
@@ -65,7 +65,7 @@ public class EntityManager {
 
         List<Entity> nearestEntities = new ArrayList<>();
         for (Chunk chunk : nearestChunks) {
-            nearestEntities.addAll(chunk.entities.keySet());
+            nearestEntities.addAll(chunk.data.entities.keySet());
         }
         return nearestEntities;
     }
@@ -81,7 +81,7 @@ public class EntityManager {
     public void removeEntity(Entity ent) {
         entitiesById.remove(ent.getId());
         Chunk chunk = chunkMan.get(ent.getPositionX(), ent.getPositionY(), ent.getPositionZ());
-        chunk.entities.remove(ent);
+        chunk.data.entities.remove(ent);
     }
 
     public void clear() {
@@ -91,7 +91,7 @@ public class EntityManager {
     public void render3DAllEntities(final ModelBatch mdlBatch, final Environment env, final float delta, final Vector3 pos, boolean nearest) {
         Collection<Chunk> chunks = nearest ? chunkMan.getNearestChunks(pos, Constants.CHUNKS_RANGE_AROUND_CAM) : chunkMan.getChunks();
         for (Chunk chunk : chunks) {
-            for (final Entity ent : chunk.entities.keySet()) {
+            for (final Entity ent : chunk.data.entities.keySet()) {
                 if (ent.shouldRender3D()) {
                     ent.render3D(mdlBatch, env, delta);
                 }
@@ -126,7 +126,7 @@ public class EntityManager {
         List<Future<Boolean>> futures = new ArrayList<>();
 
         for (Chunk chunk : nearestChunks) {
-            Set<Entity> entitiesByChunkClone = new HashSet<>(chunk.entities.keySet());
+            Set<Entity> entitiesByChunkClone = new HashSet<>(chunk.data.entities.keySet());
             futures.add(executorService.submit(new TickChunk(entitiesByChunkClone, delta)));
         }
 
@@ -165,7 +165,7 @@ public class EntityManager {
             log.debug("Try to move the Player from: " + oldChunk + " to: " + newChunk + ".");
         else log.debug("Entity id: " + ent.getId() + " is trying to move from: " + oldChunk + " to: " + newChunk + ".");
 
-        if (!oldChunk.entities.containsKey(ent)) {
+        if (!oldChunk.data.entities.containsKey(ent)) {
             if (player != null && player.getId() == ent.getId())
                 log.error("Player: !entitiesByChunks.get(oldChunk).containsKey(ent).");
             else log.error("Entity id: " + ent.getId() + " !entitiesByChunks.get(oldChunk).containsKey(ent).");

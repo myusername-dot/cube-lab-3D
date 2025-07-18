@@ -23,8 +23,6 @@ public class RectManager {
     private final ConcurrentHashMap<Vector3i, RectanglePlus> staticRectsByPosition = new ConcurrentHashMap<>();
     private final Object justObject = new Object();
 
-    public final float roundDist = 1f;
-
     private volatile boolean isTick = false;
     private volatile long tickId = -1;
 
@@ -45,7 +43,7 @@ public class RectManager {
             rect.getY() + rect.getHeight() / 2f,
             rect.getZ() + rect.getDepth() / 2f
         );
-        chunk.rects.computeIfAbsent(rect.filter, k -> new ConcurrentHashMap<>()).put(rect, justObject);
+        chunk.data.rects.computeIfAbsent(rect.filter, k -> new ConcurrentHashMap<>()).put(rect, justObject);
 
         if (rect.getConnectedEntityId() >= 0) {
             rectsByConnectedEntityId.put(rect.getConnectedEntityId(), rect);
@@ -67,8 +65,8 @@ public class RectManager {
 
         validateOldChunkContainsRect(oldChunk, newChunk, rect, ent);
 
-        oldChunk.rects.get(rect.filter).remove(rect);
-        newChunk.rects.computeIfAbsent(rect.filter, k -> new ConcurrentHashMap<>()).put(rect, justObject);
+        oldChunk.data.rects.get(rect.filter).remove(rect);
+        newChunk.data.rects.computeIfAbsent(rect.filter, k -> new ConcurrentHashMap<>()).put(rect, justObject);
 
         logRectEndChunkMovement(ent);
     }
@@ -112,23 +110,23 @@ public class RectManager {
     }
 
     public void updateChunkNearestRectsPositions(Chunk chunk) {
-        chunk.rectsRoundCenter.clear();
-        for (Map.Entry<RectanglePlusFilter, ConcurrentHashMap<RectanglePlus, Object>> rectsEntry : chunk.rects.entrySet()) {
+        chunk.data.rectsRoundCenter.clear();
+        for (Map.Entry<RectanglePlusFilter, ConcurrentHashMap<RectanglePlus, Object>> rectsEntry : chunk.data.rects.entrySet()) {
             HashMap<Vector3i, List<RectanglePlus>> rectsRoundByFilter = new HashMap<>(rectsEntry.getValue().size());
-            chunk.rectsRoundCenter.put(rectsEntry.getKey(), rectsRoundByFilter);
+            chunk.data.rectsRoundCenter.put(rectsEntry.getKey(), rectsRoundByFilter);
             for (RectanglePlus rect : rectsEntry.getValue().keySet()) {
                 rect.nearestChunk = true;
-                Vector3i positionRound = getChunkRoundPosition(rect.getCenter());
+                Vector3i positionRound = chunk.data.getChunkRoundPosition(rect.getCenter());
                 rectsRoundByFilter.computeIfAbsent(positionRound, p -> new ArrayList<>()).add(rect);
             }
         }
     }
 
     public void getNearestRectsByChunkByFilter(Chunk chunk, Vector3 centerPos, RectanglePlusFilter filter, Collection<RectanglePlus> dst) {
-        HashMap<Vector3i, List<RectanglePlus>> roundRectsByFilter = chunk.rectsRoundCenter.get(filter);
+        HashMap<Vector3i, List<RectanglePlus>> roundRectsByFilter = chunk.data.rectsRoundCenter.get(filter);
         if (roundRectsByFilter == null) return;
 
-        Vector3i roundPos = getChunkRoundPosition(centerPos);
+        Vector3i roundPos = chunk.data.getChunkRoundPosition(centerPos);
         Vector3i shiftedRoundPos = new Vector3i(0, 0, 0);
         for (int i = roundPos.x - 1; i <= roundPos.x + 1; i++) {
             for (int j = roundPos.y - 1; j <= roundPos.y + 1; j++) {
@@ -143,10 +141,6 @@ public class RectManager {
         }
     }
 
-    private Vector3i getChunkRoundPosition(Vector3 centerPos) {
-        return new Vector3i((int) (centerPos.x / roundDist), (int) (centerPos.y / roundDist), (int) (centerPos.z / roundDist));
-    }
-
     public boolean checkStaticPosition(int x, int y, int z) {
         return staticRectsByPosition.containsKey(new Vector3i(x, y, z));
     }
@@ -156,7 +150,7 @@ public class RectManager {
         Chunk chunk;
         if (entity != null) chunk = entity.getChunk();
         else chunk = chunkMan.get(rect.getX(), rect.getY(), rect.getZ());
-        chunk.rects.get(rect.filter).remove(rect);
+        chunk.data.rects.get(rect.filter).remove(rect);
         rectsByConnectedEntityId.remove(rect.getConnectedEntityId());
         staticRectsByPosition.remove(new Vector3i(rect.getPositionImmutable()));
         MyDebugRenderer.shapes.remove(rect);
@@ -169,7 +163,7 @@ public class RectManager {
     public int rectsCountAndCheck() {
         AtomicInteger rectsCount = new AtomicInteger();
         List<Chunk> chunks = chunkMan.getChunks();
-        chunks.forEach(c -> c.rects.forEach((f, s) -> rectsCount.addAndGet(s.size())));
+        chunks.forEach(c -> c.data.rects.forEach((f, s) -> rectsCount.addAndGet(s.size())));
         checkRectCountConsistency(rectsCount);
         return rectsCount.get();
     }
@@ -215,10 +209,10 @@ public class RectManager {
     }
 
     private void validateOldChunkContainsRect(Chunk oldChunk, Chunk newChunk, RectanglePlus rect, Entity ent) {
-        if (!oldChunk.rects.containsKey(rect.filter)) {
+        if (!oldChunk.data.rects.containsKey(rect.filter)) {
             throw new RuntimeException("Entity id: " + ent.getId() + " !rects.get(oldChunk).containsKey(rect.filter)");
         }
-        if (!oldChunk.rects.get(rect.filter).containsKey(rect)) {
+        if (!oldChunk.data.rects.get(rect.filter).containsKey(rect)) {
             throwWhyChunkDoesNotContainRect(ent.getId(), oldChunk, newChunk, rect);
         }
     }
@@ -226,7 +220,7 @@ public class RectManager {
     private void throwWhyChunkDoesNotContainRect(int entId, Chunk oldChunk, Chunk newChunk, RectanglePlus rect) {
         Optional<Chunk> chunk = chunkMan.getChunks()
             .stream()
-            .filter(c -> c.rects.values().stream().anyMatch(s -> s.keySet().stream().anyMatch(r -> r.equals(rect))))
+            .filter(c -> c.data.rects.values().stream().anyMatch(s -> s.keySet().stream().anyMatch(r -> r.equals(rect))))
             .findAny();
 
         throw new RuntimeException(
